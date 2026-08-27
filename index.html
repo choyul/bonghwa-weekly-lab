@@ -248,7 +248,7 @@ footer a{color:var(--acc);font-weight:700;text-decoration:underline;text-decorat
 .feed-divider{display:flex;align-items:center;gap:8px;margin:18px 2px 10px;color:var(--sub);font-size:13px;font-weight:700}
 /* ── 갈래 탭 — 목록 머리에 붙어 따라 내려온다 ── */
 .grptabs{position:sticky;top:0;z-index:26;display:flex;gap:6px;
- background:var(--bg);padding:8px 0 10px;margin:0 0 2px}
+ background:var(--bg);padding:8px 14px 10px;margin:0 0 2px}
 .grptabs button{flex:1;min-height:54px;display:flex;flex-direction:column;align-items:center;
  justify-content:center;gap:1px;border:1px solid var(--line);border-radius:13px;
  background:var(--card);color:var(--sub);font-family:inherit;cursor:pointer;padding:6px 2px}
@@ -353,13 +353,13 @@ body.wide-phone .modetabs button{font-size:17px;min-height:52px}
 /* 행사 보기에서는 업무 목록만 감춘다 — 검색(.psearch)·기간(#wstrip)·요약(#hero)은 셋이 함께 쓴다 */
 body.mode-event #bwTiles,body.mode-event #bwAxes,
 body.mode-event #bwTop,body.mode-event #bwFilters,body.mode-event #bwInfo,
-body.mode-event #bwCards,body.mode-event #bwMore,
+body.mode-event #bwCards,body.mode-event #bwMore,body.mode-event #bwGrpTabs,
 body.mode-event #evSpan{display:none}
 body:not(.mode-event) #evView{display:none}
 /* 뉴스 보기는 자기만의 시간축(오늘·놓친 것·지난 1주일)을 쓰므로 주간 달력까지 통째로 감춘다 */
 body.mode-news #bwTiles,body.mode-news #bwAxes,
 body.mode-news #bwTop,body.mode-news #bwFilters,body.mode-news #bwInfo,
-body.mode-news #bwCards,body.mode-news #bwMore,
+body.mode-news #bwCards,body.mode-news #bwMore,body.mode-news #bwGrpTabs,
 body.mode-news #evView,body.mode-news .nw-search{display:none}
 body:not(.mode-news) #nwView{display:none}
 /* ── 뉴스 목록 ── */
