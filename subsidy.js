@@ -175,8 +175,8 @@
       /* 담당자가 관리자 화면에서 정한 마감일이 원문보다 앞선다 */
       const endD = cfg.applyEnd || c.applyEnd;
       const closed = endD && dday(endD, today) < 0;
-      const full = cfg.capacity && applyLog().filter(r => r.id === sub.id).length >= cfg.capacity;
-      const already = applyLog().some(r => r.id === sub.id);
+      const full = false;   /* 정원은 서버가 접수 순간에 다시 센다 — 기기별로 세면 동시에 넘어간다 */
+      const already = window.LABAPI ? LABAPI.mine(sub.id) : applyLog().some(r => r.id === sub.id);
       let body = '', act = '';
       if (v.r === 'no') {
         body = `<div class="sub-verdict no">${E(v.fails.join(', '))} 조건에서 해당되지 않습니다.</div>
@@ -236,6 +236,10 @@
     function renderApply() {
       const A = window.SUBCFG ? SUBCFG.ASK : {};
       const pre = prof();
+      const q = cfg.qty;
+      const areaHa = (agrix && agrix.area != null) ? agrix.area : (a.farmArea || null);
+      const cap = window.SUBCFG ? SUBCFG.qtyCap(q, areaHa) : null;
+      const why = window.SUBCFG ? SUBCFG.qtyWhy(q, areaHa) : '';
       const rows = cfg.ask.map(k => {
         const f = A[k]; if (!f) return '';
         let val = pre['ap_' + k] || '';
@@ -246,10 +250,21 @@
           : `<input class="ap-in" data-k="${k}" type="${f.type}" value="${E(val)}" placeholder="${E(f.ph || '')}">`;
         return `<label class="ap-lab">${E(f.label)}${f.required ? ' <b>*</b>' : ''}</label>${inp}`;
       }).join('');
+      const qtyRow = (q && q.on) ? `
+        <label class="ap-lab">${E(q.label || '신청 수량')}${q.unit ? ` (${E(q.unit)})` : ''}</label>
+        <input class="ap-in" id="apQty" type="number" min="0" inputmode="numeric"
+          placeholder="${cap != null ? '최대 ' + cap : '숫자로 적어 주세요'}">
+        <div class="ap-cap" id="apCap">${cap != null
+          ? `신청할 수 있는 최대 <b>${cap}${E(q.unit || '')}</b>${why ? ` <span>(${E(why)})</span>` : ''}`
+          : '경작 면적을 확인하면 받을 수 있는 최대 수량을 알려 드립니다.'}</div>
+        <div class="ap-cap warn">신청한 수량이 그대로 나가지는 않습니다.
+          <b>면적과 예산에 맞춰 자동으로 조정</b>되며, 최종 수량은 담당과 심사로 정해집니다.
+          ${q.note ? E(q.note) : ''}</div>` : '';
       m.innerHTML = `<div class="mbox">${head}
         <div class="sub-body">
           <div class="sub-q" style="margin-top:2px">온라인 신청</div>
           ${rows || '<p class="sub-note">받을 정보가 정해지지 않았습니다.</p>'}
+          ${qtyRow}
           ${cfg.agree !== false ? `<label class="ap-agree" id="apAgree"><input type="checkbox">
             적어 주신 내용을 이 사업 심사에 쓰는 데 동의합니다. 심사가 끝나면 지웁니다.</label>` : ''}
           <div class="sub-note">보내신 내용은 담당과가 확인합니다. 최종 자격은 담당과 심사로 정해집니다.</div>
@@ -257,9 +272,19 @@
         ${foot('<button type="button" id="apGo" class="pri">접수하기</button><button type="button" id="apBack">뒤로</button>')}</div>`;
       wire();
       m.querySelector('#apBack').onclick = () => renderResult({ r: 'ok' });
+      const qi = m.querySelector('#apQty');
+      if (qi && cap != null) qi.oninput = () => {
+        if (qi.value !== '' && +qi.value > cap) {
+          qi.value = cap;
+          const c = m.querySelector('#apCap');
+          c.classList.add('cut');
+          c.innerHTML = `신청하신 수량이 한도를 넘어 <b>${cap}${E(q.unit || '')}</b>로 맞췄습니다.` +
+            (why ? ` <span>(${E(why)})</span>` : '');
+        }
+      };
       const ag = m.querySelector('#apAgree');
       if (ag) ag.onclick = () => ag.classList.toggle('on', ag.querySelector('input').checked);
-      m.querySelector('#apGo').onclick = () => {
+      m.querySelector('#apGo').onclick = async () => {
         const d = {}; let miss = '';
         m.querySelectorAll('.ap-in').forEach(el => {
           d[el.dataset.k] = el.value.trim();
@@ -268,15 +293,24 @@
         });
         if (miss) { alert(miss + '을(를) 적어 주세요.'); return; }
         if (ag && !ag.querySelector('input').checked) { alert('동의에 표시해 주세요.'); return; }
-        const no = 'B' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + '-' +
-          String(applyLog().length + 1).padStart(3, '0');
-        pushApply({ no, id: sub.id, title: sub.title, dept: sub.dept,
-          at: new Date().toISOString().slice(0, 16).replace('T', ' '), d, agrix });
-        const keep = { ...prof() }; Object.keys(d).forEach(k => { if (k !== 'memo') keep['ap_' + k] = d[k]; });
+        if (qi) {
+          if (qi.value === '') { alert((q.label || '신청 수량') + '을(를) 적어 주세요.'); return; }
+          d.qty = (cap != null ? Math.min(+qi.value, cap) : +qi.value) + (q.unit || '');
+          if (why) d.qtyWhy = why;
+        }
+        const btn = m.querySelector('#apGo'); btn.disabled = true; btn.textContent = '접수 중…';
+        const rec = { sid: sub.id, title: sub.title, dept: sub.dept, data: d, agrix, capacity: cfg.capacity || null };
+        const res = window.LABAPI ? await LABAPI.apply(rec)
+          : { ok: true, no: 'B-LOCAL-' + (applyLog().length + 1) };
+        if (!res.ok) { btn.disabled = false; btn.textContent = '접수하기'; alert(res.why); return; }
+        const keep = { ...prof() }; Object.keys(d).forEach(k => { if (k !== 'memo' && k !== 'qty') keep['ap_' + k] = d[k]; });
         saveProf(keep);
         m.innerHTML = `<div class="mbox">${head}
           <div class="sub-body">
-            <div class="sub-verdict ok">접수했습니다.<br><span style="font-weight:400">접수번호 <b>${E(no)}</b></span></div>
+            <div class="sub-verdict ok">접수했습니다.<br><span style="font-weight:400">접수번호 <b>${E(res.no)}</b></span></div>
+            ${d.qty ? `<p class="sub-note">신청 수량 <b>${E(d.qty)}</b>${
+              why ? ` — ${E(why)} 기준으로 맞췄습니다.` : ''}<br>
+              최종 수량은 면적·예산에 따라 담당과가 다시 정합니다.</p>` : ''}
             <p class="sub-note">담당과가 확인한 뒤 연락드립니다. 접수번호를 적어 두세요.
               ${sub.dept ? E(sub.dept) + ' ' : ''}${H.tel ? E(H.tel) : ''}</p>
           </div>${foot('')}</div>`;
@@ -295,7 +329,9 @@
   /* 테스트본에서는 검수 여부와 무관하게, 조건이 1개 이상 뽑힌 사업 전부에 문답을 연다.
      (운영 반영 시에는 reviewed 관문을 되살려야 한다 — 지시서 §4.4)
      검수 안 된 것은 결과 화면에 '자동으로 읽은 초안' 경고를 함께 붙인다. */
-  const askable = it => (cfgOf(it).fields || []).some(f => f.on !== false);
+  /* 물을 것이 있거나, 물을 건 없어도 온라인 접수를 받는 사업이면 연다 */
+  const askable = it => { const c = cfgOf(it);
+    return (c.fields || []).some(f => f.on !== false) || !!c.online; };
   const onlineOK = it => !!cfgOf(it).online;
   const okKeys = new Set(DATA.filter(askable).map(i => i.issueKey));
   /* 카드 제목만으로는 같은 사업의 다른 연도와 헷갈린다 — 현안 키로 맞춘다 */
@@ -309,6 +345,12 @@
   }
   /* 관리자 설정이 바뀌면(다른 탭에서 저장) 표식을 다시 계산한다 */
   addEventListener('storage', e => { if (e.key === 'bhlab.admin.cfg') location.reload(); });
+  /* 담당자가 관리자 화면에서 정한 설정을 테스트 서버에서 받아 온다 */
+  if (window.LABAPI && window.SUBCFG) LABAPI.pullCfg().then(r => {
+    SUBCFG.setAll(r.cfg);
+    titleSet = null;                       /* 표식을 다시 계산 */
+    if (window.BWUI && BWUI.api) BWUI.api.render();
+  });
   function markCards() {
     const T = reviewedTitles(); if (!T) return;
     document.querySelectorAll('#bwCards .card h3').forEach(h => {

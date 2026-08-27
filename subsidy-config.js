@@ -62,13 +62,36 @@
     const all = load();
     if (all[sub.id]) return all[sub.id];
     return { fields: defaultsFrom(sub.conditions), online: false, ask: ['name', 'phone'],
-             agree: true, capacity: null, note: '' };
+             agree: true, capacity: null, note: '', qty: null };
   }
   function put(id, cfg) { const all = load(); all[id] = cfg; save(all); }
   function reset(id) { const all = load(); delete all[id]; save(all); }
 
+  /* ── 신청량 ──
+     묘목·자재처럼 '얼마나 받을지'를 적는 사업이 있다. 신청한 만큼 다 나오는 게 아니라
+     경작 면적에 맞춰 깎이므로, 적는 자리에서 미리 한도를 보여 주고 넘으면 스스로 줄인다.
+     qty = { on, label, unit, perHa, max, note } */
+  function qtyCap(q, areaHa) {
+    if (!q || !q.on) return null;
+    let cap = q.max != null ? q.max : Infinity;
+    if (q.perHa != null && areaHa != null && areaHa !== '' && !isNaN(+areaHa))
+      cap = Math.min(cap, Math.floor(+areaHa * q.perHa));
+    return cap === Infinity ? null : Math.max(0, cap);
+  }
+  function qtyWhy(q, areaHa) {
+    if (!q || !q.on) return '';
+    const bits = [];
+    if (q.perHa != null && areaHa) bits.push(`경작 면적 ${areaHa}ha × ${q.perHa}${q.unit || ''}`);
+    if (q.max != null) bits.push(`한 사람 최대 ${q.max}${q.unit || ''}`);
+    return bits.join(' · ');
+  }
+
   /* 질문 문구 — {값} 을 실제 값(봉화군/여성 등)으로 바꾼다 */
   function qText(f) { return (f.q || (FIELDS[f.k] && FIELDS[f.k].q) || f.k).replace('{값}', f.v || ''); }
 
-  G.SUBCFG = { FIELDS, ASK, defaultsFrom, load, save, forItem, put, reset, qText, CKEY };
+  /* 서버에서 받아 온 설정을 통째로 갈아 끼운다 (lab-api 가 부른다) */
+  function setAll(all) { save(all || {}); }
+
+  G.SUBCFG = { FIELDS, ASK, defaultsFrom, load, save, setAll, forItem, put, reset, qText,
+               qtyCap, qtyWhy, CKEY };
 })(window);

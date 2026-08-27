@@ -65,3 +65,11 @@ textarea.ap-in{min-height:70px}
  line-height:1.55;cursor:pointer}
 .ap-agree.on{background:var(--brand-soft,#E8F7EE);border-color:var(--brand,#16A34A)}
 .ap-agree input{margin-top:3px;width:18px;height:18px;flex:none}
+/* 신청 수량 한도 안내 */
+.ap-cap{font-size:calc(12.5px*var(--fsx,1));color:var(--sub,#5F7168);line-height:1.6;margin:6px 0 0;
+ background:var(--bg,#F4F5F2);border-radius:10px;padding:8px 11px}
+.ap-cap b{color:var(--ink,#121E18)}
+.ap-cap span{color:var(--faint,#98A2AE)}
+.ap-cap.cut{background:#FFF3D8;color:#8A6210}
+.ap-cap.cut b{color:#8A6210}
+.ap-cap.warn{background:transparent;padding:6px 2px 0;color:var(--sub,#5F7168)}

@@ -114,7 +114,29 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
     </div>
 
     <div class="card">
-      <h2 style="margin-top:0">③ 주민 화면 미리보기</h2>
+      <h2 style="margin-top:0">③ 신청량을 받을까요</h2>
+      <button type="button" class="chk" id="qtyChk">이 사업은 신청 수량을 받습니다</button>
+      <div id="qtyBox" style="display:none;margin-top:12px">
+        <div class="row">
+          <div><label style="font-size:12.5px;color:var(--sub)">무엇을</label>
+            <input type="text" id="qtyLabel" placeholder="예: 묘목" style="width:150px"></div>
+          <div><label style="font-size:12.5px;color:var(--sub)">단위</label>
+            <input type="text" id="qtyUnit" placeholder="예: 주" style="width:90px"></div>
+          <div><label style="font-size:12.5px;color:var(--sub)">1ha당 한도</label>
+            <input type="number" id="qtyPerHa" min="0" placeholder="예: 100" style="width:120px"></div>
+          <div><label style="font-size:12.5px;color:var(--sub)">한 사람 최대</label>
+            <input type="number" id="qtyMax" min="0" placeholder="예: 500" style="width:120px"></div>
+        </div>
+        <label style="font-size:12.5px;color:var(--sub);margin-top:8px;display:block">덧붙일 안내</label>
+        <input type="text" id="qtyNote" placeholder="예: 예산 사정에 따라 더 줄어들 수 있습니다">
+        <p class="hint">1ha당 한도를 정해 두면, 주민이 경영체 정보를 불러왔을 때
+          <b>면적에 맞는 수량으로 자동 조정</b>되고 그 이유가 화면에 뜹니다.
+          신청한 만큼 다 나가지 않는다는 안내도 함께 나갑니다.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">④ 주민 화면 미리보기</h2>
       <div class="prev" id="prev"></div>
     </div>
 
@@ -131,6 +153,7 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
 </div>
 
 <script src="subsidy-data.js"></script>
+<script src="lab-api.js"></script>
 <script src="subsidy-config.js"></script>
 <script src="agrix-mock.js"></script>
 <script>
@@ -143,9 +166,15 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
  let cur=null, cfg=null, onlyOpen=true;
 
  /* ── 열람 코드 ── */
- function enter(){ if($('#code').value.trim()!==CODE){alert('코드가 다릅니다');return;}
-   try{sessionStorage.setItem(GKEY,'1')}catch(e){} show(); }
- function show(){ $('#gate').style.display='none'; $('#app').style.display=''; renderList(); }
+ function enter(){ const c=$('#code').value.trim();
+   if(c!==CODE){alert('코드가 다릅니다');return;}
+   try{sessionStorage.setItem(GKEY,'1')}catch(e){}
+   LABAPI.setCode(c); show(); }
+ async function show(){ $('#gate').style.display='none'; $('#app').style.display='';
+   $('#cnt').textContent='서버에서 설정을 받는 중…';
+   const r=await LABAPI.pullCfg(); SUBCFG.setAll(r.cfg);
+   srv=r.from; renderList(); }
+ let srv='local';
  $('#go').onclick=enter;
  $('#code').onkeydown=e=>{if(e.key==='Enter')enter()};
  try{ if(sessionStorage.getItem(GKEY)==='1')show(); }catch(e){}
@@ -168,7 +197,8 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
       ${on?'<span class="pill on">온라인 접수</span>':set?'<span class="pill off">설정됨</span>':''}
       ${it.conditions.applyEnd&&it.conditions.applyEnd<today?'<span class="pill warn">마감</span>':''}
     </div>`}).join('')||'<p class="hint">해당하는 사업이 없습니다.</p>';
-  $('#cnt').textContent=`${rows.length}건 (설정된 사업 ${Object.keys(all).length}건)`;
+  $('#cnt').textContent=`${rows.length}건 · 설정된 사업 ${Object.keys(all).length}건 · `
+    +(srv==='server'?'테스트 서버와 연결됨':'서버에 닿지 못해 이 기기 설정만 보입니다');
   $('#list').querySelectorAll('.item').forEach(el=>el.onclick=()=>pick(el.dataset.id));
  }
  $('#q').oninput=renderList;
@@ -241,7 +271,7 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
   $('#capacity').value=cfg.capacity??''; $('#note').value=cfg.note||'';
   $('#endDate').value=cfg.applyEnd||cur.conditions.applyEnd||'';
   $('#agreeChk').classList.toggle('on',cfg.agree!==false);
-  renderPrev();
+  renderQty(); renderPrev();
  }
  $('#addBtn').onclick=()=>{ const k=$('#addField').value; if(!k)return;
    cfg.fields.push({k,on:true,required:true,q:SUBCFG.FIELDS[k].q,v:null,min:null,max:null}); renderEditor(); };
@@ -250,6 +280,21 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
  $('#capacity').oninput=()=>{ cfg.capacity=$('#capacity').value===''?null:+$('#capacity').value; };
  $('#note').oninput=()=>{ cfg.note=$('#note').value; };
  $('#endDate').oninput=()=>{ cfg.applyEnd=$('#endDate').value||null; renderPrev(); };
+ /* ── 신청량 ── */
+ const Q=()=>cfg.qty||(cfg.qty={on:false,label:'',unit:'',perHa:null,max:null,note:''});
+ $('#qtyChk').onclick=()=>{ Q().on=!Q().on; renderQty(); renderPrev(); };
+ ['qtyLabel','qtyUnit','qtyNote'].forEach(id=>$('#'+id).oninput=()=>{
+   Q()[id.replace('qty','').toLowerCase()]=$('#'+id).value; renderPrev(); });
+ ['qtyPerHa','qtyMax'].forEach(id=>$('#'+id).oninput=()=>{
+   const k=id==='qtyPerHa'?'perHa':'max';
+   Q()[k]=$('#'+id).value===''?null:+$('#'+id).value; renderPrev(); });
+ function renderQty(){
+  const q=Q();
+  $('#qtyChk').classList.toggle('on',!!q.on);
+  $('#qtyBox').style.display=q.on?'':'none';
+  $('#qtyLabel').value=q.label||''; $('#qtyUnit').value=q.unit||'';
+  $('#qtyPerHa').value=q.perHa??''; $('#qtyMax').value=q.max??''; $('#qtyNote').value=q.note||'';
+ }
  $('#agreeChk').onclick=()=>{ cfg.agree=cfg.agree===false; $('#agreeChk').classList.toggle('on',cfg.agree); };
 
  function renderPrev(){
@@ -262,16 +307,25 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
   }).join('');
   const end=cfg.applyEnd||cur.conditions.applyEnd;
   const today=new Date().toISOString().slice(0,10);
+  const q=cfg.qty;
+  const qtyPrev=(cfg.online&&q&&q.on)?`<div class="q" style="margin-top:10px">${E(q.label||'수량')} 몇 ${E(q.unit||'개')}가 필요하세요?</div>
+    <div class="o"><span>숫자 입력 ${E(q.unit||'')}</span>${
+      q.perHa!=null?`<span style="color:var(--sub)">면적에 맞춰 자동 조정</span>`:''}</div>`:'';
   const ask=cfg.online?`<div class="q" style="margin-top:14px">자격을 통과하면 — 온라인 접수${
     end&&end<today?' <span style="color:var(--warn);font-weight:700">(마감일이 지나 접수가 닫힙니다)</span>':''}</div>
     <div class="o">${cfg.ask.map(k=>`<span>${E(SUBCFG.ASK[k].label)}</span>`).join('')||'<span style="color:var(--faint)">받을 정보를 고르세요</span>'}</div>
+    ${qtyPrev}
     ${cfg.agree!==false?'<div class="q" style="font-size:12.5px;font-weight:600;color:var(--sub);margin-top:8px">개인정보 수집·이용 동의</div>':''}`
    :`<div class="q" style="margin-top:14px;color:var(--faint)">온라인 접수를 받지 않습니다 — 담당과 전화만 안내</div>`;
   $('#prev').innerHTML=(qs||'<p class="hint">물을 항목이 없습니다.</p>')+ask;
  }
 
- $('#save').onclick=()=>{ SUBCFG.put(cur.id,cfg);
-   $('#saved').textContent=`저장했습니다 — ${cur.title} (이 기기에만 남습니다)`;
+ $('#save').onclick=async()=>{
+   $('#saved').textContent='저장 중…';
+   const r=await LABAPI.pushCfg(cur.id,cfg,'담당자');
+   $('#saved').textContent=r.ok
+     ? `저장했습니다 — ${cur.title} (테스트 서버에 올라갔습니다. 다른 기기에서도 보입니다)`
+     : `${r.why} — ${cur.title}`;
    renderList(); };
 
  $('#export').onclick=()=>{
@@ -282,12 +336,13 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
   $('#saved').textContent='아래 내용을 build/subsidy-review.json 에 넣고 node build/subsidy-extract.js 를 실행하세요.';
  };
 
- $('#csv').onclick=()=>{
-  let rows=[]; try{ rows=JSON.parse(localStorage.getItem('bhlab.apply.log'))||[] }catch(e){}
+ $('#csv').onclick=async()=>{
+  $('#saved').textContent='접수 내역을 받는 중…';
+  const rows=(await LABAPI.applyList()).map(r=>({...r,d:r.data||r.d||{}}));
   if(!rows.length){ $('#saved').textContent='접수된 건이 없습니다.'; return; }
-  const cols=['접수번호','접수일시','사업','이름','연락처','생년월일','주소','경영체번호','계좌','남기실 말','경영체확인'];
+  const cols=['접수번호','접수일시','사업','이름','연락처','생년월일','주소','경영체번호','계좌','신청수량','조정사유','남기실 말','경영체확인'];
   const csv=[cols.join(',')].concat(rows.map(r=>[r.no,r.at,r.title,r.d.name||'',r.d.phone||'',r.d.birth||'',
-    r.d.addr||'',r.d.farmNo||'',r.d.account||'',(r.d.memo||'').replace(/[\r\n,]/g,' '),
+    r.d.addr||'',r.d.farmNo||'',r.d.account||'',r.d.qty||'',r.d.qtyWhy||'',(r.d.memo||'').replace(/[\r\n,]/g,' '),
     r.agrix?`${r.agrix.no} ${r.agrix.status} ${r.agrix.area}ha`:''].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))).join('\r\n');
   const b=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(b);
