@@ -107,6 +107,8 @@
       ${qs.map(k => qHtml[k]).join('')}
       <div id="subOut"></div>
       <div class="sub-raw"><details><summary>근거 원문 보기</summary><pre>${E(sub.rawLines.join('\n'))}</pre></details></div>
+      ${sub.status !== 'reviewed' ? `<div class="sub-note" style="color:#9A3A2E">
+        ⚠ 조건을 계획서 원문에서 자동으로 읽은 초안입니다. 아직 담당과 검수 전이라 잘못 읽었을 수 있습니다.</div>` : ''}
       <div class="sub-note">답하신 내용은 이 휴대폰에만 저장되며 어디에도 전송되지 않습니다.<br>
         최종 결정은 담당 부서 심사로 정해집니다.</div>
       <div class="mfoot"><button id="subGo" class="pri">결과 보기</button>
@@ -171,7 +173,14 @@
      검수된 사업만 문답이 열리는데, 목록에서는 어느 것이 그런지 알 수 없어
      '아무것도 안 바뀐 것 같다'는 인상을 준다. 카드 제목 옆에 작은 표식을 단다.
      index.html 을 더 고치지 않으려고 여기서 목록 변화를 지켜보며 붙인다. */
-  const okKeys = new Set(DATA.filter(i => i.status === 'reviewed').map(i => i.issueKey));
+  /* 테스트본에서는 검수 여부와 무관하게, 조건이 1개 이상 뽑힌 사업 전부에 문답을 연다.
+     (운영 반영 시에는 reviewed 관문을 되살려야 한다 — 지시서 §4.4)
+     검수 안 된 것은 결과 화면에 '자동으로 읽은 초안' 경고를 함께 붙인다. */
+  const askable = it => {
+    const c = it.conditions;
+    return c.ageMin !== null || c.ageMax !== null || !!c.residency || !!c.needsFarmRegistry || !!c.gender;
+  };
+  const okKeys = new Set(DATA.filter(askable).map(i => i.issueKey));
   /* 카드 제목만으로는 같은 사업의 다른 연도와 헷갈린다 — 현안 키로 맞춘다 */
   let titleSet = null;
   function reviewedTitles() {
@@ -202,7 +211,7 @@
       const sub = byKey[iss.key]; if (!sub) return;
       const row = foot.querySelector('div');   /* [알림 받기][문의] 줄 */
       if (!row) return;
-      if (sub.status === 'reviewed') {
+      if (askable(sub)) {
         const b = document.createElement('button');
         b.type = 'button'; b.id = 'subBtn'; b.className = 'callbtn';
         b.textContent = '✅ 내가 받을 수 있나';

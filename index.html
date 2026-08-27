@@ -1098,6 +1098,7 @@ function init(){
  const PKEY='bhlab.profile';
  let PROF={aud:[],region:''};
  try{ PROF=Object.assign(PROF, JSON.parse(localStorage.getItem(PKEY))||{}); }catch(e){}
+ if(PROF.aud.length>1)PROF.aud=[PROF.aud[0]];
  const profOn=()=>PROF.aud.length||PROF.region;
  function saveProf(){ try{localStorage.setItem(PKEY,JSON.stringify(PROF))}catch(e){} }
  /* 내 프로필과 얼마나 맞는지 — 클수록 위로 */
@@ -1162,6 +1163,11 @@ function init(){
   splitAdmin:iss=>tag(iss).score>0,
   /* 갈래 탭 — 한 번에 한 갈래만 보여 목록이 두루마리가 되지 않게 한다 */
   groupTabs:true,
+  profileMatch:iss=>{
+   const a=PROF.aud[0]; if(!a||a==='주민 누구나')return false;
+   const e=MERGED_AUD.find(x=>x[0]===a);
+   return !!e&&e[2].some(k=>tag(iss).auds.includes(k));
+  },
   noticeTab:{ count:()=>noticeMatches().length, render:host=>renderNoticeSection(host),
     renderRecent:host=>renderNoticeSection(host,'recent') },
   onGroupTab:k=>AA('갈래탭',k),
@@ -1203,6 +1209,7 @@ function init(){
     match:(iss,v)=>{const e=MERGED_TOPICS.find(x=>x[0]===v);return !!e&&e[2].some(k=>tag(iss).topics.includes(k));}},
 
    {key:'aud', label:'누구를 위한 일인가요?', chipLabel:'대상', render:'circles',
+    sortByCount:true,
     /* '전체'는 사람이 아니므로 캐릭터 옆에서 겨루지 않게 점 세 개로만 둔다 */
     allLabel:'전체', allIcon:'<span class="ic-all"></span>',
     values:MERGED_AUD.map(([v,icon])=>({v,label:v,icon:audIcon(v,icon)})),
@@ -1918,7 +1925,7 @@ function init(){
     <h2>내 소식 맞춤 설정</h2>
     <div class="note">고르신 내용은 <b>이 휴대폰에만</b> 저장되고 어디에도 전송되지 않아요.
       해당하는 소식을 목록 위쪽에 올려 드립니다.</div>
-    <div class="pf-lab">저는 이런 사람이에요 <span>(여러 개 고를 수 있어요)</span></div>
+    <div class="pf-lab">저는 이런 사람이에요 <span>(하나만 고를 수 있어요)</span></div>
     <div class="pf-grid" id="pfAud">${auds.map(a=>
       `<button type="button" data-a="${E(a)}" class="${PROF.aud.includes(a)?'on':''}">${audIcon(a,icons[a])} ${E(a)}</button>`).join('')}</div>
     <div class="pf-lab">사는 곳</div>
@@ -1933,9 +1940,9 @@ function init(){
   const close=()=>m.classList.remove('open');
   m.onclick=e=>{if(e.target===m)close()};
   m.querySelectorAll('#pfAud button').forEach(b=>b.onclick=()=>{
-   const a=b.dataset.a; const i=PROF.aud.indexOf(a);
-   if(i<0)PROF.aud.push(a); else PROF.aud.splice(i,1);
-   b.classList.toggle('on',i<0);
+   const a=b.dataset.a, on=!PROF.aud.includes(a);
+   PROF.aud=on?[a]:[];
+   m.querySelectorAll('#pfAud button').forEach(x=>x.classList.toggle('on',on&&x===b));
   });
   m.querySelectorAll('#pfReg button').forEach(b=>b.onclick=()=>{
    PROF.region=b.dataset.r;
@@ -2082,7 +2089,10 @@ function init(){
       먼저 올라와 '오늘'이 자료 주간 밖일 때도 문장이 어긋나지 않는다. */
    const gc=BWUI.api.groupCounts;
    const openN=gc?gc.apply:N.open;
-   title = openN
+   const me=PROF.aud[0], mineN=gc?(gc.applyMine||0):0;
+   title = (me&&me!=='주민 누구나'&&mineN>0)
+     ? `${P},<br><b>${me}</b>이 신청할 수 있는 일이<br><b>${mineN}개</b> 있어요`
+     : openN
      ? `${P},<br>신청할 수 있는 일이<br><b>${openN}개</b> 있어요`
      : `${P},<br>봉화에는 <b>${nEv+nWork+nNt}개</b><br>소식이 있어요`;
   }

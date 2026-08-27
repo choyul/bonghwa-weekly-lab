@@ -379,7 +379,15 @@
       ? `<button class="calfold" id="bwAxClose" style="margin-bottom:8px">🔎 ${E(CFG.axesLabel || '갈라 보기')} <span class="hint">· 접기</span></button>` : '')
       + CFG.axes.map(ax => {
       if (ax.when && !ax.when(S)) return '';
-      const vals = axValues(ax);
+      let vals = axValues(ax);
+      /* 개수 많은 순 — '전체' 칸은 맨 앞에 둔 채 나머지만 정렬한다 */
+      if (ax.sortByCount) {
+        const head = ax.allLabel ? vals.slice(0, 1) : [];
+        vals = head.concat(
+          (ax.allLabel ? vals.slice(1) : vals.slice())
+            .map(v => [v, countFor(ax, v.v)])
+            .sort((a, b) => b[1] - a[1]).map(x => x[0]));
+      }
       const cur = S.axis[ax.key] || '';
       if (ax.render === 'calendar') {
         return `<div class="axis"><p class="axh">${E(ax.label)}</p>
@@ -503,6 +511,8 @@
       const ntN = CFG.noticeTab ? CFG.noticeTab.count() : 0;
       GRP_COUNTS = { apply: applyNew.length + applyOld.length,
                      gov: govNew.length + govOld.length, notice: ntN };
+      if (CFG.profileMatch)
+        GRP_COUNTS.applyMine = applyNew.concat(applyOld).filter(i => CFG.profileMatch(i)).length;
       /* 탭은 #bwCards 밖에 둔다 — 안에 두면 다음 렌더의 innerHTML='' 로 같이 지워지고,
          맞춤설정(#bwAxes)을 안으로 옮기면 그것까지 사라진다.
          자리는 맞춤설정 바로 위 — [갈래 탭] → [맞춤설정] → [목록] 차례가 된다. */
