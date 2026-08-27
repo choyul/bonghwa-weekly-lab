@@ -167,6 +167,36 @@
     };
   }
 
+  /* ── 목록에서 찾을 수 있게 ──
+     검수된 사업만 문답이 열리는데, 목록에서는 어느 것이 그런지 알 수 없어
+     '아무것도 안 바뀐 것 같다'는 인상을 준다. 카드 제목 옆에 작은 표식을 단다.
+     index.html 을 더 고치지 않으려고 여기서 목록 변화를 지켜보며 붙인다. */
+  const okKeys = new Set(DATA.filter(i => i.status === 'reviewed').map(i => i.issueKey));
+  /* 카드 제목만으로는 같은 사업의 다른 연도와 헷갈린다 — 현안 키로 맞춘다 */
+  let titleSet = null;
+  function reviewedTitles() {
+    if (titleSet || !window.BWUI || !BWUI.api || !BWUI.api.issues) return titleSet;
+    titleSet = new Set(BWUI.api.issues.filter(i => okKeys.has(i.key)).map(i => i.title.trim()));
+    return titleSet;
+  }
+  function markCards() {
+    const T = reviewedTitles(); if (!T) return;
+    document.querySelectorAll('#bwCards .card h3').forEach(h => {
+      if (h.dataset.subMark) return;
+      h.dataset.subMark = '1';
+      if (!T.has(h.textContent.trim())) return;
+      const b = document.createElement('span');
+      b.className = 'sub-badge'; b.textContent = '조건 확인';
+      h.appendChild(document.createTextNode(' ')); h.appendChild(b);
+    });
+  }
+  function watchList() {
+    const box = document.getElementById('bwCards'); if (!box) return setTimeout(watchList, 400);
+    markCards();
+    new MutationObserver(markCards).observe(box, { childList: true, subtree: true });
+  }
+  if (document.readyState === 'loading') addEventListener('DOMContentLoaded', watchList); else watchList();
+
   window.BWLAB_SUBSIDY = {
     mount(iss, foot, H) {
       const sub = byKey[iss.key]; if (!sub) return;

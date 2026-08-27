@@ -1,19 +1,47 @@
 {
+  "_설명": "담당자 검수 파일. 여기에 status를 reviewed로 적기 전에는 화면이 문답을 열지 않는다(무응답=미게시). 아래 항목은 전부 시험용 표본이며 실제 검수가 아니다.",
+
   "sub_23d52fb5": {
     "status": "reviewed",
-    "reviewedBy": "농정축산과(시험용 표본 — 실제 검수 아님)",
+    "reviewedBy": "시험용 표본 — 실제 검수 아님",
     "reviewedAt": "2026-08-28",
-    "overrides": {
-      "applyEnd": "2026-09-19",
-      "dateInferred": false
-    },
-    "apply": {
-      "channel": "읍면",
-      "place": "주소지 읍·면사무소",
-      "documents": [
-        "신분증",
-        "농업경영체 등록확인서"
-      ]
-    }
-  }
+    "overrides": { "applyEnd": "2026-09-19", "dateInferred": false },
+    "apply": { "channel": "읍면", "place": "주소지 읍·면사무소",
+      "documents": ["신분증", "농업경영체 등록확인서"] }
+  },
+
+  "sub_3397891f": {
+    "status": "reviewed",
+    "reviewedBy": "시험용 표본 — 실제 검수 아님",
+    "reviewedAt": "2026-08-28",
+    "overrides": { "residency": "봉화군", "applyEnd": "2026-09-30" },
+    "apply": { "channel": "군청", "place": "군청 도시계획과",
+      "documents": ["임대차계약서", "주민등록등본"] }
+  },
+
+  "sub_0308e03c": {
+    "status": "reviewed",
+    "reviewedBy": "시험용 표본 — 실제 검수 아님",
+    "reviewedAt": "2026-08-28",
+    "overrides": { "applyEnd": "2026-09-12" },
+    "apply": { "channel": "군청", "place": "군청 미래전략과", "documents": ["사업계획서", "주민등록등본"] }
+  },
+
+  "sub_604c5430": {
+    "status": "reviewed",
+    "reviewedBy": "시험용 표본 — 실제 검수 아님",
+    "reviewedAt": "2026-08-28",
+    "overrides": { "needsFarmRegistry": true, "residency": "봉화군", "applyEnd": "2026-10-05" },
+    "apply": { "channel": "읍면", "place": "주소지 읍·면사무소", "documents": ["신분증", "농업경영체 등록확인서"] }
+  },
+
+  "sub_5db164c0": {
+    "status": "reviewed",
+    "reviewedBy": "시험용 표본 — 실제 검수 아님",
+    "reviewedAt": "2026-08-28",
+    "overrides": { "applyEnd": "2025-07-31" },
+    "apply": { "channel": "군청", "place": "군청 교육가족과", "documents": ["가족관계증명서"] }
+  },
+
+  "sub_a1634f24": { "status": "hold", "reviewedBy": "시험용 — 보류 상태 확인용", "reviewedAt": "2026-08-28" }
 }

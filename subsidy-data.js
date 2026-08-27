@@ -3435,7 +3435,7 @@ window.BW_SUBSIDY={
     "사 업 비: 150백만원(보조 80% 자부담 20%)",
     "지원금액: 농가당 15만원(자부담 3만원 포함)"
    ],
-   "reviewedBy": "농정축산과(시험용 표본 — 실제 검수 아님)",
+   "reviewedBy": "시험용 표본 — 실제 검수 아님",
    "reviewedAt": "2026-08-28"
   },
   {
@@ -3850,29 +3850,34 @@ window.BW_SUBSIDY={
    "title": "2025년 경상북도 농어민수당 지원사업 추가 신청 접수",
    "dept": "농정축산과",
    "week": "2025-05-19",
-   "status": "draft",
+   "status": "reviewed",
    "conditions": {
     "ageMin": null,
     "ageMax": null,
     "ageMaxInclusive": null,
-    "residency": null,
-    "needsFarmRegistry": null,
+    "residency": "봉화군",
+    "needsFarmRegistry": true,
     "gender": null,
     "subsidyRate": null,
     "selfPayRate": null,
     "applyStart": "2025-05-12",
-    "applyEnd": "2025-05-23",
+    "applyEnd": "2026-10-05",
     "dateInferred": true
    },
    "apply": {
-    "channel": null,
-    "place": null,
-    "documents": []
+    "channel": "읍면",
+    "place": "주소지 읍·면사무소",
+    "documents": [
+     "신분증",
+     "농업경영체 등록확인서"
+    ]
    },
    "rawLines": [
     "신청기간: 2025. 5. 12. ~ 5. 23.(온라인 동시)",
     "지원금액: 농가당 60만원(봉화사랑상품권)"
-   ]
+   ],
+   "reviewedBy": "시험용 표본 — 실제 검수 아님",
+   "reviewedAt": "2026-08-28"
   },
   {
    "id": "sub_520c96e0",
@@ -5394,7 +5399,7 @@ window.BW_SUBSIDY={
    "title": "2026년 원예특작분야 지원사업 추진계획 및 신청접수",
    "dept": "유통특작과",
    "week": "2026-01-12",
-   "status": "draft",
+   "status": "hold",
    "conditions": {
     "ageMin": null,
     "ageMax": null,
@@ -5416,7 +5421,9 @@ window.BW_SUBSIDY={
    "rawLines": [
     "지원대상: 봉화군에 주소를 두고, 봉화군에 소재한 농지를 경작하는 농업인",
     "신청기간: 2026. 1. 6.(화) ~ 1. 30.(금)"
-   ]
+   ],
+   "reviewedBy": "시험용 — 보류 상태 확인용",
+   "reviewedAt": "2026-08-28"
   },
   {
    "id": "sub_1be572fe",
@@ -9152,29 +9159,34 @@ window.BW_SUBSIDY={
    "title": "2026년 청년월세 지원사업 신청접수",
    "dept": "도시계획과",
    "week": "2026-04-27",
-   "status": "draft",
+   "status": "reviewed",
    "conditions": {
     "ageMin": 19,
     "ageMax": null,
     "ageMaxInclusive": null,
-    "residency": null,
+    "residency": "봉화군",
     "needsFarmRegistry": null,
     "gender": null,
     "subsidyRate": null,
     "selfPayRate": null,
     "applyStart": "2026-03-30",
-    "applyEnd": "2026-05-29",
+    "applyEnd": "2026-09-30",
     "dateInferred": false
    },
    "apply": {
-    "channel": null,
-    "place": null,
-    "documents": []
+    "channel": "군청",
+    "place": "군청 도시계획과",
+    "documents": [
+     "임대차계약서",
+     "주민등록등본"
+    ]
    },
    "rawLines": [
     "지원대상: 19세~34세 청년으로 부모님과 별도 거주하는 무주택자",
     "기 간: 2026. 3. 30.(월) ~ 2026. 5. 29.(금)"
-   ]
+   ],
+   "reviewedBy": "시험용 표본 — 실제 검수 아님",
+   "reviewedAt": "2026-08-28"
   },
   {
    "id": "sub_0e6afee7",
@@ -11514,7 +11526,7 @@ window.BW_SUBSIDY={
    "title": "2025년 청년창업 지역정착 지원사업 신규참여자 모집",
    "dept": "미래전략과",
    "week": "2025-03-24",
-   "status": "draft",
+   "status": "reviewed",
    "conditions": {
     "ageMin": 19,
     "ageMax": 39,
@@ -11525,18 +11537,23 @@ window.BW_SUBSIDY={
     "subsidyRate": null,
     "selfPayRate": null,
     "applyStart": "2025-03-10",
-    "applyEnd": "2025-04-08",
+    "applyEnd": "2026-09-12",
     "dateInferred": true
    },
    "apply": {
-    "channel": null,
-    "place": null,
-    "documents": []
+    "channel": "군청",
+    "place": "군청 미래전략과",
+    "documents": [
+     "사업계획서",
+     "주민등록등본"
+    ]
    },
    "rawLines": [
     "지원대상: 경상북도 외에 주소를 둔 만 19세 이상∼만 39세 이하 청년 1팀(명) ※ 2025. 1. 1. 기준, 경상북도 내 주소지를 둔 청년 단독 참여 불가 (타지역 주소지를 둔 청년과 팀으로 지원 가능)",
     "신청기간: 2025. 3. 10.(월) ~ 4. 8.(화) 17:00"
-   ]
+   ],
+   "reviewedBy": "시험용 표본 — 실제 검수 아님",
+   "reviewedAt": "2026-08-28"
   },
   {
    "id": "sub_73bb16cc",
@@ -11983,7 +12000,7 @@ window.BW_SUBSIDY={
    "title": "2025년 다문화가족 자녀 교육활동비 지원사업 신청자 모집(2차)",
    "dept": "교육가족과",
    "week": "2025-07-07",
-   "status": "draft",
+   "status": "reviewed",
    "conditions": {
     "ageMin": 7,
     "ageMax": null,
@@ -11998,15 +12015,19 @@ window.BW_SUBSIDY={
     "dateInferred": true
    },
    "apply": {
-    "channel": null,
-    "place": null,
-    "documents": []
+    "channel": "군청",
+    "place": "군청 교육가족과",
+    "documents": [
+     "가족관계증명서"
+    ]
    },
    "rawLines": [
     "대 상: 기준중위소득 100% 이하 다문화가족의 7~18세 자녀 ※ 교육급여 지원 시 중복 불가",
     "기 간: 2025. 7. 1.(화) ~ 7. 31.(목)",
     "신청방법: 봉화군가족센터 방문 신청"
-   ]
+   ],
+   "reviewedBy": "시험용 표본 — 실제 검수 아님",
+   "reviewedAt": "2026-08-28"
   },
   {
    "id": "sub_a9ba5265",
