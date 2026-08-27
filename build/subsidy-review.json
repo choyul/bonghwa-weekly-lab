@@ -1,0 +1,19 @@
+{
+  "sub_23d52fb5": {
+    "status": "reviewed",
+    "reviewedBy": "농정축산과(시험용 표본 — 실제 검수 아님)",
+    "reviewedAt": "2026-08-28",
+    "overrides": {
+      "applyEnd": "2026-09-19",
+      "dateInferred": false
+    },
+    "apply": {
+      "channel": "읍면",
+      "place": "주소지 읍·면사무소",
+      "documents": [
+        "신분증",
+        "농업경영체 등록확인서"
+      ]
+    }
+  }
+}

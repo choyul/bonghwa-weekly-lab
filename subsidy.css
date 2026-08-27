@@ -1,0 +1,26 @@
+/* 보조사업 조건 자가확인 — 테스트본 전용. 기존 .modal/.callbtn 틀을 그대로 따른다. */
+#subBtn{flex:1;background:var(--brand-soft,#E8F7EE);color:var(--brand-ink,#0F7A38);
+ border:1.5px solid var(--brand,#16A34A)}
+.sub-hold{font-size:calc(13px*var(--fsx,1));color:var(--sub,#5F7168);background:var(--bg,#F4F5F2);
+ border:1px solid var(--line,#DDE8E2);border-radius:12px;padding:10px 13px;line-height:1.55}
+.sub-hold b{color:var(--ink,#121E18)}
+#subModal .mbox{max-height:86vh;overflow-y:auto}
+.sub-q{margin:14px 0 6px;font-weight:800;font-size:calc(15.5px*var(--fsx,1))}
+.sub-opts{display:flex;gap:7px;flex-wrap:wrap}
+.sub-opts button{min-height:44px;padding:9px 16px;border:1px solid var(--line,#DDE8E2);
+ border-radius:100px;background:var(--paper,#fff);color:var(--ink,#121E18);
+ font-family:inherit;font-size:calc(14.5px*var(--fsx,1));font-weight:600;cursor:pointer}
+.sub-opts button.on{background:var(--brand,#16A34A);border-color:var(--brand,#16A34A);color:#fff}
+.sub-age{width:110px;min-height:44px;border:1px solid var(--line,#DDE8E2);border-radius:12px;
+ padding:8px 12px;font:inherit;font-size:calc(15px*var(--fsx,1))}
+.sub-verdict{margin-top:16px;border-radius:14px;padding:14px 15px;font-size:calc(15px*var(--fsx,1));
+ line-height:1.6;font-weight:600}
+.sub-verdict.ok{background:var(--brand-soft,#E8F7EE);color:var(--brand-ink,#0F7A38)}
+.sub-verdict.no{background:#FDF0EE;color:#9A3A2E}
+.sub-verdict.ask{background:var(--gold-soft,#FEF4D8);color:#8A6210}
+.sub-follow{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.sub-follow .row{display:flex;gap:8px}
+.sub-note{margin-top:12px;font-size:calc(12px*var(--fsx,1));color:var(--sub,#5F7168);line-height:1.55}
+.sub-raw{margin-top:10px;font-size:calc(12.5px*var(--fsx,1));color:var(--sub,#5F7168)}
+.sub-raw pre{white-space:pre-wrap;background:var(--bg,#F4F5F2);border-radius:10px;
+ padding:10px 12px;margin:6px 0 0;font-family:inherit;line-height:1.6}

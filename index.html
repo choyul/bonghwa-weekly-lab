@@ -1,0 +1,2519 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16A34A">
+<title>[테스트] 오늘의 봉화</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="봉화의 이모저모를 알려드립니다 — 오늘·이번 주 행사·모집·공사·민원을 한눈에">
+<!-- 카카오톡·문자·SNS 링크 미리보기(마스코트 카드) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="[테스트] 오늘의 봉화">
+<meta property="og:title" content="[테스트] 오늘의 봉화">
+<meta property="og:description" content="봉화의 이모저모를 알려드립니다 — 오늘·이번 주 소식을 한눈에">
+<!-- ?v= 는 카카오톡·메신저가 옛 미리보기 그림을 계속 쓰지 않도록 붙인다. 그림을 바꿀 때마다 숫자를 올린다. -->
+<meta property="og:image" content="https://choyul.github.io/bonghwa-weekly-lab/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://choyul.github.io/bonghwa-weekly-lab/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="public.webmanifest?v=2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-m192.png">
+<!-- 토큰은 반드시 ui.css보다 먼저 로드한다 -->
+<link rel="stylesheet" href="bonghwa-tokens.css?v=b3e2a291">
+<link rel="stylesheet" href="ui.css?v=104d50e4">
+<link rel="stylesheet" href="subsidy.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   리디자인 (project/design_handoff_bonghwa_weekly_redesign)
+   — 밝은 봉화 그린 · 카카오 카드형. 군민용에만 적용하고 기능은 그대로 둔다.
+     (군수·직원용은 ui.css 기본 톤을 그대로 쓰므로 여기서만 덮어쓴다)
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --bh-primary:#16A34A; --bh-primary-ink:#0F7A38; --bh-primary-soft:#E8F7EE; --bh-primary-tint:#E8F7EE;
+  --bh-accent:#B7830E;  --bh-accent-soft:#FEF4D8;
+  --bh-warn:#EF4444;    --bh-warn-soft:#FEECEC;
+  --bh-ink:#191A1D; --bh-ink-2:#3D4148; --bh-sub:#7A7F87; --bh-sub-2:#7A7F87;
+  --bh-line:#EDEFF3; --bh-line-2:#F1F2F5;
+  --bh-bg:#F7F8FA; --bh-paper:#FFFFFF;
+  --bh-r:16px;
+  --brand:#16A34A; --brand-2:#22C55E; --brand-soft:#E8F7EE; --brand-ink:#0F7A38;
+  --gold:#F4B324; --gold-soft:#FEF4D8; --blue:#3B82F6; --blue-soft:#E7F0FF;
+  --red:#EF4444; --red-soft:#FEECEC;
+  --r-lg:20px;
+  --shadow-1:0 1px 2px rgba(15,20,30,.04);
+  --shadow-2:0 4px 14px rgba(15,20,30,.06);
+  --shadow-3:0 10px 24px -8px rgba(15,20,30,.12);
+}
+html,body{font-family:'Pretendard','Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;
+ font-size:15px;line-height:1.5;letter-spacing:-.01em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+/* 모바일 웹앱 — 컴퓨터에서도 430px 한 컬럼을 가운데 유지한다(디자인 지정) */
+.bw-wrap{max-width:430px;padding:14px 0 96px}
+footer{max-width:430px}
+.cards,.ev-list,.evm-list{grid-template-columns:1fr!important}
+
+/* ── 헤더 ── */
+.bw-head{background:var(--paper);color:var(--ink);border-bottom:1px solid var(--line);box-shadow:none;
+ padding:calc(2px + env(safe-area-inset-top)) 14px 2px}
+.bw-head .in{max-width:430px;padding:7px 14px;gap:8px;align-items:center;flex-wrap:nowrap}
+.bw-head h1{font-size:15.5px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+.bw-head .wk{display:none}
+/* 오늘 날짜는 제목 오른쪽 끝에 작게 — 줄바꿈 없이 한 줄을 유지한다 */
+.bw-today{margin-left:auto;flex:none;font-size:12.5px;color:var(--sub);font-weight:700;white-space:nowrap}
+.mascot-head{width:28px;height:28px;border-radius:11px;background:linear-gradient(135deg,var(--brand-2),var(--brand));
+ align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(22,163,74,.28);padding:5px}
+.bw-head .hbtn{width:38px;height:38px;min-height:38px;flex:none;border-radius:12px;background:var(--bg);border:none;
+ color:var(--ink);font-weight:800;font-size:16px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.bw-head h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── 히어로(이번 주 요약) ── */
+.hero{margin:14px 14px 14px;padding:20px 20px 18px;border-radius:var(--r-lg);color:#fff;position:relative;overflow:hidden;
+ background:linear-gradient(135deg,#22C55E 0%,#16A34A 100%);box-shadow:0 10px 24px -8px rgba(22,163,74,.45)}
+.hero::after{content:'';position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.08)}
+.hero::before{content:'';position:absolute;right:40px;bottom:-40px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.06)}
+.h-week{font-size:12.5px;font-weight:600;opacity:.9;margin-bottom:4px;letter-spacing:.02em;position:relative;
+ padding-right:104px}
+.h-title{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.3;margin-bottom:0;position:relative;
+ padding-right:104px;word-break:keep-all}
+/* 이번 주 소식을 전해 주는 캐릭터 — 오른쪽 빈자리에 선다 */
+.h-mas{position:absolute;right:6px;top:4px;width:112px;height:112px;object-fit:contain;
+ z-index:1;pointer-events:none;filter:drop-shadow(0 8px 14px rgba(0,0,0,.22))}
+@media (max-width:359px){
+ .h-week,.h-title{padding-right:86px}
+ .h-mas{width:94px;height:94px}
+}
+.h-title b{color:#FFF3B8}
+
+/* ── 카드 ── */
+.cards{padding:0 14px}
+#bwCards .card,.ev-card,.evm-list .card{border-radius:var(--r);box-shadow:var(--shadow-1);border:none;padding:14px}
+#bwCards .card:active{transform:scale(.98);box-shadow:var(--shadow-2)}
+#bwCards .card .top h3{font-size:15.5px;font-weight:700;line-height:1.4;color:var(--ink);text-wrap:pretty;word-break:keep-all}
+#bwCards .card .meta{font-size:12.5px;font-weight:600;color:var(--sub)}
+.tag{font-size:11.5px!important;font-weight:800!important;padding:3px 8px!important;border-radius:6px!important;border:none!important}
+.tag.st-ongoing{background:var(--brand-soft);color:var(--brand-ink)}
+.tag.st-upcoming{background:var(--gold-soft);color:#B7830E}
+.tag.st-done{background:var(--line-2,#F1F2F5);color:var(--sub)}
+.tag.type{background:var(--blue-soft);color:#1D5DBB}
+.tag.dept{background:#F1F2F5;color:var(--sub)}
+.tag.annual{background:var(--red-soft);color:var(--red)}
+
+/* ── 섹션 제목 ── */
+#bwInfo{margin:22px 14px 10px;padding:0}
+#bwInfo .listh{font-size:16px;font-weight:800;letter-spacing:-.02em}
+#bwInfo .hint{color:var(--brand);font-size:14px;font-weight:800}
+
+/* ── 상세 시트 ── */
+.sheet{border-radius:24px 24px 0 0;max-width:430px}
+.shd h2{font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.35}
+.sft{max-width:430px}
+
+/* ── 분류축(무엇을·누구를·어디서) — 군민이 가장 많이 쓰는 부분이라 그대로 두고 톤만 맞춘다 ── */
+#bwAxes{padding:0 14px}
+.axis .axh{font-size:16px;font-weight:800;letter-spacing:-.02em;color:var(--ink);margin:22px 2px 10px}
+.axis:first-child .axh{margin-top:16px}
+.axchip,.rchip{border-radius:100px!important;border:1px solid var(--line)!important;font-weight:700!important;font-size:13px!important}
+.axchip.on,.rchip.on{background:var(--brand)!important;border-color:var(--brand)!important;color:#fff!important}
+/* 아이콘형 축(주제·대상)은 카드 느낌으로 */
+.axcard{border-radius:14px!important;box-shadow:var(--shadow-1);border:1px solid var(--line)!important}
+.axcard.on{border-color:var(--brand)!important;background:var(--brand-soft)!important}
+
+/* ── 주간 달력 ── */
+.wstrip{border:none;border-radius:var(--r);box-shadow:var(--shadow-1);margin:0 14px 14px}
+.ws-title{font-size:15px;font-weight:800}
+.calday{border-radius:12px;min-height:60px}
+.calday .cnt{font-size:10px;font-weight:800;background:var(--gold-soft);color:#B7830E;border-radius:6px;padding:1px 5px;min-width:16px;text-align:center}
+.calday.on{background:var(--brand);border-color:var(--brand)}
+.calday.on .cnt{background:rgba(255,255,255,.28);color:#fff}
+.calday.sun .dow,.calday.sun .d{color:var(--red)}
+.calday.sat .dow,.calday.sat .d{color:var(--blue)}
+.ws-scopes button{border-radius:10px;font-weight:700}
+.ws-scopes button.on{background:var(--brand);border-color:var(--brand)}
+.psearch{margin:0 14px 14px;border-radius:var(--r);border-width:1.5px}
+
+/* ── 글씨 크기 ── 어르신도 편히 보시도록 '크게'를 기본으로 두고, 두 단계 더 키울 수 있다.
+   한 곳(--fsx 배율)만 바꾸면 아래 크기들이 함께 커진다. 레이아웃은 그대로라 폭이 넘치지 않는다. */
+:root{--fsx:1}
+body.fs1{--fsx:1.13}
+body.fs2{--fsx:1.26}
+/* 언론속봉화 — 여기 없으면 [설정]의 글씨 크기가 이 화면에만 안 먹는다 */
+.nw-more{display:inline-block;margin-top:8px;color:var(--acc);font-weight:800;text-decoration:none}
+
+/* ── 바탕화면 바로가기 안내 ── */
+.a2-steps{margin:2px 0 6px;padding:0 18px 0 38px;font-size:calc(15px*var(--fsx));line-height:1.85;color:var(--ink)}
+.a2-steps li{margin-bottom:4px}
+.a2-ic{display:inline-block;padding:0 2px}
+/* 바탕화면에서 연 상태면 바로가기 항목은 필요 없다 */
+body.standalone #moreA2{display:none}
+
+/* ── 설정 시트 (헤더에서 옮겨 온 바로가기·글씨크기·맞춤설정·사용안내) ── */
+#moreModal .mbox{max-height:86vh;overflow-y:auto}
+.mo-lab{padding:14px 18px 8px;font-size:calc(14px*var(--fsx));font-weight:800;color:var(--ink)}
+.mo-fs{display:flex;gap:7px;padding:0 18px}
+.mo-fs button{flex:1;min-height:60px;border:1px solid var(--line);border-radius:12px;background:var(--paper);
+ color:var(--ink);font-weight:800;font-size:calc(19px*var(--fsx));cursor:pointer;font-family:inherit;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.mo-fs button small{font-size:calc(11.5px*var(--fsx));font-weight:700;color:var(--sub)}
+.mo-fs button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.mo-fs button.on small{color:#fff;opacity:.9}
+.mo-list{display:flex;flex-direction:column;gap:8px;padding:0 18px}
+.mo-list button{display:flex;align-items:center;gap:12px;text-align:left;min-height:62px;padding:10px 14px;
+ border:1px solid var(--line);border-radius:12px;background:var(--paper);cursor:pointer;font-family:inherit}
+.mo-list button:active{border-color:var(--acc)}
+.mo-ic{flex:none;font-size:22px;line-height:1}
+.mo-tx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.mo-tx b{font-size:calc(15px*var(--fsx));font-weight:700;color:var(--ink)}
+.mo-tx small{font-size:calc(12.5px*var(--fsx));color:var(--sub);font-weight:600;word-break:keep-all}
+
+/* ── 내 소식 맞춤 설정 ── */
+.pf-lab{padding:14px 18px 8px;font-size:calc(14px*var(--fsx));font-weight:800;color:var(--ink)}
+.pf-lab span{font-weight:600;color:var(--sub);font-size:calc(12px*var(--fsx))}
+.pf-grid{display:flex;flex-wrap:wrap;gap:7px;padding:0 18px}
+/* 대상 캐릭터 그림 — 동그라미 칸과 맞춤 설정 단추에서 같은 그림을 쓴다 */
+.circ .ic{overflow:hidden;background:#fff}
+.circ .ic .charimg{width:100%;height:100%;object-fit:contain;display:block;padding:3px}
+/* '전체' 표시 — 점 세 개 */
+.ic-all{display:block;width:22px;height:22px;position:relative}
+.ic-all::before,.ic-all::after{content:'';position:absolute;border-radius:50%;background:var(--sub)}
+.ic-all::before{width:7px;height:7px;left:0;top:7px;
+ box-shadow:8px 0 0 var(--sub), 16px 0 0 var(--sub)}
+.ic-all::after{width:7px;height:7px;left:4px;top:16px;box-shadow:8px 0 0 var(--sub)}
+.circ.on .ic-all::before,.circ.on .ic-all::after{background:var(--brand)}
+.circ.on .ic-all::before{box-shadow:8px 0 0 var(--brand), 16px 0 0 var(--brand)}
+.circ.on .ic-all::after{box-shadow:8px 0 0 var(--brand)}
+.pf-grid .charimg{width:calc(22px*var(--fsx));height:calc(22px*var(--fsx));object-fit:contain;
+ vertical-align:-5px;margin-right:2px}
+.pf-grid button{min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:100px;
+ background:var(--paper);color:var(--ink);font-size:calc(14px*var(--fsx));font-weight:700;cursor:pointer;font-family:inherit}
+.pf-grid button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+#profModal .mbox{max-height:86vh;overflow-y:auto}
+/* 맞춤이 켜져 있으면 아래 탭바의 설정 아이콘을 눈에 띄게 */
+body.profon #tabbar [data-t="more"] .ic{background:var(--acc-soft)}
+
+/* ── 검색 결과가 어느 기간인지 ── */
+.ps-scope{display:none}
+.ps-scope.on{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+ padding:0 15px 13px;margin-top:-4px}
+.ps-scope .pss-t{font-size:calc(12.5px*var(--fsx));color:var(--sub);font-weight:600}
+.ps-scope button{border:1px solid var(--brand);background:var(--brand-soft);color:var(--brand-ink);
+ border-radius:100px;padding:6px 12px;min-height:34px;font-size:calc(12.5px*var(--fsx));font-weight:800;
+ cursor:pointer;font-family:inherit}
+
+/* ── 하단 탭바 ── */
+.tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:430px;z-index:30;
+ background:var(--paper);border-top:1px solid var(--line);padding:8px 0 max(10px,env(safe-area-inset-bottom));
+ display:flex;visibility:hidden}
+body.ready .tabbar{visibility:visible}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;
+ font-family:inherit;color:var(--sub);cursor:pointer;padding:4px 0}
+.tabbar .ic{font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;
+ width:46px;height:30px;border-radius:100px;transition:background .18s,transform .18s}
+.tabbar .lb{font-size:calc(10.5px*var(--fsx));font-weight:700}
+/* 고른 탭은 한눈에 — 알약 배경 + 진한 글씨 + 위쪽 표시선 */
+/* ── 사용 안내(가이드) — 화면을 덮고 문서처럼 읽는다 ── */
+#guideModal{align-items:stretch;justify-content:center;background:rgba(0,0,0,.42)}
+#guideModal .gd{display:flex;flex-direction:column;width:100%;max-width:430px;height:100%;
+ background:var(--card,#fff)}
+#guideModal .gd-top{flex:none;display:flex;align-items:center;gap:10px;padding:11px 14px;
+ border-bottom:1px solid var(--line);background:#fff}
+#guideModal .gd-top b{flex:1;font-size:calc(15.5px*var(--fsx));font-weight:800;letter-spacing:-.02em;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#guideModal .gd-top button{flex:none;width:38px;height:38px;border:none;border-radius:12px;
+ background:var(--bg);color:var(--ink);font-size:17px;font-weight:800;line-height:1}
+#guideModal iframe{flex:1;width:100%;border:none;display:block;background:var(--bg)}
+.tabbar button{position:relative;transition:color .15s}
+.tabbar button.on{color:var(--brand)}
+.tabbar button.on .ic{background:var(--brand-soft);transform:translateY(-1px)}
+.tabbar button.on .lb{font-weight:800}
+.tabbar button.on::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+ width:30px;height:3px;border-radius:0 0 3px 3px;background:var(--brand)}
+/* 푸터는 body에 정적으로 있지만, 위 화면(헤더·달력·카드)은 data.js를 다 받아야
+   JS가 만든다. 그 사이 잠깐 푸터 글이 엉뚱하게 화면 맨 위쪽에 홀로 떠 있다가
+   콘텐츠가 채워지며 아래로 밀리는 게 "잔상"처럼 보였다 — 화면이 다 준비된 뒤에만 보이게 한다. */
+footer{max-width:1100px;margin:0 auto;padding:18px 16px 46px;color:var(--sub);font-size:12.5px;line-height:1.7;border-top:1px solid var(--line);
+ visibility:hidden}
+body.ready footer{visibility:visible}
+footer a{color:var(--acc);font-weight:700;text-decoration:underline;text-decoration-color:rgba(31,75,63,.4);text-underline-offset:3px}
+/* 한눈에 — 언제·어디서·누구만 */
+.glist{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;margin:0;font-size:15px;line-height:1.5}
+.glist dt{color:var(--sub);font-size:13px;white-space:nowrap;display:flex;align-items:center;gap:5px;padding-top:2px}
+.glist dt .gi{font-size:15px}
+.glist dd{margin:0;font-weight:600}
+
+/* ── 고시·공고를 이번 주 소식과 한 목록에 섞어 보여준다(탭 없음) ── */
+.feed-divider{display:flex;align-items:center;gap:8px;margin:18px 2px 10px;color:var(--sub);font-size:13px;font-weight:700}
+/* ── 갈래 탭 — 목록 머리에 붙어 따라 내려온다 ── */
+.grptabs{position:sticky;top:0;z-index:26;display:flex;gap:6px;
+ background:var(--bg);padding:8px 0 10px;margin:0 0 2px}
+.grptabs button{flex:1;min-height:54px;display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:1px;border:1px solid var(--line);border-radius:13px;
+ background:var(--card);color:var(--sub);font-family:inherit;cursor:pointer;padding:6px 2px}
+.grptabs .gi{font-size:calc(14px*var(--fsx));line-height:1.2}
+.grptabs .gl{font-size:calc(12px*var(--fsx));font-weight:700;letter-spacing:-.02em;white-space:nowrap}
+.grptabs .gn{font-size:calc(12.5px*var(--fsx));font-weight:800;font-variant-numeric:tabular-nums;
+ color:var(--faint);line-height:1.2}
+.grptabs button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.grptabs button.on .gn{color:#FFF3B8}
+.grptabs button:active{transform:scale(.98)}
+.grpnote{font-size:calc(12.5px*var(--fsx));color:var(--sub);margin:4px 2px 10px;font-weight:600}
+/* 새로 올라온 것 / 전부터 이어지는 것 — 같은 갈래 안에서 다시 한 번 가른다 */
+.grpsub{display:flex;align-items:center;gap:8px;margin:16px 2px 9px}
+.grpsub:first-of-type{margin-top:6px}
+.grpsub .gsi{font-size:calc(15px*var(--fsx));line-height:1}
+.grpsub .gst{font-size:calc(14px*var(--fsx));font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.grpsub .gsn{font-size:calc(12px*var(--fsx));font-weight:700;color:var(--sub);
+ background:var(--bg);border:1px solid var(--line);border-radius:100px;padding:2px 9px;white-space:nowrap}
+.grpsub::after{content:'';flex:1;height:1px;background:var(--line)}
+/* 맞춤설정이 갈래 탭 바로 밑에 온다 */
+#bwGrpTabs + #bwAxes .calfold{width:100%}
+
+/* ── 목록을 두 구역으로 ──
+   '내가 할 수 있는 일' 과 '군청이 하는 일' 은 성격이 아주 다르므로
+   제목을 각각 달고, 군정 구역은 배경까지 바꿔 한눈에 갈라 보이게 한다. */
+.grp-head{display:flex;align-items:center;gap:9px;width:100%;
+ font-family:inherit;text-align:left;font-size:calc(15px*var(--fsx));font-weight:800;
+ color:var(--ink);letter-spacing:-.02em}
+.grp-head .gh-i{font-size:calc(17px*var(--fsx));line-height:1;flex:none}
+.grp-head .gh-t{flex:1;min-width:0}
+.grp-head .gh-n{flex:none;font-size:calc(12.5px*var(--fsx));font-weight:800;
+ border-radius:100px;padding:3px 10px;white-space:nowrap}
+
+/* 내가 할 수 있는 일 — 초록 띠 */
+.grp-head.mine{margin:4px 2px 12px;padding:0 0 10px;border-bottom:2px solid var(--brand)}
+.grp-head.mine .gh-n{background:var(--brand-soft);color:var(--brand-ink)}
+
+/* 군청이 하는 일 — 회색 구역으로 확실히 갈라 놓는다 */
+.govsec{margin:26px -14px 0;padding:0 14px 2px;background:var(--line-2,#F3F4F6);
+ border-top:1px solid var(--line)}
+.grp-head.gov{border:none;background:none;cursor:pointer;padding:16px 0 14px;color:var(--sub)}
+.grp-head.gov:active{opacity:.7}
+.grp-head.gov .gh-t{display:flex;flex-direction:column;gap:1px;color:var(--ink)}
+.grp-head.gov .gh-t em{font-style:normal;font-size:calc(11.5px*var(--fsx));font-weight:600;
+ color:var(--faint,#98A2AE)}
+.grp-head.gov .gh-n{background:#fff;color:var(--sub);border:1px solid var(--line)}
+.grp-head.gov .gh-x{flex:none;font-size:calc(12.5px*var(--fsx));font-weight:800;color:var(--brand);
+ white-space:nowrap}
+.gov-body{padding:0 0 16px!important}
+.gov-body .card{opacity:.94}
+.feed-divider::after{content:'';flex:1;height:1px;background:var(--line)}
+.nrow{text-align:left;width:100%;background:var(--paper);border:1px solid var(--line);border-radius:12px;
+ padding:13px 15px;cursor:pointer;transition:box-shadow var(--bh-dur,180ms) var(--bh-ease,ease);font:inherit}
+.nrow:hover{box-shadow:var(--bh-shadow-1,0 1px 2px rgba(0,0,0,.06))}
+.nr-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.nkind{flex:none;font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:6px}
+.nk-cat{background:var(--acc-soft);color:var(--acc)}
+.ntbody{margin:8px 0 2px;padding:12px 13px;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+ font-size:13.5px;line-height:1.6;color:var(--ink-2,var(--ink));max-height:200px;overflow-y:auto;
+ -webkit-overflow-scrolling:touch;white-space:pre-line}
+.nr-date{margin-left:auto;font-size:12px;color:var(--sub);flex:none}
+.nr-title{font-size:14.5px;font-weight:700;line-height:1.42;color:var(--ink);text-wrap:pretty}
+.nr-dept{font-size:12.5px;color:var(--sub);margin-top:5px}
+
+/* ── 헤더는 한 줄 (자료 주차 줄은 달력 카드 타이틀로 옮겨 헤더에선 숨김) ── */
+.bw-head .wk{display:none}
+
+/* ── 상단 주간 달력 (데이 스트립) + 주 네비게이터 + 기간 버튼 ── */
+.wstrip{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:12px 12px 10px;margin-bottom:14px}
+.ws-scopes{display:flex;gap:5px;margin-bottom:12px}
+.ws-scopes button{flex:1;min-height:42px;border:1px solid var(--line);border-radius:10px;background:var(--paper);
+ color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;transition:all var(--bh-dur,180ms) var(--bh-ease,ease)}
+.ws-scopes button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+/* 주 네비게이터: ◀  7월 27일 ~ 8월 2일  ▶ */
+.ws-nav{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ws-title{flex:1;text-align:center;font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.ws-arrow{flex:none;width:36px;height:36px;border:1px solid var(--line);border-radius:10px;background:var(--paper);
+ color:var(--acc);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+ transition:background var(--bh-dur,180ms) var(--bh-ease,ease)}
+.ws-arrow:hover:not(:disabled){background:var(--acc-soft)}
+.ws-arrow svg{width:20px;height:20px}
+.ws-arrow:disabled{opacity:.28;cursor:default;color:var(--sub)}
+.wstrip .cal{border:none;background:transparent;padding:0;gap:4px}
+.wstrip .calday{position:relative;min-height:62px}
+/* 1개월 모드: 요일 달력만 숨김(화살표는 남겨 달 이동) / 전체 기간: 화살표도 숨김
+   — 어느 모드든 타이틀·버튼 사이 간격(ws-nav의 margin-bottom)은 그대로 유지한다 */
+/* ── 삼성 인터넷 등에서 '데스크톱 사이트로 보기'가 켜져 있으면 viewport 설정이 무시돼
+      화면 폭이 PC처럼 잡힌다(글씨가 깨알같이 작아지고 카드가 2단으로 깔림).
+      휴대폰인데 폭이 넓으면 한 줄 배치로 되돌려 최소한 읽을 수 있게 한다. ── */
+body.wide-phone .bw-wrap{max-width:820px}
+body.wide-phone .cards,body.wide-phone .ev-list,body.wide-phone .evm-list{grid-template-columns:1fr}
+body.wide-phone .card h3,body.wide-phone .ev-title{font-size:17px}
+body.wide-phone .ev-time{font-size:17px}
+body.wide-phone .modetabs button{font-size:17px;min-height:52px}
+/* ── 맨 위 보기 전환: 주간업무 / 주간행사 ── */
+.modetabs{display:flex;gap:6px;background:var(--bg2,#eceae5);border-radius:13px;padding:5px;margin:0 14px 14px}
+.modetabs button{flex:1;min-height:46px;border:none;border-radius:9px;background:transparent;
+ color:var(--sub);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
+ display:flex;align-items:center;justify-content:center;gap:6px;transition:background .18s,color .18s}
+.modetabs button.on{background:var(--paper);color:var(--acc);box-shadow:0 1px 4px rgba(0,0,0,.10)}
+/* 행사 보기에서는 업무용 화면 요소를 감춘다 */
+/* 행사 보기에서는 업무 목록만 감춘다 — 검색(.psearch)·기간(#wstrip)·요약(#hero)은 셋이 함께 쓴다 */
+body.mode-event #bwTiles,body.mode-event #bwAxes,
+body.mode-event #bwTop,body.mode-event #bwFilters,body.mode-event #bwInfo,
+body.mode-event #bwCards,body.mode-event #bwMore,
+body.mode-event #evSpan{display:none}
+body:not(.mode-event) #evView{display:none}
+/* 뉴스 보기는 자기만의 시간축(오늘·놓친 것·지난 1주일)을 쓰므로 주간 달력까지 통째로 감춘다 */
+body.mode-news #bwTiles,body.mode-news #bwAxes,
+body.mode-news #bwTop,body.mode-news #bwFilters,body.mode-news #bwInfo,
+body.mode-news #bwCards,body.mode-news #bwMore,
+body.mode-news #evView,body.mode-news .nw-search{display:none}
+body:not(.mode-news) #nwView{display:none}
+/* ── 뉴스 목록 ── */
+.nw-search{margin:0 14px 12px;position:relative}
+.nw-search input{width:100%;min-height:46px;padding:0 38px 0 14px;border:1px solid var(--line);
+ border-radius:var(--r);background:var(--paper);color:var(--ink);font-size:15px;font-family:inherit}
+.nw-search .clr{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;
+ border:none;background:transparent;color:var(--sub);font-size:17px;cursor:pointer}
+.nw-list{display:grid;grid-template-columns:1fr;gap:9px;padding:0 14px}
+@media(min-width:760px){.nw-list{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}}
+.nw-card{display:block;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);
+ padding:13px 14px;text-decoration:none;color:inherit;transition:border-color .15s}
+.nw-card:active{border-color:var(--acc)}
+.nw-title{font-size:15px;font-weight:700;color:var(--ink);line-height:1.45;word-break:keep-all}
+.nw-meta{margin-top:6px;font-size:13px;color:var(--sub);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.nw-press{font-weight:700;color:var(--acc)}
+.nw-out{margin-left:auto;font-size:12px;opacity:.7}
+.nw-badge{display:inline-block;font-size:11.5px;font-weight:800;border-radius:6px;padding:2px 7px;
+ background:var(--acc);color:#fff;margin-right:6px;vertical-align:1px}
+.nw-empty{text-align:center;color:var(--sub);font-size:14px;padding:34px 10px;
+ background:var(--paper);border:1px solid var(--line);border-radius:var(--r)}
+.nw-note{margin:16px 14px 0;padding:11px 13px;border:1px solid var(--line);border-radius:var(--r);
+ background:var(--bg2,#eceae5);color:var(--sub);font-size:12.5px;line-height:1.65}
+/* 놓친 뉴스가 있으면 아래 탭바의 뉴스 아이콘에 개수를 얹는다 */
+.tabbar button{position:relative}
+.tabbar .dot{position:absolute;top:4px;left:50%;margin-left:4px;min-width:17px;height:17px;padding:0 4px;
+ border-radius:9px;background:#d9480f;color:#fff;font-size:10.5px;font-weight:800;line-height:17px;text-align:center}
+/* ── 행사 목록 ── */
+.ev-head{display:flex;align-items:baseline;gap:8px;margin:22px 14px 10px}
+.ev-head h2{font-size:17px;margin:0;color:var(--ink)}
+.ev-head .cnt{font-size:13px;color:var(--sub);font-weight:700}
+.ev-kinds{display:flex;gap:6px;margin:0 14px 14px}
+.ev-kinds button{flex:1;min-height:42px;border:1px solid var(--line);border-radius:10px;background:var(--paper);
+ color:var(--ink);font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.ev-kinds button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.ev-list{display:grid;grid-template-columns:1fr;gap:9px;padding:0 14px}
+@media(min-width:760px){.ev-list{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}}
+.ev-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;
+ display:flex;gap:12px;align-items:flex-start}
+.ev-time{flex:none;min-width:52px;font-size:15px;font-weight:800;color:var(--acc);line-height:1.35}
+.ev-body{flex:1;min-width:0}
+.ev-title{font-size:15px;font-weight:700;color:var(--ink);line-height:1.4;margin-bottom:5px;word-break:keep-all}
+.ev-meta{font-size:13px;color:var(--sub);line-height:1.5}
+.ev-badge{display:inline-block;font-size:11.5px;font-weight:700;border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:1px}
+.ev-badge.gun{background:var(--acc-soft);color:var(--acc)}
+.ev-badge.org{background:#f0ede7;color:var(--sub)}
+.ev-empty{text-align:center;color:var(--sub);font-size:14px;padding:34px 10px;
+ background:var(--paper);border:1px solid var(--line);border-radius:var(--r)}
+.ev-card{cursor:pointer;transition:border-color .15s}
+.ev-card:active{border-color:var(--acc)}
+/* ── 주 / 월 보기 전환 ── */
+.ev-span{display:flex;gap:6px;margin:0 14px 14px}
+.ev-span button{flex:1;min-height:40px;border:1px solid var(--line);border-radius:10px;background:var(--paper);
+ color:var(--ink);font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.ev-span button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+/* ── 월간 달력 ── */
+.evm{background:var(--paper);border:none;box-shadow:var(--shadow-1);border-radius:var(--r);padding:12px;margin:0 14px 14px}
+.evm-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.evm-nav .t{flex:1;text-align:center;font-size:15px;font-weight:800;color:var(--ink)}
+.evm-nav button{width:38px;height:38px;flex:none;border:1px solid var(--line);border-radius:10px;
+ background:var(--paper);color:var(--ink);cursor:pointer;font-size:16px;font-family:inherit}
+.evm-nav button:disabled{opacity:.35;cursor:default}
+.evm-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px}
+.evm-dow span{text-align:center;font-size:11.5px;font-weight:700;color:var(--sub)}
+.evm-dow span:nth-child(1){color:var(--warn,#c0392b)}.evm-dow span:nth-child(7){color:#2f6fd0}
+.evm-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.evm-cell{aspect-ratio:1/1;min-height:44px;border:1px solid transparent;border-radius:9px;background:var(--bg);
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+ cursor:pointer;font-family:inherit;padding:0}
+.evm-cell.empty{background:transparent;cursor:default}
+.evm-cell .d{font-size:14px;font-weight:700;color:var(--ink);line-height:1}
+.evm-cell.sun .d{color:var(--red)}
+.evm-cell.sat .d{color:var(--blue)}
+.evm-cell .n{font-size:10.5px;font-weight:800;color:var(--acc);line-height:1}
+.evm-cell.zero{opacity:.45}
+.evm-cell.zero .n{visibility:hidden}
+.evm-cell.today{border-color:var(--acc)}
+.evm-cell.on{background:var(--acc)}
+.evm-cell.on .d,.evm-cell.on .n{color:#fff}
+.wstrip.no-days .ws-days{display:none}
+.wstrip.no-arrows .ws-arrow{display:none}
+/* ── 기간 직접 고르기 (날짜 옆 달력 아이콘) ── */
+.ws-cal{flex:none;width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+ border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--sub);cursor:pointer;padding:0}
+.ws-cal svg{width:19px;height:19px}
+.wstrip.range-open .ws-cal,.wstrip.ranged .ws-cal{border-color:var(--acc);color:var(--acc);background:var(--acc-soft)}
+.ws-range{max-height:0;overflow:hidden;transition:max-height .28s var(--bh-ease,ease),margin .28s var(--bh-ease,ease)}
+.wstrip.range-open .ws-range{max-height:280px;margin:2px 0 10px}
+.wr-row{display:flex;align-items:flex-end;gap:8px}
+.wr-row label{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--sub);font-weight:700}
+.wr-row input{width:100%;min-height:46px;padding:10px 11px;border:1px solid var(--line);border-radius:10px;
+ background:var(--paper);color:var(--ink);font-size:15px;font-family:inherit}
+.wr-row input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--bh-primary-tint,var(--acc-soft))}
+.wr-tilde{padding-bottom:12px;color:var(--sub);font-weight:700}
+.wr-quick{display:flex;gap:6px;margin-top:9px}
+.wr-quick button{flex:1;min-height:38px;border:1px solid var(--line);border-radius:9px;background:var(--paper);
+ color:var(--ink);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.wr-act{display:flex;gap:8px;margin-top:10px}
+.wr-cancel{flex:none;min-width:76px;min-height:46px;border:1px solid var(--line);border-radius:11px;
+ background:var(--paper);color:var(--sub);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.wr-go{flex:1;min-height:46px;border:none;border-radius:11px;background:var(--acc);color:#fff;
+ font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.ws-dot{position:absolute;top:6px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--gold)}
+.calday.on .ws-dot{background:#fff}
+
+/* ── 접이식 검색 (네이버페이식) — 접힌 바를 누르면 아래로 펼쳐져 키워드 입력 ── */
+.searchbar{display:none}   /* 기본 검색창은 숨기고 아래 카드로 대체 */
+/* 검색은 이 화면에서 가장 많이 쓰는 기능이라, 다른 카드보다 확실히 도드라지게 둔다 —
+   테두리를 굵고 진하게, 살짝 띄우고, 글씨도 한 단계 크게. */
+.psearch{border:2px solid var(--acc);border-radius:14px;background:var(--paper);
+ margin-bottom:14px;overflow:hidden;transition:border-color .2s,box-shadow .2s;
+ box-shadow:0 2px 10px rgba(31,75,63,.13)}
+.psearch.open{box-shadow:0 0 0 4px var(--bh-primary-tint,var(--acc-soft))}
+.ps-bar{width:100%;display:flex;align-items:center;gap:10px;min-height:60px;padding:15px;
+ background:transparent;border:none;cursor:pointer;text-align:left;font:inherit}
+.ps-mag{width:23px;height:23px;color:var(--acc);flex:none}
+.ps-text{flex:1;min-width:0;color:var(--ink);font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ps-text.has{color:var(--acc)}
+.ps-pill{flex:none;font-size:12.5px;font-weight:700;color:var(--acc);background:var(--acc-soft);border-radius:999px;padding:5px 11px}
+.ps-panel{max-height:0;overflow:hidden;padding:0 15px;transition:max-height .32s var(--bh-ease,ease),padding .32s var(--bh-ease,ease)}
+.psearch.open .ps-panel{max-height:460px;padding:2px 15px 15px}
+.ps-input{width:100%;min-height:50px;padding:13px 14px;border:1px solid var(--line);border-radius:11px;
+ background:var(--bg);color:var(--ink);font-size:16px}
+.ps-input:focus{outline:none;border-color:var(--acc);background:var(--paper);box-shadow:0 0 0 3px var(--bh-primary-tint,var(--acc-soft))}
+.ps-lab{margin:16px 2px 8px;font-size:13px;font-weight:700;color:var(--sub)}
+.ps-scopes{display:flex;gap:8px}
+.ps-scopes button{flex:1;min-height:48px;border:1px solid var(--line);border-radius:11px;background:var(--paper);
+ color:var(--ink);font-size:14.5px;font-weight:600;cursor:pointer;transition:all var(--bh-dur,180ms) var(--bh-ease,ease)}
+.ps-scopes button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.ps-actions{display:flex;gap:8px;margin-top:15px}
+.ps-reset{flex:none;min-width:90px;min-height:52px;border:1px solid var(--line);border-radius:12px;
+ background:var(--paper);color:var(--sub);font-size:15px;font-weight:600;cursor:pointer}
+.ps-go{flex:1;min-height:52px;border:none;border-radius:12px;background:var(--acc);color:#fff;
+ font-size:16px;font-weight:800;cursor:pointer;box-shadow:var(--bh-shadow-cta,0 8px 22px rgba(31,75,63,.28))}
+
+/* ── 첫 화면 인트로 (마스코트 인사 → 헤더로 올라감) ── */
+#intro{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;
+ align-items:center;justify-content:center;text-align:center;padding:24px;overflow:hidden}
+#intro .ibg{position:absolute;inset:0;background:
+  radial-gradient(120% 90% at 50% 0%, var(--bh-primary-tint,#eaf3ee) 0%, var(--bg,#f6f7f8) 60%);
+  transition:opacity .5s ease}
+#intro.go .ibg{opacity:0}
+#intro .intro-mascot{position:relative;width:min(70vw,270px);height:min(70vw,270px);
+ will-change:transform;animation:introPop .6s cubic-bezier(.2,.9,.3,1.3) both, floaty 3s ease-in-out .6s infinite}
+#intro .intro-mascot img{width:100%;height:100%;display:block;object-fit:contain;
+ filter:drop-shadow(0 14px 26px rgba(31,75,63,.20))}
+#intro .intro-text{position:relative;margin-top:18px;font-size:clamp(19px,5.4vw,26px);
+ font-weight:800;line-height:1.55;color:var(--ink);letter-spacing:-.02em;
+ animation:introUp .6s ease .15s both;transition:opacity .3s ease}
+#intro .intro-text b{color:var(--acc)}
+#intro .is-week{font-size:14px;font-weight:700;color:var(--ink)}
+#intro .is-cnt{margin-top:7px;font-size:14px;font-weight:800;color:var(--acc);
+ background:var(--brand-soft,#E8F7EE);border-radius:100px;padding:7px 15px;display:inline-block}
+#intro .intro-sub{position:relative;margin-top:12px;font-size:14px;color:var(--sub);
+ animation:introUp .6s ease .25s both;transition:opacity .3s ease}
+#intro .intro-btn{position:relative;margin-top:34px;padding:16px 46px;border:none;
+ border-radius:var(--bh-r-xl,20px);background:var(--acc);color:#fff;font-size:17px;font-weight:800;
+ box-shadow:var(--bh-shadow-cta,0 8px 22px rgba(31,75,63,.28));cursor:pointer;
+ animation:introUp .6s ease .35s both;transition:opacity .3s ease,transform var(--bh-dur-fast,120ms) var(--bh-ease,ease)}
+#intro .intro-btn:active{transform:scale(.96)}
+#intro.go .intro-text,#intro.go .intro-sub,#intro.go .intro-btn{opacity:0;pointer-events:none}
+@keyframes introPop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes introUp{0%{transform:translateY(16px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}
+/* 헤더에 자리잡는 마스코트 — 인트로 마스코트가 도착한 뒤에만 나타난다.
+   처음부터 보이면 날아오는 마스코트와 겹쳐 '잔상'처럼 보인다. */
+/* 캐릭터 그림 자체가 주인공이므로 앞서 준 초록 배지 배경·그림자는 지운다 */
+.mascot-head{width:calc(30px*var(--fsx));height:calc(30px*var(--fsx));flex:none;
+ display:inline-flex;margin-right:4px;opacity:0;transition:opacity .22s ease;
+ background:none;box-shadow:none;border-radius:0;padding:0}
+.mascot-head.show{opacity:1}
+.mascot-head img{width:100%;height:100%;display:block;object-fit:contain}
+@media (prefers-reduced-motion:reduce){
+ #intro .intro-mascot,#intro .intro-text,#intro .intro-sub,#intro .intro-btn{animation:none}
+}
+
+/* ── 글씨 크기 실제 적용 ──────────────────────────────────────────
+   이 규칙들은 반드시 **스타일 맨 끝**에 있어야 한다.
+   위쪽에 두면 .nw-title{font-size:15px} 처럼 뒤에 나오는 같은 굵기의 규칙이 이겨서
+   [설정]에서 글씨를 키워도 그 화면만 그대로 남는다.
+   실제로 그렇게 돼서 모드탭·푸터·행사제목·언론속봉화 등 14곳이 안 커지고 있었다.
+   새 화면을 만들면 여기에 한 줄 더한다 — 위가 아니라 여기다. ── */
+#bwCards .card .top h3{font-size:calc(18px*var(--fsx));line-height:1.45}
+#bwCards .card .meta{font-size:calc(14.5px*var(--fsx))}
+.tag{font-size:calc(13px*var(--fsx))!important;padding:4px 9px!important}
+.axis .axh{font-size:calc(18px*var(--fsx))}
+.axcard .lb,.axchip,.rchip{font-size:calc(14.5px*var(--fsx))!important}
+.axcard .n{font-size:calc(13px*var(--fsx))}
+#bwInfo .listh{font-size:calc(18px*var(--fsx))}
+#bwInfo .hint{font-size:calc(15px*var(--fsx))}
+.h-title{font-size:calc(24px*var(--fsx))}
+.h-week{font-size:calc(13.5px*var(--fsx))}
+.ws-title{font-size:calc(17px*var(--fsx))}
+.calday .d{font-size:calc(19px*var(--fsx))}
+.calday .dow{font-size:calc(12.5px*var(--fsx))}
+.calday .cnt{font-size:calc(11.5px*var(--fsx))}
+.ws-scopes button{font-size:calc(14.5px*var(--fsx));padding:0 4px;white-space:nowrap}
+@media (max-width:359px){.ws-scopes button{font-size:calc(13.5px*var(--fsx))}}
+.ps-text{font-size:calc(17px*var(--fsx))}
+.ev-title,.ev-time{font-size:calc(17px*var(--fsx))}
+.ev-meta{font-size:calc(14.5px*var(--fsx))}
+.ev-kinds button,.ev-span button{font-size:calc(15px*var(--fsx))}
+.ev-head h2{font-size:calc(18px*var(--fsx))}
+.shd h2,.sheet .shd h2{font-size:calc(21px*var(--fsx))}   /* ui.css 의 '.sheet .shd h2' 가 더 구체적이라 함께 적는다 */
+.sbd,.glist{font-size:calc(16.5px*var(--fsx))}
+.glist dt{font-size:calc(14.5px*var(--fsx))}
+.feed-divider{font-size:calc(14.5px*var(--fsx))}
+.modetabs button{font-size:calc(16px*var(--fsx))}
+.tabbar .lb{font-size:calc(11.5px*var(--fsx))}
+footer{font-size:calc(14px*var(--fsx))}
+.nrow,.ntbody{font-size:calc(15px*var(--fsx))}
+.nw-title{font-size:calc(15px*var(--fsx))}
+.nw-meta{font-size:calc(13px*var(--fsx))}
+.nw-out{font-size:calc(12px*var(--fsx))}
+.nw-badge{font-size:calc(11.5px*var(--fsx))}
+.nw-empty{font-size:calc(14px*var(--fsx))}
+.nw-note{font-size:calc(12.5px*var(--fsx))}
+.nw-search input{font-size:calc(15px*var(--fsx))}
+
+</style>
+<script>
+/* 안드로이드 계열은 '바탕화면에 추가' 안내를 페이지가 뜨자마자 한 번 보낸다.
+   그때 잡아 두지 않으면 나중에 버튼을 눌러도 띄울 수 없어, 여기서 미리 받아 둔다. */
+window.__installPrompt=null; window.__installWaiters=[];
+addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault(); window.__installPrompt=e;
+  window.__installWaiters.splice(0).forEach(function(f){f(e)});   /* 기다리던 버튼에 알려 준다 */
+});
+addEventListener('appinstalled',function(){window.__installPrompt=null;
+  try{localStorage.setItem('bhlab.a2h.n','9')}catch(e){}   /* 설치했으니 더 권하지 않는다 */
+});
+/* 서비스워커를 여기서 먼저 등록한다.
+   앱 로직(ui.js)은 3MB짜리 data.js를 다 받은 뒤에야 돌아서, 거기서 등록하면
+   브라우저가 '설치 가능'을 늦게 판단해 버튼을 눌러도 설치창이 아직 준비되지 않는다. */
+if('serviceWorker' in navigator && location.protocol!=='file:'){
+  addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});
+}
+</script>
+</head>
+<body>
+<!-- [테스트본] 상시 경고 배너 — 스크롤해도 사라지지 않는다 -->
+<style>
+#labBanner{position:fixed;top:0;left:0;right:0;z-index:9999;background:#C2410C;color:#fff;
+ text-align:center;font-size:13px;font-weight:800;letter-spacing:-.01em;padding:8px 12px;line-height:1.4}
+body{padding-top:34px}
+#bwGrpTabs{top:34px!important}   /* 갈래 탭이 배너 밑으로 붙게 */
+.bw-head{top:34px}
+</style>
+<div id="labBanner">테스트 버전입니다. 여기 나온 내용으로 신청하거나 방문하지 마세요.</div>
+
+<footer>
+ <b>🔔 알림 받기</b> — 소식을 눌러 자세히 본 화면 아래 [🔔 알림 받기]를 누르면
+ 휴대폰 캘린더에 담깁니다. 그러면 날짜 전에 휴대폰이 알아서 알려 줍니다.<br><br>
+ 이 정보는 봉화군 홈페이지에 공개된 주간업무 계획을 바탕으로 합니다.
+ 계획 단계의 내용이므로 실제 일정과 장소가 달라질 수 있습니다.
+ 참여하시기 전에 담당 부서로 한 번 확인해 주세요.<br><br>
+ <a href="https://www.bonghwa.go.kr/main.do" target="_blank" rel="noopener">🔗 봉화군청 홈페이지 바로가기</a><br><br>
+ <span style="opacity:.85">어떤 소식이 도움이 되는지 알아보려고 <b>익명 이용 기록</b>을 모읍니다.
+ 이름·전화번호·아이피는 저장하지 않습니다.
+ 원치 않으시면 <a href="?nostat=1">여기를 누르세요</a> — 이 기기에서는 모으지 않습니다.</span>
+</footer>
+<script src="analytics.js?v=884013ee"></script>
+<script src="core.js?v=28380ee5"></script>
+<script src="ui.js?v=4722f15a"></script>
+<script src="subsidy-data.js"></script>
+<script src="subsidy.js"></script>
+<script>
+/* data.js(필수) → notices.js(고시·공고) → events.js(주간행사) → news.js(봉화 뉴스) → init
+   뒤의 셋은 없거나 실패해도 화면은 뜬다 */
+(function(){
+ function load(src,cb){const s=document.createElement('script');s.src=src;s.onload=cb;s.onerror=cb;document.head.appendChild(s)}
+ load('data.js?v='+Date.now(), function(){
+  load('notices.js?v='+Date.now(), function(){
+   load('events.js?v='+Date.now(), function(){
+    load('news.js?v='+Date.now(), init);
+   });
+  });
+ });
+})();
+
+function init(){
+ const D=window.BW_DATA, E=BW.escH;
+
+ /* ── 이용 통계(analytics.js) 호출 도우미 ──
+    analytics.js 가 안 받아졌거나 통계를 꺼 둔 기기에서도 앱은 그대로 돌아야 하므로
+    반드시 window.BWA 가 있는지 보고 부른다. 화면(view)과 누름(act) 두 가지만 남긴다. */
+ const AV=(n,k,t)=>{ if(window.BWA)try{BWA.view(n,k,t)}catch(e){} };
+ const AA=(n,k,t)=>{ if(window.BWA)try{BWA.act(n,k,t)}catch(e){} };
+ const FKEY='bhlab.fav';
+ let fav={};try{fav=JSON.parse(localStorage.getItem(FKEY))||{}}catch(e){}
+ const saveFav=()=>localStorage.setItem(FKEY,JSON.stringify(fav));
+ const phoneOf=d=>D.deptPhones[d]||'';
+
+ /* 분류는 현안마다 한 번만 계산해 둔다 (3천 건을 매번 훑으면 느리다) */
+ const tag=iss=>{
+  if(iss._cls)return iss._cls;
+  const last=iss.list[iss.list.length-1];
+  iss._cls={
+   topics:BW.topicsOf(last.item),
+   auds:BW.audiencesOf(last.item),
+   regions:BW.regionsOf(last.item),
+   score:BW.citizenScore(last.item),
+   week:last.week, item:last.item
+  };
+  return iss._cls;
+ };
+
+ /* ── 관심 업무 → 휴대폰 캘린더 알림 ──
+    서버가 없어 앱이 직접 알림을 못 보내므로, 일정을 알림과 함께 캘린더에 넣어
+    휴대폰 캘린더가 대신 알려주게 한다(.ics 파일). 개인정보·계정 없이 동작. */
+ const pad=n=>String(n).padStart(2,'0');
+ /* 안건별 고정 UID — 제목이 전부 한글이어도 겹치지 않게 해시로 만든다.
+    같은 안건은 늘 같은 UID라, 다시 담아도 캘린더에 중복 생성되지 않는다. */
+ const uidHash=s=>{let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return(h>>>0).toString(36)};
+ const icsD=ymd=>ymd.replace(/-/g,'');
+ const icsEsc=s=>String(s).replace(/\\/g,'\\\\').replace(/[;,]/g,m=>'\\'+m).replace(/\n/g,'\\n');
+ const icsStamp=()=>{const d=new Date();return ''+d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+pad(d.getUTCMinutes())+pad(d.getUTCSeconds())+'Z'};
+ function timeOf(item){
+  for(const l of item.lines){const m=l.txt.match(/(\d{1,2})\s*:\s*(\d{2})/);if(/일\s*시/.test(l.txt)&&m)return{h:+m[1],mi:+m[2]}}
+  return null;
+ }
+ function icsEvent(iss){
+  const c=tag(iss), r=BW.parseDateRange(c.item,c.week);
+  if(!r||!r.start)return null;
+  const today=BW.ymd(new Date()), end=r.end||r.start;
+  if(end<today)return null;                          /* 이미 지난 일정은 알림 무의미 */
+  const placeLine=c.item.lines.find(l=>/^(장\s*소|위\s*치)/.test(l.txt));
+  const loc=placeLine?placeLine.txt.replace(/^[^:：]*[:：]\s*/,'').trim():c.regions.filter(x=>x!=='공통').join(', ');
+  const t=timeOf(c.item);
+  const L=['BEGIN:VEVENT','UID:bh'+uidHash(iss._id)+'@bonghwa','DTSTAMP:'+icsStamp()];
+  let alarms;
+  if(t){
+   L.push('DTSTART:'+icsD(r.start)+'T'+pad(t.h)+pad(t.mi)+'00');
+   const ed=new Date(BW.d2(r.start).getFullYear(),BW.d2(r.start).getMonth(),BW.d2(r.start).getDate(),t.h+1,t.mi);
+   L.push('DTEND:'+icsD(BW.ymd(ed))+'T'+pad(ed.getHours())+pad(ed.getMinutes())+'00');
+   alarms=['-P1D','-PT2H'];                          /* 하루 전 · 2시간 전 */
+  }else{
+   L.push('DTSTART;VALUE=DATE:'+icsD(r.start),'DTEND;VALUE=DATE:'+icsD(BW.ymd(BW.addD(BW.d2(end),1))));
+   alarms=['-PT15H'];                                /* 종일 → 전날 오전 9시쯤 */
+  }
+  L.push('SUMMARY:'+icsEsc('[봉화군] '+iss.title));
+  if(loc)L.push('LOCATION:'+icsEsc(loc));
+  L.push('DESCRIPTION:'+icsEsc(iss.dept+' · '+(iss._icsNote||'봉화군 주간업무 안내\n계획 단계 정보라 실제 일정과 다를 수 있습니다.')));
+  alarms.forEach(tr=>L.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(iss.title),'TRIGGER:'+tr,'END:VALARM'));
+  L.push('END:VEVENT');
+  return L.join('\r\n');
+ }
+ function buildICS(list){
+  const evs=list.map(icsEvent).filter(Boolean);
+  if(!evs.length)return null;
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Bonghwa//weekly//KO','CALSCALE:GREGORIAN',...evs,'END:VCALENDAR'].join('\r\n');
+ }
+ function downloadICS(text,name){
+  AA('캘린더담기','',name);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:'text/calendar;charset=utf-8'}));
+  a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+ }
+ /* 파일을 '어디 저장됐는지 모르게' 내려받는 대신, 팝업을 띄우고
+    한 번 눌러 바로 캘린더에 추가되게 한다. 카카오톡 인앱 브라우저는
+    다운로드가 잘 안 보이므로 '기본 브라우저로 열기'를 함께 안내한다. */
+ const UA=navigator.userAgent;
+ const inApp=/KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\//i.test(UA);
+ const isKakao=/KAKAOTALK/i.test(UA);
+
+ function calModal(list,base){
+  AV('알림받기','', list.length===1?list[0].title:(list.length+'건'));
+  const events=list.map(icsEvent).filter(Boolean);
+  if(!events.length){BWUI.toast('알림 받을 일정이 없어요 — 날짜가 지났거나 정해지지 않았습니다');return}
+  const ics=buildICS(list), fname=base+'.ics';
+  let m=document.getElementById('calModal');
+  if(!m){m=document.createElement('div');m.id='calModal';m.className='modal';document.body.appendChild(m)}
+  m.innerHTML=`<div class="mbox">
+    <h2>휴대폰 캘린더에 추가</h2>
+    <div class="note">관심 일정 <b>${events.length}개</b>를 캘린더에 담아요.
+      추가하면 <b>날짜 전에 휴대폰이 알림</b>을 줍니다. (기존 일정은 그대로예요)</div>
+    <div style="padding:8px 18px 2px"><button class="callbtn" id="calAdd" style="width:100%">📅 캘린더에 추가하기</button></div>
+    ${inApp?`<div class="note" style="color:var(--warn);padding-top:8px">
+       ${isKakao?'카카오톡 화면에서는 캘린더 추가가 막힐 수 있어요. 아래 <b>[기본 브라우저로 열기]</b>를 누른 뒤 다시 시도해 주세요.'
+                :'앱 안에서는 막힐 수 있어요. 오른쪽 위 메뉴 → <b>‘다른 브라우저로 열기’</b> 후 다시 시도해 주세요.'}</div>
+       ${isKakao?`<div style="padding:4px 18px 0"><button class="callbtn" id="calExt" style="width:100%;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🌐 기본 브라우저로 열기</button></div>`:''}`:''}
+    <div class="mfoot"><span style="flex:1"></span><button id="calCancel">닫기</button></div>
+  </div>`;
+  m.classList.add('open');
+  const close=()=>m.classList.remove('open');
+  m.querySelector('#calCancel').onclick=close;
+  m.onclick=e=>{if(e.target===m)close()};
+  const ext=m.querySelector('#calExt');
+  /* 기본 브라우저로 열면 완전히 새 페이지로 뜬다 — 방금 보던 화면(이 안건)을
+     주소에 담아 보내서, 열리자마자 같은 자리(상세+알림 팝업)로 되돌아오게 한다.
+     즐겨찾기는 카카오톡 안 저장소에만 있어 새 브라우저로 안 넘어오므로,
+     안건 번호 자체를 실어 보낸다. */
+  if(ext)ext.onclick=()=>{
+   const url=new URL(location.pathname,location.origin);
+   url.searchParams.set('r',list.map(i=>uidHash(i._id)).join(','));   /* 짧은 코드로 — 링크 길이 절약 */
+   location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(url.href);
+  };
+  m.querySelector('#calAdd').onclick=async()=>{
+   const file=new File([ics],fname,{type:'text/calendar'});
+   /* 1) 공유 시트 — 가장 매끄럽다. 눌러서 '캘린더'를 고르면 바로 추가된다. */
+   if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:'봉화군 관심 일정'});close();return}
+    catch(err){if(err&&err.name==='AbortError')return}   /* 사용자가 취소 */
+   }
+   /* 2) 공유가 안 되면 파일 열기 — 열리면 캘린더 추가 화면이 뜬다. */
+   downloadICS(ics,fname); close();
+   BWUI.toast('파일이 열리면 [추가]를 누르면 캘린더에 들어갑니다');
+  };
+ }
+ function remindFav(){
+  const favIss=BWUI.api.issues.filter(i=>fav[i._id]);
+  if(!favIss.length){BWUI.toast('관심 업무를 먼저 담아 주세요 (☆)');return}
+  calModal(favIss,'봉화군_관심일정');
+ }
+
+ /* ── 이 소식을 친구에게 공유 ──
+    안건 번호를 주소에 실어, 링크를 받은 사람이 열면 바로 그 안건이 뜬다.
+    휴대폰은 공유 시트(카톡·문자 등)를, 안 되면 링크 복사로 넘어간다. */
+ function shareUrlOf(iss){
+  const path=location.pathname.replace(/index\.html$/,'');   /* .../ 형태로 — index.html 안 붙게 */
+  const url=new URL(path||'/',location.origin);
+  url.searchParams.set('i',uidHash(iss._id));   /* 한글 안건번호 대신 짧은 코드 — 링크가 길어지지 않게 */
+  url.searchParams.set('a','1');                /* 링크를 받은 사람에게 '바탕화면에 추가'를 한 번 권한다 */
+  return url.href;
+ }
+ /* 복사 — 최신 클립보드 API가 막히면(카카오톡 인앱 등) execCommand로 대체 */
+ function fallbackCopy(t){
+  try{
+   const ta=document.createElement('textarea'); ta.value=t; ta.readOnly=true;
+   ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+   document.body.appendChild(ta); ta.focus(); ta.select();
+   try{ta.setSelectionRange(0,t.length)}catch(e){}
+   const ok=document.execCommand('copy'); document.body.removeChild(ta); return ok;
+  }catch(e){ return false; }
+ }
+ function copyText(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText)
+   return navigator.clipboard.writeText(t).then(()=>true,()=>fallbackCopy(t));
+  return Promise.resolve(fallbackCopy(t));
+ }
+ /* 공유 시트를 못 쓰는 환경(카카오톡 인앱 브라우저·컴퓨터 등)에서 뜨는 대체 모달.
+    ※ 카카오톡 안의 브라우저는 OS 공유 시트(카톡·문자 고르기)가 원천적으로 막혀 있어
+      코드로는 띄울 수 없다. 대신 '기본 브라우저로 열기'로 넘겨주면 거기서는 정상으로 뜬다.
+      그래서 카카오톡에서는 그 버튼을 가장 크게 두고, 다른 곳에서는 링크 복사를 안내한다. */
+ const isPhone=/iPhone|iPad|iPod|Android/i.test(UA);
+ function shareModal(url,text){
+  AA('공유_대체창');
+  const body=(text?text+'\n':'')+url;                       /* 문자 본문 — 제목·날짜까지 함께 */
+  const sep=/iPhone|iPad|iPod/i.test(UA)?'&':'?';           /* iOS는 '&', 안드로이드는 '?' */
+  const smsHref=`sms:${sep}body=${encodeURIComponent(body)}`;
+  let m=document.getElementById('shareModal');
+  if(!m){m=document.createElement('div');m.id='shareModal';m.className='modal';document.body.appendChild(m)}
+  m.innerHTML=`<div class="mbox">
+    <h2>친구에게 공유</h2>
+    <div class="note">${isPhone
+      ? '문자로 바로 보내거나, 링크를 복사해 <b>카카오톡</b>에 붙여넣어 보낼 수 있어요.'
+      : '아래 링크를 복사해 <b>카카오톡·문자에 붙여넣어</b> 보내면, 친구가 이 소식을 바로 볼 수 있어요.'}</div>
+    ${/* .callbtn 이 이미 flex 로 글자를 가운데 놓는다 — display:block 으로 덮어쓰면 글자가 위로 몰린다 */''}
+    ${isPhone?`<div style="padding:8px 18px 0"><a class="callbtn" id="shareSms" href="${E(smsHref)}">💬 문자로 보내기</a></div>`:''}
+    <div style="padding:4px 18px 2px"><input id="shareUrl" class="ps-input" readonly value="${E(url)}"></div>
+    <div style="padding:8px 18px 2px"><button class="callbtn" id="shareCopy" style="width:100%;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔗 링크 복사하기</button></div>
+    ${isKakao?`<div class="note" style="padding-top:8px">카톡·문자를 <b>고르는 창</b>으로 보내고 싶으면
+       <button id="shareExt" style="background:none;border:none;padding:0;font:inherit;color:var(--acc);text-decoration:underline;cursor:pointer">기본 브라우저로 열기</button></div>`:''}
+    ${inApp&&!isKakao?`<div class="note" style="padding-top:8px">앱 안에서는 고르기 창이 막힐 수 있어요. 오른쪽 위 메뉴 → <b>‘다른 브라우저로 열기’</b> 후 다시 눌러 보세요.</div>`:''}
+    <div class="mfoot"><span style="flex:1"></span><button id="shareClose">닫기</button></div>
+  </div>`;
+  m.classList.add('open');
+  const close=()=>m.classList.remove('open');
+  m.querySelector('#shareClose').onclick=close;
+  m.onclick=e=>{if(e.target===m)close()};
+  const inp=m.querySelector('#shareUrl'); inp.onclick=()=>{inp.focus();inp.select()};
+  const sms=m.querySelector('#shareSms'); if(sms)sms.addEventListener('click',()=>AA('공유_문자'));
+  /* 기본 브라우저로 넘길 때, 공유하려던 그 소식(?i=)과 '공유하러 왔음'(&s=1)을 함께 실어 보낸다.
+     새 브라우저에서 자동으로 공유 시트를 띄울 수는 없다(사용자가 직접 눌러야만 열린다) —
+     그래서 해당 소식을 펼쳐 두고 안내 문구만 띄운다. */
+  const ext=m.querySelector('#shareExt');
+  if(ext)ext.onclick=()=>{
+   AA('공유_브라우저전환');
+   const u=new URL(url); u.searchParams.set('s','1');
+   location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(u.href);
+  };
+  m.querySelector('#shareCopy').onclick=()=>{
+   AA('공유_링크복사');
+   copyText(url).then(ok=>{ BWUI.toast(ok?'링크를 복사했어요 — 대화창에 붙여넣어 보내세요':'아래 링크를 길게 눌러 복사해 주세요'); if(ok)close(); });
+  };
+ }
+ /* ── 앱 전체가 공유 버튼에서 공통으로 쓰는 함수 — 소식이든 고시·공고든 똑같이 동작해야 한다.
+    canShare()는 브라우저마다 지원이 들쭉날쭉해서(특히 title+text+url 조합에서 오탐 사례가 있다)
+    미리 걸러내지 않고, navigator.share가 있으면 일단 시도부터 한다 — 카카오톡·문자 등이 뜨는
+    휴대폰 OS 공유 시트는 이렇게 해야 가장 안정적으로 뜬다. 실패하면 그때 링크 복사로 넘어간다. */
+ function nativeShare(data,url){
+  if(!navigator.share){ shareModal(url,data.text); return; }   /* 기능 자체가 없음(카톡 인앱 등) */
+  const t0=Date.now();
+  let p;
+  try{ p=navigator.share(data); }
+  catch(e){ shareModal(url,data.text); return; }               /* 부르자마자 튕기는 브라우저 */
+  if(!p||typeof p.catch!=='function'){ shareModal(url,data.text); return; }
+  p.then(()=>AA('공유_시트완료'),()=>{});
+  p.catch(err=>{
+   /* 삼성 인터넷 등 일부는 '실패'를 사용자가 취소한 것(AbortError)처럼 알려 준다.
+      시트가 뜰 새도 없이(0.4초 안에) 돌아왔다면 사람이 닫은 게 아니라 실패한 것이므로,
+      조용히 넘어가지 말고 대신 보낼 수 있는 창을 띄운다. */
+   const quick=Date.now()-t0<400;
+   if(err&&err.name==='AbortError'&&!quick){ AA('공유_시트취소'); return; }   /* 진짜로 사용자가 닫음 */
+   shareModal(url,data.text);
+  });
+ }
+ function shareIssue(iss){
+  AA('공유_누름','소식:'+uidHash(iss._id),iss.title);
+  const url=shareUrlOf(iss);
+  const r=BW.parseDateRange(tag(iss).item,tag(iss).week);
+  let when='';
+  if(r&&r.start){const s=BW.d2(r.start);when=`${s.getMonth()+1}월 ${s.getDate()}일 · `}
+  const text=`[오늘의 봉화] ${iss.title}\n${when}자세히 보기 👇`;
+  nativeShare({title:'오늘의 봉화',text,url},url);
+ }
+
+ /* ── 봉화 마스코트 — 인트로와 헤더가 함께 쓴다 ──
+    계절마다 옷이 바뀐다. 그 계절 것 중 하나를 무작위로 고르고,
+    계절 옷이 없는 봄(3~5월)에는 기본 캐릭터가 나온다. */
+ const MASCOT_SETS={ 여름:['s1','s2','s3'], 가을:['f1','f2','f3'], 겨울:['w1','w2','w3'] };
+ function mascotSeason(d){
+  const m=(d||new Date()).getMonth()+1;
+  if(m>=6&&m<=8)return '여름';
+  if(m>=9&&m<=11)return '가을';
+  if(m===12||m<=2)return '겨울';
+  return '';                      /* 봄 — 계절 캐릭터 없음 */
+ }
+ const MASCOT_KEY=(()=>{
+  const set=MASCOT_SETS[mascotSeason()];
+  return set? set[Math.floor(Math.random()*set.length)] : 'base';
+ })();
+ const MASCOT_SRC='mascot/'+MASCOT_KEY+'.webp';
+ const MASCOT=`<img src="${MASCOT_SRC}" alt="" aria-hidden="true" decoding="async">`;
+
+ /* ── 첫 화면 인트로: 인사 → [시작하기] → 마스코트가 헤더로 날아가고 본문이 드러남 ── */
+ /* 인트로 아래 한 줄 요약 — 언제 자료인지, 이번 주에 무엇이 몇 건인지 */
+ function introSummary(){
+  const days=daysOf(D.weekStart), a=BW.d2(days[0]), b=BW.d2(days[6]);
+  const f=d=>`${d.getMonth()+1}. ${d.getDate()}.`;
+  const nEv=EV.filter(e=>days.includes(e.date)).length;
+  const nWork=BWUI.api.issues.filter(i=>i.list.some(o=>o.week===D.weekStart)).length;
+  const nNt=(NOTICES||[]).filter(n=>days.includes(n.date)).length;
+  const bits=[];
+  if(nWork)bits.push(`📋 업무 ${nWork}`);
+  if(nEv)bits.push(`🎪 행사 ${nEv}`);
+  if(nNt)bits.push(`📢 공고 ${nNt}`);
+  return `<div class="is-week">${a.getFullYear()}. ${f(a)}(${BW.DOW[a.getDay()]}) ~ ${f(b)}(${BW.DOW[b.getDay()]}) 주간소식</div>
+    <div class="is-cnt">${bits.length?bits.join(' · '):'이번 주 소식을 준비 중이에요'}</div>`;
+ }
+
+ /* 헤더 왼쪽 마스코트 — 인트로를 건너뛰어도 있어야 하므로 따로 심는다.
+    show 를 바로 주면 인트로에서 날아오는 마스코트와 겹쳐 보이므로, 인트로가 없을 때만 바로 보여 준다. */
+ function putHeadMascot(showNow){
+  const head=document.querySelector('.bw-head .in')||document.querySelector('.bw-head');
+  if(!head)return null;
+  let hm=head.querySelector('.mascot-head');
+  if(!hm){ hm=document.createElement('span'); hm.className='mascot-head'; hm.innerHTML=MASCOT;
+    head.insertBefore(hm,head.firstChild); }
+  if(showNow)hm.classList.add('show');
+  return hm;
+ }
+ function setupIntro(){
+  const head=document.querySelector('.bw-head .in')||document.querySelector('.bw-head');
+  if(!head)return;
+  const hm=putHeadMascot(false);   /* 도착 지점 — 비행이 끝난 뒤에 보여 준다 */
+
+  const intro=document.createElement('div'); intro.id='intro';
+  intro.innerHTML=`<div class="ibg"></div>
+    <div class="intro-mascot">${MASCOT}</div>
+    <div class="intro-text">안녕하세요<br><b>오늘의 봉화</b>가<br>이번 주 소식을 알려드립니다</div>
+    <div class="intro-sub">${introSummary()}</div>
+    <button class="intro-btn" id="introGo">시작하기</button>`;
+  document.body.appendChild(intro);
+  document.documentElement.style.overflow='hidden';   /* 인트로 동안 스크롤 잠금 */
+
+  const finish=()=>{ intro.remove(); document.documentElement.style.overflow=''; };
+  document.getElementById('introGo').onclick=()=>{
+   AA('인트로_시작하기'); AV('홈');
+   const im=intro.querySelector('.intro-mascot');
+   const src=im.getBoundingClientRect(), dst=hm.getBoundingClientRect();
+   const sc=dst.width/src.width;
+   const tx=(dst.left+dst.width/2)-(src.left+src.width/2);
+   const ty=(dst.top+dst.height/2)-(src.top+src.height/2);
+   im.style.animation='none';                          /* floaty 정지 후 비행 */
+   im.firstElementChild.style.filter='none';         /* 그림자 필터는 축소 중 흐려 보여 끈다 */
+   /* floaty가 멈춘 그 자리 그대로 트랜지션 없이 고정해 둔다.
+      (transition과 transform을 같은 프레임에서 같이 걸면 브라우저가
+       전환을 건너뛰고 바로 순간이동해 버려 잔상처럼 보인다) */
+   const frozen=getComputedStyle(im).transform;
+   im.style.transition='none';
+   im.style.transform=(frozen==='none')?'':frozen;
+   void im.offsetWidth;                                 /* 강제 리플로우로 위 상태를 확정 */
+   requestAnimationFrame(()=>{
+    /* 튕기지 않고 감속만 하는 이징 — 도착지에 이미 있는 헤더 마스코트와
+       겹쳐 튕기면 잔상처럼 보이므로 overshoot 없는 곡선을 쓴다 */
+    im.style.transition='transform .5s cubic-bezier(.3,.7,.2,1)';
+    im.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`;
+    intro.classList.add('go');                         /* 글·버튼·배경 사라짐 */
+   });
+   let done=false;
+   const end=()=>{
+    if(done)return; done=true;
+    hm.classList.add('show');                          /* 도착한 뒤에야 헤더 마스코트를 보여준다 */
+    setTimeout(finish,120);                             /* 겹치는 순간 없이 자연스럽게 이어받는다 */
+   };
+   im.addEventListener('transitionend',end,{once:true});
+   setTimeout(end,650);                                /* transitionend 누락 대비 */
+  };
+ }
+
+ /* ── 기간 판정 (새소식·행사·언론속봉화 공통) ──
+    맨 위 기간 UI 하나로 세 화면을 함께 좁힌다. 예전에는 화면마다 기간 규칙이 따로 있어
+    '행사에는 기간이 없고', '뉴스에는 아예 못 거는' 상태였다. 규칙은 여기 한 곳에만 둔다. */
+ function inPeriod(ymd){
+  const S=BWUI.api.state;
+  if(!ymd)return false;
+  if(S.scope==='all')return true;
+  if(S.scope==='day')return ymd===S.day;
+  if(S.scope==='range')return ymd>=S.from&&ymd<=S.to;
+  if(S.scope==='month')return ymd.slice(0,7)===S.month;
+  return daysOf(VIEW_WEEK).includes(ymd);           /* week */
+ }
+ /* 지금 고른 기간을 사람 말로 — 히어로 문구에 쓴다 */
+ function periodWord(){
+  const S=BWUI.api.state;
+  if(S.scope==='all')return '전체 기간';
+  if(S.scope==='range')return '고른 기간';
+  if(S.scope==='month')return S.month===BW.ymd(new Date()).slice(0,7)?'이번 달':'그 달';
+  if(S.scope==='day')return S.day===BWUI.api.today?'오늘':'그날';
+  return VIEW_WEEK===D.weekStart?'이번 주':'그 주';
+ }
+
+ /* ── 주/달 이동·달력 헬퍼 (onRender가 첫 렌더에서 참조하므로 BWUI.start 이전에 선언) ── */
+ const WEEKS=D.weeks.slice();                 /* 자료가 있는 주차(월요일) 목록 */
+ const MONTHS=[...new Set(D.weeks.map(w=>w.slice(0,7)))].sort();   /* 자료가 있는 달 목록 */
+ let VIEW_WEEK=D.weekStart;                    /* 지금 보고 있는 주(월요일) */
+ /* 달력처럼 일요일부터 토요일까지 7일. 자료의 주차 키(월요일)가 들어오면
+    그 월요일이 속한 달력 주의 일요일부터 센다. */
+ const daysOf=mon=>{const s=BW.d2(mon);s.setDate(s.getDate()-s.getDay());   /* 그 주의 일요일로 */
+   const a=[];for(let i=0;i<7;i++){const d=new Date(s);d.setDate(s.getDate()+i);a.push(BW.ymd(d));}return a;};
+ const cntOf=day=>BWUI.api.issues.filter(i=>i.list.some(o=>BW.coversDate(o.item,o.week,day))).length;
+ /* ═══ 주간행사 ═══ 주간업무계획과 같은 게시물에 붙는 '주간행사표'(build/fetch_events.py 수집).
+    그날 그 자리에서 열리는 일이라 업무 목록과 섞지 않고 맨 위에서 갈라 놓는다.
+    ※ BWUI.start 가 첫 렌더에서 syncTopControls 를 부르므로, 이 값들은 반드시 그 앞에 선언한다. */
+ const EV=(window.BW_EVENTS&&window.BW_EVENTS.items)||[];
+ let MODE='work', evKind='';                     /* evKind: ''=전체 '군' '기관' */
+
+ /* ═══ 봉화 뉴스 ═══ 네이버 뉴스 검색 API로 모은 봉화 관련 기사(build/fetch_news.py).
+    ── 저작권 때문에 지켜야 할 것 (고치기 전에 읽을 것) ──
+    제목·언론사·날짜만 보여 주고, 누르면 언론사 원문으로 **새 창을 열어 나간다.**
+    · 기사 본문·요약(리드문)·사진은 담지도 보여 주지도 않는다 — 요약도 침해가 될 수 있다.
+    · iframe·임베드로 원문을 이 앱 안에 끼워 넣지 않는다(프레이밍 분쟁 소지).
+    · 언론사 사이트를 직접 긁지 않는다 — 저작권과 별개로 부정경쟁방지법에 걸린다.
+    근거: 링크 행위는 저작권법상 전송에 해당하지 않고(대법원 2021.9.9. 2017도19025 전합),
+          사실 전달에 불과한 시사보도는 보호 대상이 아니다(저작권법 제7조 제5호).
+    자세한 것은 build/fetch_news.py 머리말에 적어 두었다. */
+ const NEWS=(window.BW_NEWS&&window.BW_NEWS.items)||[];
+ const NWKEY='bhlab.news.seen';                     /* 이 기기가 마지막으로 본 기사 시각 */
+ let nwSeen=0, nwMissed=[], nwQ='', nwLimit=10;   /* 뉴스도 10개씩 */
+ let nwSig='';                                   /* 기간·검색이 바뀌면 상한을 되돌린다 */
+ (function initNewsSeen(){
+  try{nwSeen=+localStorage.getItem(NWKEY)||0}catch(e){}
+  const newest=NEWS.length?NEWS[0].ts:0;
+  /* 처음 온 기기라면 30일치가 통째로 '놓친 뉴스'가 돼 버린다 — 첫 방문은 놓친 것 없음으로 둔다 */
+  if(!nwSeen){ nwSeen=newest; try{localStorage.setItem(NWKEY,String(newest))}catch(e){} }
+  else nwMissed=NEWS.filter(n=>n.ts>nwSeen);     /* 이번 방문 동안은 이 목록을 고정해서 보여 준다 */
+ })();
+ const evOf=day=>EV.filter(e=>e.date===day&&(!evKind||e.kind===evKind));
+ const evCntOf=day=>EV.filter(e=>e.date===day&&(!evKind||e.kind===evKind)).length;
+ let evLimit=10;                                 /* 행사 목록을 10개씩 늘려 보여 준다 */
+ let evSig='';                                   /* 기간·검색이 바뀌면 상한을 되돌린다 */
+ let evSpan='week';                              /* 'week' 주간 보기 · 'month' 월간 달력 */
+ let EVM=(EV.length?EV[EV.length-1].date:BW.ymd(new Date())).slice(0,7);   /* 달력이 보고 있는 달 */
+ const EV_MONTHS=[...new Set(EV.map(e=>e.date.slice(0,7)))].sort();
+ const dLabel=day=>{const d=BW.d2(day);return `${d.getMonth()+1}월 ${d.getDate()}일(${BW.DOW[d.getDay()]})`;};
+ const rangeTitle=mon=>{const w=daysOf(mon),a=BW.d2(w[0]),b=BW.d2(w[6]);
+   return `${a.getFullYear()}. ${a.getMonth()+1}. ${a.getDate()}.(${BW.DOW[a.getDay()]}) ~ ${b.getMonth()+1}. ${b.getDate()}.(${BW.DOW[b.getDay()]})`;};
+ const weekLabel=mon=>{const w=daysOf(mon),a=BW.d2(w[0]),b=BW.d2(w[6]);return `${a.getMonth()+1}월 ${a.getDate()}일 ~ ${b.getMonth()+1}월 ${b.getDate()}일`;};
+
+ /* ── 주간 소식(weekly)과 고시·공고(notice)를 한 목록에서 찾도록 — 두 분류를 합친 축 ──
+    같은 말은 하나로 합치고(예: 점검·안전=재해·안전), 한쪽에만 있는 건 그대로 따로 둔다.
+    [표시이름, 아이콘, 주간소식 원래 분류 키[], 고시·공고 원래 분류 키[]] */
+ const MERGED_TOPICS=[
+  ['축제·행사','🎪',['축제·행사'],[]],
+  ['교육·모집·공모','🎓',['교육·강좌'],['모집·교육·공모']],
+  ['신청·접수','📋',['신청·접수'],[]],
+  ['채용·일자리','💼',[],['채용·일자리']],
+  ['공사·도로·건축','🚧',['공사·정비'],['도시·도로·건축']],
+  ['점검·안전','🦺',['점검·안전'],['재해·안전']],
+  ['건강·의료','🩺',['건강·의료'],[]],
+  ['민원·인허가','🗂️',['민원·인허가'],['인허가·처분']],
+  ['재산·세금·보상','💰',[],['재산·세금·보상']],
+  ['입찰·용역','🧾',[],['입찰·용역']],
+  ['농림·환경·에너지','🌱',[],['농림·환경·에너지']],
+  ['그 밖의 일','📄',['그 밖의 일'],['기타 안내']],
+ ];
+ /* ── 누구를 위한 일인가요 ──
+    캐릭터로 그려 둔 일곱 갈래만 남긴다. 갈래가 많으면 고르기 전에 지치고,
+    한 자리 수짜리 갈래는 눌러도 허탕이라 오히려 신뢰를 깎는다.
+    없앤 갈래(복지·돌봄 / 구직자 / 토지·주택 소유자)의 소식은 버리지 않고
+    '주민 누구나' 로 모아 둔다 — 특정한 누구의 일이라기보다 열려 있는 일들이다. */
+ const MERGED_AUD=[
+  ['주민 누구나','👥',['주민 누구나','복지·돌봄','구직자'],['주민 누구나','구직자','토지·주택 소유자']],
+  ['어르신','🧓',['어르신'],[]],
+  ['아이·청소년','🧒',['아이·청소년'],[]],
+  ['여성·가족','👨‍👩‍👧',['여성·가족'],[]],
+  ['농업인','🧑‍🌾',['농업인'],['농업인']],
+  ['청년','🧑',['청년'],[]],
+  ['소상공인','🏪',['소상공인'],['사업자·업체']],
+ ];
+ /* 주간소식 카드의 원래 분류 키 → 합친 표시이름 (카드 태그를 누르면 그 합친 축이 켜지도록) */
+ const W2M_TOPIC={}; MERGED_TOPICS.forEach(([m,,wk])=>wk.forEach(k=>W2M_TOPIC[k]=m));
+ const W2M_AUD={}; MERGED_AUD.forEach(([m,,wk])=>wk.forEach(k=>W2M_AUD[k]=m));
+ /* ── 대상 캐릭터 그림 ──
+    char/ 안에 그림이 있으면 그림을, 없으면 이모지를 쓴다.
+    그림 파일을 넣기만 하면 코드를 고치지 않고도 바뀐다(못 읽으면 스스로 이모지로 돌아간다). */
+ const CHAR_FILE={'주민 누구나':'everyone','어르신':'senior','아이·청소년':'kid',
+   '여성·가족':'family','농업인':'farmer','청년':'youth','소상공인':'shop'};
+ function audIcon(name,emo){
+  const f=CHAR_FILE[name];
+  return f ? `<img class="charimg" src="char/${f}.webp" alt="" data-emo="${emo||''}" decoding="async">`
+           : (emo||'');
+ }
+ /* 그림이 없으면 이모지로 되돌린다 — error 는 위로 안 올라오므로 잡는 단계에서 듣는다 */
+ addEventListener('error',function(e){
+  const t=e.target;
+  if(t&&t.classList&&t.classList.contains('charimg')){
+   const sp=document.createElement('span'); sp.textContent=t.dataset.emo||''; t.replaceWith(sp);
+  }
+ },true);
+ /* ═══ 내 소식 (개인화) ═══
+    고른 값은 이 기기에만 저장하고 서버로 보내지 않는다 — 공공서비스라 더 그렇다.
+    추측으로 분류를 만들지 않고, 이미 확실히 붙어 있는 대상·지역 태그만 쓴다. */
+ const PKEY='bhlab.profile';
+ let PROF={aud:[],region:''};
+ try{ PROF=Object.assign(PROF, JSON.parse(localStorage.getItem(PKEY))||{}); }catch(e){}
+ const profOn=()=>PROF.aud.length||PROF.region;
+ function saveProf(){ try{localStorage.setItem(PKEY,JSON.stringify(PROF))}catch(e){} }
+ /* 내 프로필과 얼마나 맞는지 — 클수록 위로 */
+ function profScore(iss){
+  if(!profOn())return 0;
+  let n=0;
+  const t=tag(iss);                       /* 이미 계산해 둔 대상·지역 태그 */
+  PROF.aud.forEach(x=>{                   /* 합친 라벨 → 원래 대상 키로 되돌려 비교 */
+   const e=MERGED_AUD.find(y=>y[0]===x);
+   if(e&&e[2].some(k=>t.auds.includes(k)))n+=2;
+  });
+  if(t.auds.includes('주민 누구나'))n+=1;  /* 누구에게나 해당하는 일 */
+  if(PROF.region){
+   if(t.regions.includes(PROF.region))n+=2;
+   else if(!t.regions.length)n+=1;        /* 군 전체 대상이면 조금 */
+  }
+  return n;
+ }
+ /* 고시·공고 목록 상태 — onRender가 BWUI.start 안에서 첫 렌더 때 바로 참조하므로 미리 선언해 둔다 */
+ let NOTICES=null, ntLimit=30, ntSig='';
+
+ /* ── 이용 통계: 목록 화면의 상태 변화 ──
+    렌더는 아주 자주 일어나므로, 직전과 값이 달라진 것만 한 줄씩 남긴다.
+    (BWUI 안쪽을 고치지 않고도 검색어·필터·기간 변경을 그대로 잡을 수 있다) */
+ let AS_q='', AS_f='', AS_c='', AS_s='', AS_first=true;
+ function trackState(){
+  if(!window.BWA)return;
+  const S=BWUI.api.state;
+  /* 첫 렌더는 사용자가 무엇을 바꾼 게 아니라 처음 그려진 것뿐이다 —
+     기준값만 적어 두고 넘어간다(안 그러면 방문마다 '기간바꾸기'가 한 번씩 헛집힌다) */
+  if(AS_first){
+   AS_first=false;
+   AS_q=(S.q||'').trim();
+   const a0=S.axis||{}; AS_f=[a0.topic||'',a0.aud||'',a0.region||''].join('|');
+   AS_c=S.custom||''; AS_s=S.scope||'';
+   return;
+  }
+  const q=(S.q||'').trim();
+  if(q!==AS_q){ AS_q=q; if(q.length>=2)AA('검색',q); }
+  const ax=S.axis||{};
+  const f=[ax.topic||'',ax.aud||'',ax.region||''].join('|');
+  if(f!==AS_f){
+   const prev=AS_f.split('|'); AS_f=f;
+   [['주제',0],['대상',1],['지역',2]].forEach(([lb,i])=>{
+    const v=f.split('|')[i];
+    if(v&&v!==prev[i])AA('걸러보기_'+lb,v);
+   });
+  }
+  if((S.custom||'')!==AS_c){ AS_c=S.custom||''; if(AS_c==='fav')AV('관심목록'); }
+  if((S.scope||'')!==AS_s){ AS_s=S.scope||''; AA('기간바꾸기',AS_s); }
+ }
+
+ BWUI.start({
+  role:'public', title:'오늘의 봉화',
+  /* 1주 = 달력 주(일~토). 주간계획은 월~일 단위로 실리지만, 군민에게는 달력이 익숙하다 */
+  weekWindow(){ const w=daysOf(VIEW_WEEK); return [w[0],w[6]]; },
+  /* 주간계획에 안 실린 주라도 신청·접수가 아직 열려 있으면 계속 보여 준다 —
+     이름을 모르면 검색으로도 못 찾기 때문에, 놓치지 않게 목록 아래에 이어 붙인다 */
+  ongoingSection:true,
+  /* 군민이 신청·참여할 수 있는 일과 군청 내부 행정을 가르는 기준.
+     갈래 탭이 이 기준으로 [신청·참여 | 군정 소식]을 나눈다. */
+  splitAdmin:iss=>tag(iss).score>0,
+  /* 갈래 탭 — 한 번에 한 갈래만 보여 목록이 두루마리가 되지 않게 한다 */
+  groupTabs:true,
+  noticeTab:{ count:()=>noticeMatches().length, render:host=>renderNoticeSection(host),
+    renderRecent:host=>renderNoticeSection(host,'recent') },
+  onGroupTab:k=>AA('갈래탭',k),
+  /* 무엇을(목적)·누구를(대상)·어디서 고르는 칸.
+     갈래를 고른 다음에 좁히는 것이라 갈래 탭 아래에 놓고 '맞춤설정'으로 접어 둔다. */
+  axesOpen:false, axesLabel:'맞춤설정',
+  searchPlaceholder:'궁금한 일을 검색해 보세요 (예: 축제, 도로, 교육)',
+  listTitle:'봉화의 소식은?',   /* 앞에 '오늘' / '이번 주' / '7월 28일(화)' 처럼 기간이 붙는다 */
+  publicLabels:true,
+  progAsStage:true,
+  showAppearance:false,      /* 등장 기준 추정치는 내보내지 않음 (§8.2) */
+  showSimilar:false,
+  showHistory:false,
+  hideTiles:true,            /* '언제'는 상단 주간 달력이 맡는다 */
+  showCalendar:false,        /* 공용 월 달력 대신 위쪽 커스텀 주간 데이 스트립을 쓴다 */
+  onRender(){ syncTopControls(); trackState(); },   /* 필터가 바뀔 때마다 상단 달력·검색·제목을 맞춘다 */
+  hideDeptTag:true,          /* 군민은 어느 과인지로 고르지 않는다 — 문의할 때만 필요 */
+  /* 카드 태그는 고시·공고와 합친 분류 이름으로 보여준다(원래 분류 키를 합친 이름으로 바꿔서) */
+  typeTag:iss=>{const m=W2M_TOPIC[tag(iss).topics[0]]||tag(iss).topics[0];return {v:m,label:m,axis:'topic'};},
+
+  /* 군민이 참여할 수 있는 일부터 위로 */
+  /* 내 프로필에 맞는 소식을 먼저, 그다음은 기존처럼 군민 관심도 순.
+     맞춤 설정을 안 했으면 점수가 0 이라 예전 순서와 똑같다. */
+  sortWith:(a,b)=>(profScore(b)-profScore(a))||(tag(b).score-tag(a).score),
+
+  /* 헤더: 바탕화면 바로가기 + 글씨 크기 (관심 모아보기는 아래 탭바에서) */
+  /* 헤더에는 단추를 두지 않는다 — 바로가기 설치·글씨 크기·맞춤 설정은
+     아래 탭바의 [⚙️ 설정] 시트(moreModal)로 모았다. 헤더를 한 줄로 줄여
+     화면을 열면 바로 [새소식/행사/언론속봉화] 를 고를 수 있게 하려는 것. */
+  headerButtons:[],
+  customFilters:{fav:{label:'관심 업무만',fn:iss=>!!fav[iss._id]}},
+
+  /* ── 두 갈래로 좁혀 가기 (언제는 위 달력이 맡는다) — 주간 소식과 고시·공고를 합친 축 ──
+     각 축은 '전체'가 기본이다. 아무것도 안 고르면 전부 보인다. */
+  axes:[
+   {key:'topic', label:'무엇을 찾으세요?', chipLabel:'주제', render:'cards',
+    allLabel:'전체', allIcon:'🗂️',
+    values:MERGED_TOPICS.map(([v,icon])=>({v,label:v,icon})),
+    match:(iss,v)=>{const e=MERGED_TOPICS.find(x=>x[0]===v);return !!e&&e[2].some(k=>tag(iss).topics.includes(k));}},
+
+   {key:'aud', label:'누구를 위한 일인가요?', chipLabel:'대상', render:'circles',
+    /* '전체'는 사람이 아니므로 캐릭터 옆에서 겨루지 않게 점 세 개로만 둔다 */
+    allLabel:'전체', allIcon:'<span class="ic-all"></span>',
+    values:MERGED_AUD.map(([v,icon])=>({v,label:v,icon:audIcon(v,icon)})),
+    match:(iss,v)=>{const e=MERGED_AUD.find(x=>x[0]===v);return !!e&&e[2].some(k=>tag(iss).auds.includes(k));}},
+
+   {key:'region', label:'어디에서 열리나요?', chipLabel:'지역', render:'chips',
+    allLabel:'전체',
+    values:[{v:'공통',label:'공통',chip:'공통(전 지역)'}].concat(BW.REGIONS.map(r=>({v:r,label:r}))),
+    match:(iss,v)=>tag(iss).regions.includes(v)}
+  ],
+
+  cardActions:iss=>[{
+   icon:fav[iss._id]?'★':'☆', title:'관심 업무', active:!!fav[iss._id],
+   on(i){ AA(fav[i._id]?'관심빼기':'관심담기','소식:'+uidHash(i._id),i.title);
+          if(fav[i._id])delete fav[i._id]; else fav[i._id]={at:BW.ymd(new Date())}; saveFav(); }
+  }],
+
+  /* 카드 한 줄에 언제·어디서·누구 */
+  cardMeta:iss=>{
+   const c=tag(iss), bits=[];
+   const r=BW.parseDateRange(c.item,c.week);
+   if(r&&r.start){
+    const s=BW.d2(r.start);
+    bits.push(r.end&&r.end!==r.start
+     ? `${s.getMonth()+1}.${s.getDate()} ~ ${BW.d2(r.end).getMonth()+1}.${BW.d2(r.end).getDate()}`
+     : `${s.getMonth()+1}월 ${s.getDate()}일(${BW.DOW[s.getDay()]})`);
+   }
+   if(c.regions.length)bits.push(c.regions.slice(0,2).join('·'));
+   /* 신청할 수 있는 일에는 마감이 얼마나 남았는지를 맨 앞에 — 갈래 탭이 마감순이라 이 표시가 눈금이 된다 */
+   if(c.score>0&&r&&r.end){
+    const d=Math.round((BW.d2(r.end)-BW.d2(BWUI.api.today))/864e5);
+    if(d===0)bits.unshift('⏰ 오늘 마감');
+    else if(d===1)bits.unshift('⏰ 내일 마감');
+    else if(d>1&&d<=7)bits.unshift(`⏰ 마감 D-${d}`);
+   }
+   /* 카드에도 화면에서 고를 수 있는 일곱 갈래 이름으로만 적는다 —
+      없앤 갈래 이름(복지·돌봄 등)이 카드에만 남으면 눌러도 그런 조건이 없어 헷갈린다 */
+   const mg=[...new Set(c.auds.map(a=>W2M_AUD[a]).filter(Boolean))];
+   if(mg.length)bits.push(mg.slice(0,2).join('·'));
+   return bits.join(' · ');
+  },
+
+  /* 제목 옆 ⭐ — 본문에 같은 체크박스를 또 두지 않는다 */
+  sheetActions:iss=>[{
+   icon:fav[iss._id]?'★':'☆', title:'관심 업무', active:!!fav[iss._id],
+   on(i){ AA(fav[i._id]?'관심빼기':'관심담기','소식:'+uidHash(i._id),i.title);
+          if(fav[i._id])delete fav[i._id]; else fav[i._id]={at:BW.ymd(new Date())};
+          saveFav(); BWUI.toast(fav[i._id]?'관심 업무에 담았습니다':'관심 업무에서 뺐습니다'); BWUI.api.render(); }
+  }],
+
+  /* ── 상세 맨 위: 판단에 필요한 것만 ── */
+  detailTop(iss,body){
+   AV('소식상세','소식:'+uidHash(iss._id),iss.title);
+   const c=tag(iss);
+   const strip=t=>t.replace(/^[^:：]*[:：]\s*/,'').trim();
+   const line=re=>{const l=c.item.lines.find(x=>re.test(x.txt));return l?strip(l.txt):''};
+   const when=line(/^(일\s*시|기\s*간|일\s*자|기\s*한|점검기간|접수기간|모집기간|교육기간|운영기간|신청기한)/);
+   const place=line(/^(장\s*소|위\s*치|신청장소|접수처)/) || c.regions.join(', ');
+   const who=line(/^(대\s*상|참석대상|교육대상|모집대상|지원대상)/) || c.auds.join(', ');
+   const rows=[
+    when  && ['📅','언제', when],
+    place && ['📍','어디서', place],
+    who   && ['👥','누구',  who]
+   ].filter(Boolean);
+   body.insertAdjacentHTML('beforeend',`
+    <div class="blk glance">
+     <div class="tagrow" style="margin-bottom:10px">
+      <span class="tag st st-${iss._st}" style="cursor:default">${BWUI.api.ST_LABEL[iss._st]}</span>
+      <span class="tag type" style="cursor:default">${E(c.topics[0])}</span>
+     </div>
+     ${rows.length?`<dl class="glist">${rows.map(([ic,k,v])=>
+       `<dt><span class="gi">${ic}</span>${k}</dt><dd>${E(v)}</dd>`).join('')}</dl>`
+      :'<div class="hint">일정과 장소가 계획서에 적혀 있지 않습니다.</div>'}
+    </div>`);
+  },
+
+  /* 본문은 '무엇을 하는가'만 남긴다.
+     위에 이미 쓴 줄(일시·장소·대상)과 행정 내부 항목(참여단체·협조사항·근거·사업비)은 뺀다.
+     뺀 것은 아래 [계획서 원문 그대로 보기]에 그대로 남아 있다. */
+  contentTitle:'무엇을 하나요',
+  contentLines(iss,lines){
+   const already=/^(일\s*시|기\s*간|일\s*자|기\s*한|마\s*감|점검기간|접수기간|모집기간|교육기간|운영기간|신청기한|장\s*소|위\s*치|신청장소|접수처|대\s*상|참석대상|교육대상|모집대상|지원대상)/;
+   const inner=/^(참여단체|참석인원|참석자|참\s*석|협조사항|추진근거|근\s*거|사업비|사\s*업\s*비|총사업비|예\s*산|담\s*당|주\s*관|점검자|조사자|점검반|추진방법|비\s*고|기타사항|제출처|보조비율)/;
+   const out=lines.filter(l=>!already.test(l.txt)&&!inner.test(l.txt))
+    /* '주요내용:' 라벨은 위 제목이 이미 말하고 있으니 지운다.
+       콜론 없이 '주요내용' 한 줄만 있고 아래 줄에 내용이 오는 문서도 있어 그 줄도 없앤다. */
+    .map(l=>({lv:l.lv,txt:l.txt.replace(/^(주요\s*내용|내\s*용|사업내용|프로그램|추진내용|교육내용|점검내용|주요\s*사업)\s*[:：]?\s*/,'')}))
+    .filter(l=>l.txt.trim());
+   return out;
+  },
+
+  detailFooter(iss){
+   const tel=phoneOf(iss.dept)||'054-679-6114';
+   const canRemind=!!buildICS([iss]);
+   return `<div style="display:flex;flex-direction:column;gap:8px">
+     <div style="display:flex;gap:8px">
+      ${canRemind?`<button class="callbtn" id="remindBtn" style="flex:1;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔔 알림 받기</button>`:''}
+      <a class="callbtn" href="tel:${tel}" style="flex:1">📞 문의</a>
+     </div>
+     <button class="callbtn" id="shareBtn" style="background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔗 친구에게 공유하기</button>
+   </div>`;
+  },
+  onFooterMount(iss,foot){
+   const b=foot.querySelector('#remindBtn');
+   if(b)b.onclick=()=>{
+    if(!fav[iss._id]){fav[iss._id]={at:BW.ymd(new Date())};saveFav();BWUI.api.render()}  /* 알림 걸면 관심에도 담김 */
+    calModal([iss],'봉화군_'+iss.title.replace(/[^가-힣0-9a-zA-Z]/g,'').slice(0,14));
+   };
+   const sb=foot.querySelector('#shareBtn');
+   if(sb)sb.onclick=()=>shareIssue(iss);
+   if(window.BWLAB_SUBSIDY)BWLAB_SUBSIDY.mount(iss,foot,{buildICS,downloadICS,tel:phoneOf(iss.dept)||'054-679-6114'});  /* [테스트본] 보조사업 조건 자가확인 */
+  }
+ });
+
+ /* ── 헤더 부제 + 오늘 날짜 (부제 바로 밑) ── */
+ function decorateHeader(){
+  /* 헤더는 한 줄만 — 마스코트 + 이름 + 오늘 날짜. 부제와 단추는 뺐다.
+     화면을 열자마자 아래 [새소식/행사/언론속봉화] 가 보이게 하려는 것. */
+  const inb=document.querySelector('.bw-head .in'); if(!inb||inb.querySelector('.bw-today'))return;
+  const td=BW.d2(BWUI.api.today);
+  const today=document.createElement('div'); today.className='bw-today';
+  today.textContent=`${td.getMonth()+1}월 ${td.getDate()}일 (${BW.DOW[td.getDay()]})`;
+  inb.appendChild(today);
+ }
+
+ /* ── 상단 주간 달력 (데이 스트립) + 이전·다음 주 이동 + 기간 버튼 ──
+    보고 있는 주(VIEW_WEEK)의 7일을 늘어놓고, 날짜를 누르면 그날 '진행 중'(진행기간 포함)인
+    소식만 본다. 양쪽 화살표로 이전·다음 주 계획을 넘겨 본다.
+    (WEEKS·VIEW_WEEK·daysOf·cntOf·dLabel·weekLabel 은 BWUI.start 앞에서 선언됨) */
+ const CUR_MONTH=D.weekStart.slice(0,7);
+ /* 기간 버튼 = 보기 단위 선택. 누르면 항상 '지금'(현재 주/달)으로 이동, 이동은 화살표가 맡는다 */
+ function setScope(sc){
+  const S=BWUI.api.state;
+  if(sc==='today'){
+   /* 오늘이 든 주로 옮긴 뒤 그 날짜만 본다 — 자료가 오늘까지 안 왔으면 1주 보기로 */
+   const t=BWUI.api.today, w=WEEKS.find(x=>daysOf(x).includes(t));
+   if(w){ VIEW_WEEK=w; S.week=w; renderDayPills(); setDay(t); return; }
+   sc='week';
+  }
+  if(sc==='month'){ S.scope='month'; S.month=CUR_MONTH; S.day=''; }
+  else if(sc==='all'){ S.scope='all'; S.day=''; }
+  else { VIEW_WEEK=D.weekStart; S.scope='week'; S.week=VIEW_WEEK; S.month=CUR_MONTH; S.day=''; renderDayPills(); }
+  S.limit=60; BWUI.api.render();
+ }
+ function setDay(day){ const S=BWUI.api.state; S.scope='day'; S.day=day; S.month=day.slice(0,7); S.limit=60; BWUI.api.render(); }
+ /* 자료가 있는 전체 구간 — 날짜 입력칸의 선택 가능 범위로 쓴다 */
+ const MIND=D.weeks[0];
+ const LASTD=BW.ymd(new Date(BW.d2(D.weeks[D.weeks.length-1]).getTime()+6*864e5));
+ const MAXD=LASTD;
+ /* 직접 고른 기간으로 보기 */
+ function setRange(from,to){
+  const S=BWUI.api.state;
+  S.scope='range'; S.from=from; S.to=to; S.day=''; S.limit=60;
+  BWUI.api.render();
+ }
+ /* 화살표 = 현재 보기 단위대로 이동 (1주 모드→주 단위, 1개월 모드→달 단위) */
+ function navPeriod(dir){
+  const S=BWUI.api.state;
+  if(S.scope==='month'){
+   const i=MONTHS.indexOf(S.month), ni=i+dir;
+   if(ni<0||ni>=MONTHS.length)return;
+   S.month=MONTHS[ni]; S.day=''; S.limit=60; BWUI.api.render();
+  }else{
+   const i=WEEKS.indexOf(VIEW_WEEK), ni=i+dir;
+   if(ni<0||ni>=WEEKS.length)return;
+   VIEW_WEEK=WEEKS[ni]; S.scope='week'; S.week=VIEW_WEEK; S.month=VIEW_WEEK.slice(0,7); S.day=''; S.limit=60;
+   renderDayPills(); BWUI.api.render();
+  }
+ }
+ /* 달력 카드 맨 위 타이틀 = 지금 고른 조회 기간을 실제 날짜로 (주·달·전체·날짜 모두 동일 형식) */
+ function calTitle(){
+  const S=BWUI.api.state;
+  const f=d=>`${d.getMonth()+1}. ${d.getDate()}.(${BW.DOW[d.getDay()]})`;
+  const rng=(a,b)=>`${a.getFullYear()}. ${f(a)} ~ ${a.getFullYear()!==b.getFullYear()?b.getFullYear()+'. ':''}${f(b)}`;
+  if(S.scope==='day'){const d=BW.d2(S.day);return `${d.getFullYear()}. ${f(d)}`;}
+  if(S.scope==='range'){return rng(BW.d2(S.from), BW.d2(S.to));}
+  if(S.scope==='month'){const[y,m]=S.month.split('-').map(Number);return rng(new Date(y,m-1,1), new Date(y,m,0));}
+  if(S.scope==='all'){const w=daysOf(D.weekStart);return rng(BW.d2(D.weeks[0]), BW.d2(w[6]));}
+  const w=daysOf(VIEW_WEEK); return rng(BW.d2(w[0]), BW.d2(w[6]));
+ }
+ function renderDayPills(){
+  const host=document.getElementById('wsDays'); if(!host)return;
+  const today=BWUI.api.today;
+  /* 숫자는 지금 보고 있는 모드 기준 — 행사 보기면 그날 행사 수 */
+  /* 달력의 날짜별 숫자는 지금 보고 있는 화면의 것이어야 한다 —
+     뉴스 화면에서 업무 건수를 보여 주면 눌러 보고 '왜 안 맞지?' 하게 된다 */
+  const nwCntOf=day=>NEWS.filter(n=>n.d===day).length;
+  const count=day=>MODE==='event'?evCntOf(day):MODE==='news'?nwCntOf(day):cntOf(day);
+  host.innerHTML=daysOf(VIEW_WEEK).map(day=>{const d=BW.d2(day),g=d.getDay(),we=(g===0?'sun':g===6?'sat':''),n=count(day);
+    return `<button type="button" class="calday ${we} ${n?'':'zero'}" data-day="${day}">
+      <span class="dow">${BW.DOW[d.getDay()]}</span><span class="d">${d.getDate()}</span><span class="cnt">${n}</span>
+      ${day===today?'<span class="ws-dot"></span>':''}</button>`;}).join('');
+  host.dataset.week=VIEW_WEEK; host.dataset.mode=MODE;
+  host.querySelectorAll('.calday').forEach(b=>b.onclick=()=>setDay(b.dataset.day));
+ }
+ function buildDayStrip(){
+  const wrap=document.querySelector('.bw-wrap'); if(!wrap||document.getElementById('wstrip'))return;
+  const chevL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+  const chevR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+  const calIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>';
+  const box=document.createElement('div'); box.id='wstrip'; box.className='wstrip';
+  box.innerHTML=`
+    <div class="ws-nav">
+      <button type="button" class="ws-arrow ws-prev" aria-label="이전">${chevL}</button>
+      <div class="ws-title" id="wsTitle"></div>
+      <button type="button" class="ws-cal" id="wsCalBtn" aria-label="기간 직접 고르기" title="기간 직접 고르기">${calIcon}</button>
+      <button type="button" class="ws-arrow ws-next" aria-label="다음">${chevR}</button>
+    </div>
+    <div class="ws-range" id="wsRange">
+      <div class="wr-row">
+        <label>시작일<input type="date" id="wrFrom" min="${MIND}" max="${MAXD}"></label>
+        <span class="wr-tilde">~</span>
+        <label>종료일<input type="date" id="wrTo" min="${MIND}" max="${MAXD}"></label>
+      </div>
+      <div class="wr-quick" id="wrQuick">
+        <button type="button" data-q="7">최근 1주</button>
+        <button type="button" data-q="30">최근 1개월</button>
+        <button type="button" data-q="90">최근 3개월</button>
+      </div>
+      <div class="wr-act">
+        <button type="button" class="wr-cancel" id="wrCancel">닫기</button>
+        <button type="button" class="wr-go" id="wrGo">이 기간 보기</button>
+      </div>
+    </div>
+    <div class="ws-scopes" id="wsScopes">
+      <button type="button" data-sc="today">오늘</button>
+      <button type="button" data-sc="week">1주</button>
+      <button type="button" data-sc="month">1개월</button>
+      <button type="button" data-sc="all">전체 기간</button>
+    </div>
+    <div class="cal ws-days" id="wsDays"></div>`;
+  wrap.insertBefore(box,wrap.firstChild);
+  box.querySelectorAll('#wsScopes button').forEach(b=>b.onclick=()=>setScope(b.dataset.sc));
+  box.querySelector('.ws-prev').onclick=()=>navPeriod(-1);
+  box.querySelector('.ws-next').onclick=()=>navPeriod(1);
+
+  /* ── 기간 직접 고르기 ── */
+  const panel=box.querySelector('#wsRange'), fromI=box.querySelector('#wrFrom'), toI=box.querySelector('#wrTo');
+  const openRange=o=>{
+   box.classList.toggle('range-open',o);
+   if(o){ const S=BWUI.api.state;
+    /* 열 때는 지금 보고 있는 기간을 그대로 채워 둔다 — 조금만 고쳐 쓰기 좋게 */
+    if(S.scope==='range'&&S.from){ fromI.value=S.from; toI.value=S.to; }
+    else { const w=daysOf(VIEW_WEEK); fromI.value=w[0]; toI.value=w[6]; }
+   }
+  };
+  box.querySelector('#wsCalBtn').onclick=()=>openRange(!box.classList.contains('range-open'));
+  box.querySelector('#wrCancel').onclick=()=>openRange(false);
+  box.querySelectorAll('#wrQuick button').forEach(b=>b.onclick=()=>{
+   const n=+b.dataset.q, end=BW.d2(LASTD), start=new Date(end.getTime()-(n-1)*864e5);
+   fromI.value=BW.ymd(start)<MIND?MIND:BW.ymd(start); toI.value=LASTD;
+  });
+  box.querySelector('#wrGo').onclick=()=>{
+   let a=fromI.value, b=toI.value;
+   if(!a||!b){ BWUI.toast('시작일과 종료일을 모두 골라 주세요'); return; }
+   if(a>b){ const t=a; a=b; b=t; }          /* 거꾸로 고르면 바로잡아 준다 */
+   setRange(a,b); openRange(false);
+  };
+  renderDayPills();
+ }
+
+ /* 키워드 검색 (접이식) — 기간은 위 달력이 맡으므로 여기선 검색어만 */
+ function syncSearchCard(){
+  const card=document.getElementById('psearch'); if(!card)return;
+  const S=BWUI.api.state, text=card.querySelector('#psText');
+  if(S.q){ text.textContent='“'+S.q+'”'; text.classList.add('has'); }
+  else { text.textContent='궁금한 일을 검색해 보세요'; text.classList.remove('has'); }
+  const input=card.querySelector('#psInput');
+  if(document.activeElement!==input && input.value!==(S.q||'')) input.value=S.q||'';
+  /* 검색은 '지금 고른 기간 안에서'만 찾는다 — 어느 기간을 봤는지 몰라 헷갈리지 않게 여기서 알려 주고,
+     아래로 내려가지 않고도 전체 기간으로 넓힐 수 있게 단추를 붙인다. */
+  const sc=card.querySelector('#psScope'); if(!sc)return;
+  if(!S.q){ sc.innerHTML=''; sc.classList.remove('on'); return; }
+  sc.classList.add('on');
+  const n=document.querySelectorAll('#bwCards > .card').length;
+  sc.innerHTML=`<span class="pss-t">${S.scope==='all'?'전체 기간에서':E(calTitle())+' 안에서'} 찾았어요</span>`
+   +(S.scope==='all'?'':`<button type="button" id="psAll">전체 기간에서 찾기</button>`);
+  const b=sc.querySelector('#psAll');
+  if(b)b.onclick=()=>{ setScope('all'); window.scrollTo({top:0,behavior:'smooth'}); };
+ }
+ function buildSearchCard(){
+  const wrap=document.querySelector('.bw-wrap'); if(!wrap||document.getElementById('psearch'))return;
+  const card=document.createElement('div'); card.className='psearch'; card.id='psearch';
+  card.innerHTML=`
+    <button type="button" class="ps-bar" id="psBar">
+      <svg class="ps-mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <span class="ps-text" id="psText">궁금한 일을 검색해 보세요</span>
+    </button>
+    <div class="ps-scope" id="psScope"></div>
+    <div class="ps-panel" id="psPanel">
+      <input type="search" class="ps-input" id="psInput" enterkeyhint="search" placeholder="예: 은어축제, 도로포장, 어르신 교육">
+      <div class="ps-actions">
+        <button type="button" class="ps-reset" id="psReset">지우기</button>
+        <button type="button" class="ps-go" id="psGo">검색</button>
+      </div>
+    </div>`;
+  wrap.insertBefore(card,wrap.firstChild);
+  const S=BWUI.api.state, input=card.querySelector('#psInput');
+  const setOpen=o=>{ card.classList.toggle('open',o); if(o){ input.value=S.q||''; setTimeout(()=>input.focus(),80); } };
+  card.querySelector('#psBar').onclick=()=>setOpen(!card.classList.contains('open'));
+  let t; input.oninput=()=>{ clearTimeout(t); t=setTimeout(()=>{ S.q=input.value.trim(); S.limit=60; BWUI.api.render(); },180); };
+  input.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); clearTimeout(t); S.q=input.value.trim(); BWUI.api.render(); setOpen(false); } };
+  card.querySelector('#psGo').onclick=()=>{ clearTimeout(t); S.q=input.value.trim(); BWUI.api.render(); setOpen(false); };
+  card.querySelector('#psReset').onclick=()=>{ input.value=''; S.q=''; S.limit=60; BWUI.api.render(); };
+  syncSearchCard();
+ }
+
+ /* 필터가 바뀔 때마다 상단(달력·검색·목록 제목)을 실제 상태에 맞춘다 */
+ function syncTopControls(){
+  const S=BWUI.api.state, strip=document.getElementById('wstrip');
+  if(strip){
+   /* 주간 달력(요일)은 1주·날짜 모드에서만. 화살표는 1주·1개월에서 보이고 전체·직접고른기간엔 숨긴다 */
+   strip.classList.toggle('no-days', S.scope==='month'||S.scope==='all'||S.scope==='range');
+   strip.classList.toggle('no-arrows', S.scope==='all'||S.scope==='range');
+   strip.classList.toggle('ranged', S.scope==='range');   /* 달력 아이콘을 켜 둔 상태로 */
+   const ti=strip.querySelector('#wsTitle'); if(ti)ti.textContent=calTitle();
+   const host=strip.querySelector('#wsDays');
+   if(host&&(host.dataset.week!==VIEW_WEEK||host.dataset.mode!==MODE))renderDayPills();
+   /* 버튼은 '보기 단위'로 켠다 — 지난 주/달을 넘겨 봐도 그 단위 버튼이 켜진 채 타이틀만 바뀐다 */
+   strip.querySelectorAll('#wsScopes button').forEach(b=>{
+    /* 오늘 날짜를 보고 있으면 '오늘'을, 그 밖의 날짜·주간이면 '1주'를 켠다 */
+    const isToday=S.scope==='day'&&S.day===BWUI.api.today;
+    const on=(b.dataset.sc==='today'&&isToday)
+          || (b.dataset.sc==='week'&&!isToday&&(S.scope==='week'||S.scope==='day'))
+          || (b.dataset.sc==='month'&&S.scope==='month')
+          || (b.dataset.sc==='all'&&S.scope==='all');
+    b.classList.toggle('on',on);
+   });
+   strip.querySelectorAll('.calday').forEach(b=>b.classList.toggle('on',S.scope==='day'&&b.dataset.day===S.day));
+   /* 화살표 끝단 처리 — 1개월 모드면 달 목록, 아니면 주 목록 기준 */
+   const pv=strip.querySelector('.ws-prev'), nx=strip.querySelector('.ws-next');
+   if(S.scope==='month'){ const i=MONTHS.indexOf(S.month); if(pv)pv.disabled=i<=0; if(nx)nx.disabled=i>=MONTHS.length-1; }
+   else { const i=WEEKS.indexOf(VIEW_WEEK); if(pv)pv.disabled=i<=0; if(nx)nx.disabled=i>=WEEKS.length-1; }
+  }
+  syncSearchCard();
+  const listh=document.querySelector('#bwInfo .listh');
+  if(listh){
+   let t;
+   if(S.scope==='day') t=(S.day===BWUI.api.today?'오늘':dLabel(S.day))+' 봉화의 소식은?';
+   else if(S.scope==='range') t='고른 기간의 봉화 소식은?';
+   else if(S.scope==='month'){const[y,m]=S.month.split('-');t=`${+y}년 ${+m}월 봉화의 소식은?`;}
+   else if(S.scope==='all') t='전체 봉화의 소식은?';
+   else t=(VIEW_WEEK===D.weekStart?'이번 주':weekLabel(VIEW_WEEK))+' 봉화의 소식은?';
+   listh.textContent=t;
+  }
+  /* 고시·공고는 갈래 탭의 세 번째 칸이 그린다 — 여기서 또 붙이면 두 번 나온다 */
+  if(MODE==='event'&&BWUI.api.state.scope==='month')renderMonthCal();   /* 고른 날짜 표시 갱신 */
+  renderEvents();          /* 행사 보기일 때 그 기간 행사 목록 */
+  renderNews();            /* 뉴스도 같은 기간·검색을 따른다 */
+  syncHero(); syncTabBar();   /* 요약 숫자(모드별)·하단 탭 상태 */
+ }
+
+ /* ── 내용 카테고리 규칙 [이름, 아이콘, 정규식] (위에서부터 먼저 맞는 하나) ── */
+ const NCATS=[
+  ['채용·일자리','💼',    /채용|임용|공무직|기간제|근로자|일자리|인력\s*모집|시험 시행/i],
+  ['모집·교육·공모','🎓', /모집|참가자|참여자|수강생|교육생|공모|선발|수강|신청.?접수/i],
+  ['입찰·용역','🧾',     /입찰|낙찰|계약|용역|수의계약|적격심사|제안서|개찰|추정가격|구입|임대 설치/i],
+  ['재산·세금·보상','💰', /보상|수용|감정평가|편입|손실|지방세|지방소득세|체납|공매|압류|매각|조정금|공시지가|개별주택가격|지가|납부기한|기한연장|재산세|세외수입/i],
+  ['도시·도로·건축','🏗️', /도시계획|군관리계획|지구단위|개발행위|실시계획|건축|지적|지목|측량|용도지역|경관|마을만들기|도로명주소|도로명|통행제한|도로\s*구역|도로구간|노선|시행계획|조성사업|시설사업|완료 공고|농촌중심지|농촌용수|공공청사|매장유산/i],
+  ['농림·환경·에너지','🌱', /농지|농업|산림|임야|환경|폐기물|태양광|발전|하천|수질|저수지|방제|재선충|축산|비닐|전기자동차|전기차|햇빛소득|방지시설|소규모 사업장|드론/i],
+  ['재해·안전','⚠️',    /재해|재난|시설물|안전|붕괴|위험|CCTV|방범|점검/i],
+  ['인허가·처분','📋',   /인가|허가|등록|말소|지정|승인|양수|양도|신고|행정처분|공시송달|공시 송달|원상|대집행|계고|과태료|이행강제금|위반|단속|행정예고|시정|폐업|무단방치|견인|폐차/i],
+ ];
+ function ncat(title){ for(const c of NCATS){ if(c[2].test(title)) return c[0]; } return '기타 안내'; }
+ const NCAT_ICON={'기타 안내':'📄'}; NCATS.forEach(c=>NCAT_ICON[c[0]]=c[1]);
+
+ /* ── 고시·공고는 누구를 위한 것인가 [이름, 아이콘, 정규식] — 여러 대상에 걸칠 수 있음 ──
+    이름을 이번 주 소식과 똑같은 일곱 갈래(캐릭터)로 맞춘다.
+    한쪽은 '사업자·업체', 다른 쪽은 '소상공인' 이면 같은 사람을 두 이름으로 부르는 셈이다.
+    어디에도 안 걸리는 것은 '주민 누구나' 로 간다. */
+ const NTGTS=[
+  ['어르신','🧓',         /노인|경로|어르신|치매|장기요양|고령|정년|노령/i],
+  ['아이·청소년','🧒',    /어린이|아동|청소년|유아|보육|어린이집|유치원|학교|학생|급식/i],
+  ['여성·가족','👨‍👩‍👧',    /여성|다문화|가족|출산|임신|육아|산모|한부모|결혼/i],
+  ['농업인','🧑‍🌾',       /농지|농업|산림|임야|축산|재선충|방제|농촌|영농|작물|가축/i],
+  ['청년','🧑',           /청년|대학생|취업준비|창업 지원|신혼/i],
+  ['소상공인','🏪',       /입찰|낙찰|용역|계약|수의계약|제안서|인가|허가|등록|말소|폐업|양수|양도|전기사업|발전소|공장|업체|사업자|제조|판매|영업|상인|시장|소상공/i],
+ ];
+ function ntgts(title){ const a=NTGTS.filter(t=>t[2].test(title)).map(t=>t[0]); return a.length?a:['주민 누구나']; }
+ const NTGT_ICON={'주민 누구나':'👥'}; NTGTS.forEach(t=>NTGT_ICON[t[0]]=t[1]);
+
+ /* 고시·공고를 '이슈'처럼 감싸 — 이번 주 소식과 같은 알림(.ics) 로직을 그대로 재사용한다.
+    본문 줄을 lines[]로 넣어 두면 BW.parseDateRange가 "접수기간:", "채용기간:" 같은
+    줄에서 날짜를 그대로 찾아낸다(주간 소식과 동일한 방식). */
+ function noticeAsIssue(n){
+  const lines=(n.body||'').split('\n').map(t=>t.trim()).filter(Boolean).map(txt=>({txt}));
+  const item={title:n.title,lines};
+  return {_id:'notice:'+n.id, title:n.title, dept:n.dept, list:[{item,week:n.date}],
+    _icsNote:'봉화군 고시·공고 안내\n공식 페이지에서 원문을 다시 한 번 확인해 주세요.'};
+ }
+
+ /* ── 고시·공고 상세 모달 — 이번 주 소식 상세와 같은 구성
+    (⭐는 제목 옆, 🔔 알림 받기 + 📞 문의, 🔗 공유, 📄 원문 보기) ── */
+ function noticeModal(n,viewBase){
+  AV('고시공고상세','고시:'+n.id,n.title);
+  const url=viewBase+'?notAncmtMgtNo='+n.id+'&mid=0201030000';
+  const nIss=noticeAsIssue(n);
+  const canRemind=!!buildICS([nIss]);
+  const tel=phoneOf(n.dept)||'054-679-6114';
+  const on=!!fav['n:'+n.id];
+  let m=document.getElementById('noticeModal');
+  if(!m){m=document.createElement('div');m.id='noticeModal';m.className='modal';document.body.appendChild(m)}
+  m.innerHTML=`<div class="mbox">
+    <h2>고시·공고 상세</h2>
+    <div style="padding:2px 18px 4px">
+     <div class="nr-top" style="margin-bottom:8px"><span class="nkind nk-cat">${E(n._cat||ncat(n.title))}</span><span class="nr-date">${E(n.date)}</span></div>
+     <div style="display:flex;gap:8px;align-items:flex-start">
+      <div style="font-size:16px;font-weight:700;line-height:1.45;flex:1">${E(n.title)}</div>
+      <button class="iconb ${on?'on':''}" id="ntFav" title="관심">${on?'★':'☆'}</button>
+     </div>
+     <div class="note" style="padding:8px 0 2px">${E(n.dept)} · ${E(n.num)}</div>
+     ${n.body?`<div class="ntbody">${E(n.body)} …</div>`:''}
+     <div class="note" style="padding:6px 0 2px">일부 내용입니다. 전체 내용·첨부파일은 봉화군 공식 페이지에서 확인하세요.</div>
+    </div>
+    <div style="padding:8px 18px 2px"><a class="callbtn" href="${url}" target="_blank" rel="noopener">📄 봉화군에서 원문·첨부 보기</a></div>
+    <div style="padding:6px 18px 2px;display:flex;flex-direction:column;gap:8px">
+     <div style="display:flex;gap:8px">
+      ${canRemind?`<button class="callbtn" id="ntRemind" style="flex:1;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔔 알림 받기</button>`:''}
+      <a class="callbtn" href="tel:${tel}" style="flex:1">📞 문의</a>
+     </div>
+     <button class="callbtn" id="ntShare" style="background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔗 공유</button>
+    </div>
+    <div class="mfoot"><span style="flex:1"></span><button id="ntClose">닫기</button></div>
+  </div>`;
+  m.classList.add('open');
+  const close=()=>m.classList.remove('open');
+  m.querySelector('#ntClose').onclick=close;
+  m.onclick=e=>{if(e.target===m)close()};
+  /* 알림받기는 헤더가 아니라 여기, 본문을 보는 자리에서 — 관심에 담으면 목록에서도 ★로 표시된다 */
+  m.querySelector('#ntFav').onclick=()=>{
+   const key='n:'+n.id;
+   AA(fav[key]?'관심빼기':'관심담기','고시:'+n.id,n.title);
+   if(fav[key])delete fav[key]; else fav[key]={at:BW.ymd(new Date())};
+   saveFav(); noticeModal(n,viewBase); renderNoticeSection();
+  };
+  const rb=m.querySelector('#ntRemind');
+  if(rb)rb.onclick=()=>{
+   const key='n:'+n.id; if(!fav[key]){fav[key]={at:BW.ymd(new Date())};saveFav();renderNoticeSection()}
+   calModal([nIss],'봉화군_'+n.title.replace(/[^가-힣0-9a-zA-Z]/g,'').slice(0,14));
+  };
+  m.querySelector('#ntShare').onclick=()=>{
+   AA('공유_누름','고시:'+n.id,n.title);
+   const text=`[봉화군 ${n.kind}] ${n.title}`;
+   nativeShare({title:'봉화군 '+n.kind,text,url},url);
+  };
+ }
+
+ /* ── 고시·공고를 이번 주 소식과 한 목록에 섞는다 (탭 전환 없음) ──
+    BWUI가 자기 카드(#bwCards)를 그린 뒤(onRender), 지금 필터(기간·검색·주제·대상·관심)에
+    맞는 고시·공고만 그 아래 이어 붙인다. 주제·대상은 위에서 정의한 합친 축을 그대로 쓴다.
+    (NOTICES·ntLimit·ntSig 는 BWUI.start 앞에서 선언됨) */
+ function buildNotices(){
+  const ND=window.BW_NOTICES||{};
+  NOTICES=(ND.items||[]).map(n=>({...n,_cat:ncat(n.title),_tgts:ntgts(n.title)}));
+  NOTICES._viewBase=ND.viewBase||'https://www.bonghwa.go.kr/portal/saeol/gosi/view.do';
+  NOTICES._months=ND.months||3;
+ }
+ function noticeMatches(){
+  if(!NOTICES||!NOTICES.length)return [];
+  const S=BWUI.api.state, q=(S.q||'').toLowerCase();
+  const inScope=n=>inPeriod(n.date);   /* 기간 규칙은 inPeriod 한 곳에만 */
+  const topicE=S.axis.topic&&MERGED_TOPICS.find(x=>x[0]===S.axis.topic);
+  const audE=S.axis.aud&&MERGED_AUD.find(x=>x[0]===S.axis.aud);
+  return NOTICES.filter(n=>
+   inScope(n)
+   && (!q || (n.title+' '+n.dept+' '+n.num+' '+(n.body||'')).toLowerCase().includes(q))
+   && (!topicE || topicE[3].includes(n._cat))
+   && (!audE || audE[3].some(t=>n._tgts.includes(t)))
+   && (S.custom!=='fav' || !!fav['n:'+n.id])
+  );
+ }
+ function renderNoticeSection(host,mode){
+  /* 갈래 탭이 켜져 있으면 엔진이 [고시·공고] 탭에서 host 를 넘겨 부른다.
+     mode==='recent' 는 고른 기간에 공고가 없을 때 최근 것 30건을 대신 보여 준다. */
+  const box=host||document.getElementById('bwCards'); if(!box||!NOTICES)return;
+  document.getElementById('ntSection')?.remove();   /* 이전 렌더에서 붙인 것 제거 후 다시 붙인다 */
+  const S=BWUI.api.state;
+  const sig=JSON.stringify([S.scope,S.day,S.month,S.q,S.axis.topic,S.axis.aud,S.custom,mode]);
+  if(sig!==ntSig){ntLimit=30;ntSig=sig;}
+  const rows=mode==='recent'
+   ? NOTICES.slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,30)
+   : noticeMatches();
+  if(!rows.length)return;
+  const sec=document.createElement('div'); sec.id='ntSection';
+  const div=document.createElement('div'); div.className='feed-divider';
+  div.textContent=mode==='recent'?`📢 최근 고시·공고 ${rows.length}건`:`📢 관련 고시·공고 ${rows.length}건`;
+  sec.appendChild(div);
+  const list=document.createElement('div'); list.className='cards';
+  rows.slice(0,ntLimit).forEach(n=>{
+   const d=n.date.split('-').map(Number).join('.')+'.';
+   const el=document.createElement('div'); el.className='card';
+   const on=!!fav['n:'+n.id];
+   el.innerHTML=`
+    <div class="top">
+     <h3>${E(n.title)}</h3>
+     <div class="acts"><button class="iconb ${on?'on':''}" title="관심">${on?'★':'☆'}</button></div>
+    </div>
+    <div class="tagrow"><span class="tag type" style="cursor:default">${NCAT_ICON[n._cat]||'📄'} ${E(n._cat)}</span></div>
+    <div class="meta">${d} · ${E(n.dept)}</div>`;
+   el.querySelector('h3').onclick=()=>noticeModal(n,NOTICES._viewBase);
+   el.querySelector('.iconb').onclick=e=>{
+    e.stopPropagation();
+    const key='n:'+n.id; if(fav[key])delete fav[key]; else fav[key]={at:BW.ymd(new Date())};
+    saveFav(); BWUI.api.render();
+   };
+   list.appendChild(el);
+  });
+  sec.appendChild(list);
+  if(rows.length>ntLimit){
+   const more=document.createElement('button'); more.className='morebtn';
+   more.textContent=`${rows.length-ntLimit}건 더 보기`;
+   more.onclick=()=>{ntLimit+=60;BWUI.api.render()};
+   sec.appendChild(more);
+  }
+  box.appendChild(sec);
+ }
+
+ function setMode(m){
+  if(m!==MODE)AV(m==='event'?'주간행사':m==='news'?'봉화뉴스':'주간업무');
+  MODE=m;
+  document.body.classList.toggle('mode-event',m==='event');
+  document.body.classList.toggle('mode-news',m==='news');
+  if(m==='news'){ markNewsSeen(); }
+  document.querySelectorAll('#modetabs button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  /* 기간은 셋이 함께 쓰므로, 화면을 옮긴다고 사용자가 고른 기간을 건드리지 않는다.
+     (예전에는 행사로 넘어갈 때 강제로 '그날'로 바꿨는데, 공통 기간에서는 자리를 빼앗는 셈이 된다) */
+  renderEvents(); renderNews();
+  renderDayPills();                              /* 숫자를 그 모드 기준으로 다시 */
+  applySpanUI(); renderMonthCal();
+  syncTopControls();
+  window.scrollTo({top:0,behavior:'smooth'});
+ }
+ function buildModeTabs(){
+  const wrap=document.querySelector('.bw-wrap'); if(!wrap||document.getElementById('modetabs'))return;
+  const el=document.createElement('div'); el.className='modetabs'; el.id='modetabs';
+  el.innerHTML=`
+    <button type="button" data-m="work" class="on">📋 새소식</button>`
+    +(EV.length?`<button type="button" data-m="event">🎪 행사</button>`:'')
+    +(NEWS.length?`<button type="button" data-m="news">📰 언론속봉화</button>`:'');
+  wrap.insertBefore(el,wrap.firstChild);
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+ }
+ /* ═══ 뒤로가기로 팝업만 닫기 ═══
+    안드로이드 뒤로가기는 기본이 '이전 페이지로'라, 상세 팝업을 열어 둔 채 누르면
+    앱이 통째로 꺼져 버린다. 팝업이 열릴 때 방문기록을 한 칸 밀어 넣어 두고,
+    뒤로가기가 오면 그 칸을 소비하며 맨 위 팝업만 닫는다. */
+ (function backClosesOverlay(){
+  const opens=()=>[...document.querySelectorAll('#bwSheet.open, .modal.open')];
+  let pushed=false, byBack=false;
+  function closeTop(){
+   const ms=[...document.querySelectorAll('.modal.open')];
+   if(ms.length){ ms[ms.length-1].classList.remove('open'); return; }   /* 위에 덮인 것부터 */
+   const sh=document.getElementById('bwSheet');
+   if(sh&&sh.classList.contains('open')){
+    const x=document.getElementById('bwShClose');
+    if(x)x.click(); else sh.classList.remove('open');
+   }
+  }
+  new MutationObserver(()=>{
+   const n=opens().length;
+   if(n>0&&!pushed){ pushed=true; history.pushState({bwOverlay:1},''); }
+   else if(n===0&&pushed){ pushed=false; if(!byBack)history.back(); byBack=false; }
+  }).observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});
+  addEventListener('popstate',()=>{
+   if(opens().length){ pushed=false; byBack=true; closeTop(); }
+  });
+ })();
+
+ /* ── 파비콘(브라우저 탭 아이콘)은 매일 오늘 날짜로 다시 그린다 ──
+    바탕화면에 만든 바로가기는 OS가 만든 그때의 그림을 계속 쓰므로 날짜가 고정된다.
+    화면 안에서 쓰는 이 아이콘만이라도 오늘 날짜를 보여 준다. */
+ function paintFavicon(){
+  const d=BW.d2(BWUI.api.today).getDate();
+  fetch('icon.svg').then(r=>r.text()).then(svg=>{
+   /* 달력 숫자만 오늘 날짜로 바꿔 끼운다 */
+   const out=svg.replace(/(text-anchor="middle">)(\d{1,2})(<\/text>)\s*<\/g>/, `$1${d}$3</g>`);
+   const url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(out);
+   let l=document.querySelector('link[rel="icon"]');
+   if(!l){ l=document.createElement('link'); l.rel='icon'; document.head.appendChild(l); }
+   l.type='image/svg+xml'; l.href=url;
+  }).catch(()=>{});
+ }
+
+ /* ── 바탕화면 바로가기 ──
+    안드로이드 계열은 브라우저가 '설치' 창을 띄워 줄 수 있고(미리 받아 둔 __installPrompt),
+    아이폰 사파리는 그런 기능이 없어 직접 누르는 방법을 그림처럼 알려 주는 수밖에 없다.
+    이미 바탕화면에서 연 상태(standalone)면 버튼을 숨긴다. */
+ const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+ const isiOS=/iPhone|iPad|iPod/i.test(UA);
+ const isSamsung=/SamsungBrowser/i.test(UA);   /* 설치창을 안 띄우고 메뉴로만 만들 수 있다 */
+ function howToModal(){
+  AV('사용안내');
+  let m=document.getElementById('a2hs');
+  if(!m){m=document.createElement('div');m.id='a2hs';m.className='modal';document.body.appendChild(m)}
+  /* 브라우저마다 메뉴 위치·이름이 달라 그대로 알려 줘야 한다.
+     특히 삼성 인터넷은 설치창을 띄우는 기능을 제공하지 않아 메뉴로만 만들 수 있다. */
+  const steps = isiOS
+   ? `<li>아래 가운데 <b>공유 <span class="a2-ic">⬆️</span></b> 단추를 누르세요</li>
+      <li>목록을 내려 <b>홈 화면에 추가</b>를 누르세요</li>
+      <li>오른쪽 위 <b>추가</b>를 누르면 끝!</li>`
+   : isSamsung
+   ? `<li>화면 <b>맨 아래 오른쪽 ≡ 메뉴</b>를 누르세요</li>
+      <li><b>현재 페이지 추가</b>를 누르세요</li>
+      <li><b>홈 화면</b>을 고르면 끝!</li>`
+   : `<li>오른쪽 위 <b>⋮ 메뉴</b>를 누르세요</li>
+      <li><b>홈 화면에 추가</b>(또는 앱 설치)를 누르세요</li>
+      <li><b>추가</b>를 누르면 끝!</li>`;
+  m.innerHTML=`<div class="mbox">
+    <h2>바탕화면에 바로가기 만들기</h2>
+    <div class="note">한 번 만들어 두면 다음부터는 <b>바탕화면 아이콘</b>만 눌러 바로 들어올 수 있어요.
+      ${isiOS?'':'<br><span style="color:var(--sub)">이미 만들어 두셨다면 바탕화면에서 아이콘을 찾아 주세요.</span>'}</div>
+    <ol class="a2-steps">${steps}</ol>
+    ${isKakao?`<div class="note" style="color:var(--warn)">카카오톡 안에서는 만들 수 없어요. 아래 [기본 브라우저로 열기]를 누른 뒤 다시 해 주세요.</div>
+      <div style="padding:4px 18px 0"><button class="callbtn" id="a2Ext" style="width:100%">🌐 기본 브라우저로 열기</button></div>`:''}
+    <div class="mfoot"><span style="flex:1"></span><button id="a2Close">닫기</button></div>
+  </div>`;
+  m.classList.add('open');
+  const close=()=>m.classList.remove('open');
+  m.querySelector('#a2Close').onclick=close;
+  m.onclick=e=>{if(e.target===m)close()};
+  /* 설치 신호가 늦게 도착하면 안내를 접고 '한 번에 추가' 단추로 바꾼다 */
+  if(!isiOS)window.__installWaiters.push(()=>{
+   if(!m.classList.contains('open'))return;
+   const box=m.querySelector('.mbox');
+   box.innerHTML=`<h2>바탕화면에 바로가기 만들기</h2>
+     <div class="note">준비됐어요. 아래를 누르면 바로 추가됩니다.</div>
+     <div style="padding:8px 18px 2px"><button class="callbtn" id="a2Go" style="width:100%">📲 바탕화면에 추가</button></div>
+     <div class="mfoot"><span style="flex:1"></span><button id="a2Close2">닫기</button></div>`;
+   box.querySelector('#a2Close2').onclick=close;
+   box.querySelector('#a2Go').onclick=async()=>{
+    const p=window.__installPrompt; if(!p)return;
+    close(); await runInstall(p);
+   };
+  });
+  const ext=m.querySelector('#a2Ext');
+  if(ext)ext.onclick=()=>{ const u=location.origin+location.pathname.replace(/index\.html$/,'');
+    location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(u+'?add=1'); };
+ }
+ /* 설치창이 아직 안 왔으면 잠깐(최대 1.2초) 기다렸다 받는다 — 눌렀는데 안내창으로 새지 않도록 */
+ function waitInstall(ms){
+  return new Promise(res=>{
+   if(window.__installPrompt)return res(window.__installPrompt);
+   if(isiOS)return res(null);                       /* 아이폰은 기다려도 오지 않는다 */
+   let done=false;
+   const f=e=>{ if(!done){done=true;res(e)} };
+   window.__installWaiters.push(f);
+   setTimeout(()=>{ if(!done){done=true;res(window.__installPrompt||null)} },ms);
+  });
+ }
+ /* 설치창을 실제로 띄운다 */
+ async function runInstall(p){
+  try{ p.prompt(); const r=await p.userChoice;
+    window.__installPrompt=null;
+    BWUI.toast(r&&r.outcome==='accepted'?'바탕화면에 추가했어요':'취소했어요 — 필요하면 다시 눌러 주세요');
+    return true;
+  }catch(e){ return false; }
+ }
+ /* 카카오톡에서 넘어오자마자 뜨는 '한 번 누르면 추가' 창.
+    설치창(prompt)은 사용자가 직접 누른 순간에만 열 수 있어서, 자동으로 띄울 수는 없다.
+    그래서 버튼 하나만 크게 띄워 탭 한 번으로 끝나게 한다. */
+ function installSheet(from){
+  AV('설치안내');
+  if(isStandalone())return;
+  let m=document.getElementById('a2go');
+  if(!m){m=document.createElement('div');m.id='a2go';m.className='modal';document.body.appendChild(m)}
+  const lead = from==='공유링크'
+    ? '이 소식을 보내 주신 <b>오늘의 봉화</b>입니다. 아래를 한 번 누르면 바탕화면에 만들어져, 다음부터는 아이콘만 눌러 들어옵니다.'
+    : '아래를 한 번 누르면 <b>오늘의 봉화</b>가 바탕화면에 만들어집니다.';
+  m.innerHTML=`<div class="mbox">
+    <h2>바탕화면에 추가</h2>
+    <div class="note">${lead}</div>
+    <div style="padding:8px 18px 2px"><button class="callbtn" id="a2Now" style="width:100%">📲 바탕화면에 추가</button></div>
+    <div class="mfoot"><span style="flex:1"></span><button id="a2NoNow">나중에</button></div>
+  </div>`;
+  m.classList.add('open');
+  const close=()=>m.classList.remove('open');
+  m.querySelector('#a2NoNow').onclick=close;
+  m.onclick=e=>{if(e.target===m)close()};
+  m.querySelector('#a2Now').onclick=async()=>{
+   AA('설치권유_수락',from||'');
+   const p=window.__installPrompt||await waitInstall(3000);
+   close();
+   if(p)await runInstall(p); else howToModal();
+  };
+ }
+ /* ── 설치 권유 ──
+    링크를 받은 분께 한 번만 권한다. [나중에]를 두 번 고르면 다시 띄우지 않는다.
+    (설치 자체는 사용자가 버튼을 눌러야 열린다 — 자동 설치는 어느 브라우저도 허용하지 않는다) */
+ const A2K='bhlab.a2h.n';
+ function offerInstall(from){
+  if(isStandalone())return;                    /* 이미 바탕화면에서 열고 있음 */
+  let n=0; try{ n=+(localStorage.getItem(A2K)||0) }catch(e){}
+  if(n>=2)return;                              /* 두 번 사양했으면 그만 권한다 */
+  try{ localStorage.setItem(A2K,n+1) }catch(e){}
+  AA('설치권유',from);
+  setTimeout(()=>installSheet(from),1300);     /* 보러 온 소식을 먼저 보여 준 뒤 */
+ }
+ async function addToHome(){
+  if(isStandalone()){ BWUI.toast('이미 바탕화면에서 열고 있어요'); return; }
+  /* 설치 신호는 서비스워커 등록 뒤에 오므로 조금 넉넉히 기다린다 */
+  const p=await waitInstall(2500);
+  if(p && await runInstall(p))return;
+  howToModal();                            /* 그래도 없으면(아이폰 등) 방법을 안내 */
+ }
+
+ function profModal(){
+  AV('맞춤설정');
+  let m=document.getElementById('profModal');
+  if(!m){m=document.createElement('div');m.id='profModal';m.className='modal';document.body.appendChild(m)}
+  const auds=MERGED_AUD.map(x=>x[0]).filter(x=>x!=='주민 누구나');
+  const icons={};MERGED_AUD.forEach(x=>icons[x[0]]=x[1]);
+  m.innerHTML=`<div class="mbox">
+    <h2>내 소식 맞춤 설정</h2>
+    <div class="note">고르신 내용은 <b>이 휴대폰에만</b> 저장되고 어디에도 전송되지 않아요.
+      해당하는 소식을 목록 위쪽에 올려 드립니다.</div>
+    <div class="pf-lab">저는 이런 사람이에요 <span>(여러 개 고를 수 있어요)</span></div>
+    <div class="pf-grid" id="pfAud">${auds.map(a=>
+      `<button type="button" data-a="${E(a)}" class="${PROF.aud.includes(a)?'on':''}">${audIcon(a,icons[a])} ${E(a)}</button>`).join('')}</div>
+    <div class="pf-lab">사는 곳</div>
+    <div class="pf-grid" id="pfReg">${['','봉화읍','물야면','봉성면','법전면','춘양면','소천면','석포면','재산면','명호면','상운면']
+      .map(r=>`<button type="button" data-r="${E(r)}" class="${PROF.region===r?'on':''}">${r||'선택 안 함'}</button>`).join('')}</div>
+    <div class="mfoot">
+      <button id="pfClear">지우기</button><span style="flex:1"></span>
+      <button class="pri" id="pfSave">저장</button>
+    </div>
+  </div>`;
+  m.classList.add('open');
+  const close=()=>m.classList.remove('open');
+  m.onclick=e=>{if(e.target===m)close()};
+  m.querySelectorAll('#pfAud button').forEach(b=>b.onclick=()=>{
+   const a=b.dataset.a; const i=PROF.aud.indexOf(a);
+   if(i<0)PROF.aud.push(a); else PROF.aud.splice(i,1);
+   b.classList.toggle('on',i<0);
+  });
+  m.querySelectorAll('#pfReg button').forEach(b=>b.onclick=()=>{
+   PROF.region=b.dataset.r;
+   m.querySelectorAll('#pfReg button').forEach(x=>x.classList.toggle('on',x.dataset.r===PROF.region));
+  });
+  m.querySelector('#pfClear').onclick=()=>{ PROF={aud:[],region:''}; saveProf(); document.body.classList.remove('profon'); close(); BWUI.api.render(); BWUI.toast('맞춤 설정을 지웠어요'); };
+  m.querySelector('#pfSave').onclick=()=>{ saveProf(); document.body.classList.toggle('profon',profOn()); close(); BWUI.api.render();
+    BWUI.toast(profOn()?'내게 맞는 소식을 위로 올렸어요':'맞춤 설정 없이 보여 드릴게요'); };
+ }
+
+ /* ── 글씨 크기 3단계 — 기본이 이미 '크게'이고, 두 단계 더 키울 수 있다.
+    고른 값은 이 기기에 기억해 다음에 열 때도 그대로. ── */
+ const BIGKEY='bhlab.fontsize';
+ const FS_LABEL=['가','가⁺','가⁺⁺'];        /* 지금 글씨 크기 단계 */
+ const FS_TOAST=['글씨를 기본 크기로 되돌렸어요','글씨를 한 단계 키웠어요','글씨를 가장 크게 키웠어요'];
+ let fsLevel=0;
+ function applyFs(n){
+  fsLevel=Math.max(0,Math.min(2,+n||0));
+  document.body.classList.toggle('fs1',fsLevel===1);
+  document.body.classList.toggle('fs2',fsLevel===2);
+  /* 설정 시트가 열려 있으면 고른 단계를 표시해 준다 (아직 안 열었으면 그릴 때 맞춰진다) */
+  document.querySelectorAll('#moreModal [data-fs]').forEach(x=>
+   x.classList.toggle('on',+x.dataset.fs===fsLevel));
+ }
+ function toggleBig(){                      /* 기본 → 더크게 → 가장크게 → 기본 */
+  applyFs((fsLevel+1)%3);
+  try{localStorage.setItem(BIGKEY,String(fsLevel))}catch(e){}
+  BWUI.toast(FS_TOAST[fsLevel]);
+ }
+
+ /* ── 설정 시트 — 헤더에 있던 [바로가기 설치·글씨 크기·맞춤 설정] 을 여기로 모았다.
+      헤더를 한 줄로 줄여, 화면을 열면 바로 메뉴를 고를 수 있게 하려는 것.
+      사용 안내(가이드)도 탭 한 칸을 쓰기보다 여기 두는 편이 낫다. ── */
+ function moreModal(){
+  AV('설정');
+  let m=document.getElementById('moreModal');
+  if(!m){ m=document.createElement('div'); m.id='moreModal'; m.className='modal'; document.body.appendChild(m); }
+  m.innerHTML=`<div class="mbox">
+    <h2>설정</h2>
+    <div class="mo-lab">글씨 크기</div>
+    <div class="mo-fs" id="moFs">
+      <button type="button" data-fs="0">가<small>보통</small></button>
+      <button type="button" data-fs="1">가<small>크게</small></button>
+      <button type="button" data-fs="2">가<small>아주 크게</small></button>
+    </div>
+    <div class="mo-lab">그 밖에</div>
+    <div class="mo-list">
+      <button type="button" id="moreA2"><span class="mo-ic">📲</span>
+        <span class="mo-tx"><b>바탕화면에 바로가기 만들기</b>
+        <small>휴대폰 첫 화면에서 앱처럼 바로 열 수 있어요</small></span></button>
+      <button type="button" id="morePf"><span class="mo-ic">🙋</span>
+        <span class="mo-tx"><b>내 소식 맞춤 설정</b>
+        <small>나에게 해당하는 소식을 위로 올려 드려요</small></span></button>
+      <button type="button" id="moreGd"><span class="mo-ic">📖</span>
+        <span class="mo-tx"><b>사용 안내</b>
+        <small>이 앱을 어떻게 쓰는지 그림으로 알려 드려요</small></span></button>
+    </div>
+    <div class="mfoot"><span style="flex:1"></span><button class="pri" id="moClose">닫기</button></div>
+  </div>`;
+  m.classList.add('open');
+  const close=()=>{ m.classList.remove('open'); syncTabBar(); };
+  m.onclick=e=>{ if(e.target===m)close() };
+  m.querySelector('#moClose').onclick=close;
+  m.querySelectorAll('#moFs button').forEach(b=>b.onclick=()=>{
+   applyFs(+b.dataset.fs);
+   try{ localStorage.setItem(BIGKEY,String(fsLevel)) }catch(e){}
+   AA('설정','글씨크기'+fsLevel);
+   BWUI.toast(FS_TOAST[fsLevel]);
+  });
+  m.querySelector('#moreA2').onclick=()=>{ AA('설정','바로가기'); close(); addToHome(); };
+  m.querySelector('#morePf').onclick=()=>{ AA('설정','맞춤설정'); close(); profModal(); };
+  m.querySelector('#moreGd').onclick=()=>{ AA('설정','사용안내'); close(); guideModal(); };
+  applyFs(fsLevel);                    /* 지금 고른 단계를 켠 상태로 보여 준다 */
+  /* 뒤로가기로 닫혔을 때도 아래 탭 표시가 따라오도록 */
+  new MutationObserver(()=>syncTabBar()).observe(m,{attributes:true,attributeFilter:['class']});
+ }
+
+ /* ── 히어로: 이번 주 요약 (디자인 지정) — 숫자는 실제 데이터에서 센다 ── */
+ function buildHero(){
+  const wrap=document.querySelector('.bw-wrap'); if(!wrap||document.getElementById('hero'))return;
+  const el=document.createElement('div'); el.className='hero'; el.id='hero';
+  /* 차례: 모드탭 → 검색 → 기간 → 히어로 → 목록.
+     메뉴 바로 밑에 검색·기간을 두어, 어느 화면에서든 같은 자리에서 좁힐 수 있게 한다. */
+  const strip=document.getElementById('wstrip');
+  const tabs=document.getElementById('modetabs');
+  wrap.insertBefore(el, strip? strip.nextSibling : (tabs?tabs.nextSibling:wrap.firstChild));
+  syncHero();
+ }
+ /* ── 첫 화면 요약 ──
+    예전에는 '이번 주 93개 소식'이라고 했는데, 그 93은 군청이 한 일의 개수라
+    군민에게는 뜻이 없었다(66건 중 신청·참여할 수 있는 것은 18건뿐).
+    그래서 '내가 할 수 있는 일'과 '언제까지인지'를 말하도록 바꾼다. */
+ function heroNums(days){
+  const wk=BWUI.api.issues.filter(i=>i.list.some(o=>o.week===VIEW_WEEK));
+  const today=BWUI.api.today;
+  let open=0, soon=0;
+  wk.forEach(i=>{
+   const c=tag(i);
+   if(c.score>0)open++;                       /* 군민이 신청·참여할 수 있는 일 */
+   const r=BW.parseDateRange(c.item,c.week);  /* 마감이 이 주 안에 남아 있는 일 */
+   if(r&&r.end&&days.indexOf(r.end)>=0&&r.end>=today)soon++;
+  });
+  return {work:wk.length, open, soon};
+ }
+ /* ── 요약 카드 — 화면마다 말하는 것이 다르다 ──
+    같은 자리에 같은 모양으로 두되, 문구와 숫자는 그 화면이 답해야 할 질문에 맞춘다.
+      새소식   : 내가 신청할 수 있는 일이 몇 개인가
+      행사     : 이 기간에 갈 만한 행사가 몇 개인가
+      언론속봉화: 오늘 새로 올라온 소식이 몇 개인가
+    기간은 맨 위 공통 UI를 따르므로, 기간을 바꾸면 세 화면의 숫자가 함께 움직인다. */
+ function syncHero(){
+  const el=document.getElementById('hero'); if(!el)return;
+  const today=BWUI.api.today, P=periodWord();
+  const days=daysOf(VIEW_WEEK), a=BW.d2(days[0]), b=BW.d2(days[6]);
+  const f=d=>`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+  /* 첫 칸은 한 문장으로만 말한다 — 밑에 숫자 칸과 부제를 달아 두면
+     '무엇을 하라'가 아니라 '몇 건이 있다'가 되어 읽는 사람에게 남는 게 없다. */
+  let head=`${f(a)} → ${f(b).slice(5)}`, title='';
+
+  if(MODE==='event'){
+   const inP=EV.filter(e=>inPeriod(e.date));
+   head=calTitle();
+   title = inP.length
+     ? `${P},<br>가 볼 만한 행사가<br><b>${inP.length}개</b> 있어요`
+     : `${P}에는<br>예정된 행사가<br><b>없어요</b>`;
+
+  }else if(MODE==='news'){
+   const inP=NEWS.filter(n=>inPeriod(n.d));
+   const nToday=NEWS.filter(n=>n.d===today).length;
+   const hasToday=inPeriod(today);
+   head=calTitle();
+   title = (hasToday&&nToday)
+     ? `오늘,<br>봉화 소식이<br><b>${nToday}개</b> 올라왔어요`
+     : (inP.length
+        ? `${P}에<br>봉화 소식이<br><b>${inP.length}개</b> 있어요`
+        : `${P}에는<br>봉화 소식이<br><b>없어요</b>`);
+
+  }else{
+   const nEv=EV.filter(e=>days.includes(e.date)).length;
+   const N=heroNums(days), nWork=N.work;
+   const nNt=(NOTICES||[]).filter(n=>days.includes(n.date)).length;
+   /* 갈래 탭과 같은 숫자를 말한다 — 첫 칸은 93, 목록 탭은 16이면 서로 거짓말이 된다.
+      앞머리는 보고 있는 기간의 말(오늘/이번 주/그 주)로 — 목요일에 다음 주 계획이
+      먼저 올라와 '오늘'이 자료 주간 밖일 때도 문장이 어긋나지 않는다. */
+   const gc=BWUI.api.groupCounts;
+   const openN=gc?gc.apply:N.open;
+   title = openN
+     ? `${P},<br>신청할 수 있는 일이<br><b>${openN}개</b> 있어요`
+     : `${P},<br>봉화에는 <b>${nEv+nWork+nNt}개</b><br>소식이 있어요`;
+  }
+
+  el.innerHTML=`
+    <div class="h-week">${head}</div>
+    <div class="h-title">${title}</div>
+    <img class="h-mas" src="${MASCOT_SRC}" alt="" aria-hidden="true" decoding="async">`;
+ }
+
+ /* ── 하단 탭바 — 디자인의 5개 탭을 이 앱에 실제로 있는 기능에 이어 붙인다 ── */
+ function buildTabBar(){
+  if(document.getElementById('tabbar'))return;
+  const el=document.createElement('nav'); el.className='tabbar'; el.id='tabbar';
+  el.innerHTML=`
+    <button data-t="home" class="on"><span class="ic">📋</span><span class="lb">새소식</span></button>
+    <button data-t="cal"><span class="ic">🎪</span><span class="lb">행사</span></button>
+    <button data-t="news"><span class="ic">📰</span><span class="lb">언론속봉화</span>${
+      nwMissed.length?`<span class="dot">${nwMissed.length>99?'99+':nwMissed.length}</span>`:''}</button>
+    <button data-t="fav"><span class="ic">⭐</span><span class="lb">관심</span></button>
+    <button data-t="more"><span class="ic">⚙️</span><span class="lb">설정</span></button>`;
+  document.body.appendChild(el);
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+   const t=b.dataset.t;
+   AA('탭바',t);
+
+
+   if(t==='home'){ setMode('work');
+     if(BWUI.api.state.custom==='fav')BWUI.api.setCustom('fav');   /* 관심만 보기였다면 풀고 전체로 */
+     window.scrollTo({top:0,behavior:'smooth'}); }
+   else if(t==='cal'){ if(EV.length)setMode('event'); else BWUI.toast('행사 자료를 아직 받지 못했어요'); }
+   else if(t==='news'){ if(NEWS.length)setMode('news'); else BWUI.toast('뉴스를 아직 받지 못했어요'); }
+   else if(t==='more'){ moreModal(); }
+   else if(t==='fav'){ setMode('work'); BWUI.api.setCustom('fav'); window.scrollTo({top:0,behavior:'smooth'}); }
+   syncTabBar();
+  });
+ }
+ /* ── 사용 안내 — 앱 안에서 한 편의 문서로 읽는다 (guide.html 을 그대로 불러온다) ── */
+ function guideModal(){
+  let m=document.getElementById('guideModal');
+  if(!m){
+   m=document.createElement('div'); m.id='guideModal'; m.className='modal';
+   m.innerHTML=`<div class="gd">
+     <div class="gd-top"><b>📖 오늘의 봉화 사용 안내</b>
+       <button type="button" id="gdClose" aria-label="닫기">✕</button></div>
+     <iframe id="gdFrame" title="오늘의 봉화 사용 안내" src="guide.html"
+       allow="clipboard-write" loading="lazy"></iframe>
+   </div>`;
+   document.body.appendChild(m);
+   const close=()=>m.classList.remove('open');
+   m.querySelector('#gdClose').onclick=close;
+   m.addEventListener('click',e=>{ if(e.target===m)close(); });   /* 옆의 빈 곳을 눌러도 닫힘 */
+   /* 앱은 밝은 화면뿐이라, 문서도 밝게 맞춰 준다 (휴대폰이 어두운 모드여도) */
+   m.querySelector('#gdFrame').addEventListener('load',function(){
+    try{ this.contentDocument.documentElement.setAttribute('data-theme','light'); }catch(e){}
+   });
+   /* 뒤로가기로 닫혔을 때도 아래 탭 표시가 따라오도록 */
+   new MutationObserver(()=>syncTabBar()).observe(m,{attributes:true,attributeFilter:['class']});
+  }
+  m.classList.add('open');
+  AV('사용안내');
+ }
+ function syncTabBar(){
+  const el=document.getElementById('tabbar'); if(!el)return;
+  const S=BWUI.api.state;
+  const g=document.getElementById('guideModal');
+  const more=document.getElementById('moreModal');
+  const cur = ((g&&g.classList.contains('open'))||(more&&more.classList.contains('open'))) ? 'more'
+            : MODE==='event' ? 'cal'
+            : MODE==='news'  ? 'news'
+            : (S.custom==='fav' ? 'fav' : 'home');
+  el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.t===cur));
+ }
+ function buildEventView(){
+  const wrap=document.querySelector('.bw-wrap'); if(!wrap||document.getElementById('evView'))return;
+  const el=document.createElement('div'); el.id='evView';
+  el.innerHTML=`
+    <div class="ev-span" id="evSpan">
+      <button type="button" data-s="week" class="on">주간 보기</button>
+      <button type="button" data-s="month">월간 달력</button>
+    </div>
+    <div class="evm" id="evMonth">
+      <div class="evm-nav">
+        <button type="button" id="evmPrev" aria-label="이전 달">‹</button>
+        <div class="t" id="evmTitle"></div>
+        <button type="button" id="evmNext" aria-label="다음 달">›</button>
+      </div>
+      <div class="evm-dow"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+      <div class="evm-grid" id="evmGrid"></div>
+    </div>
+    <div class="ev-kinds" id="evKinds">
+      <button type="button" data-k="" class="on">전체</button>
+      <button type="button" data-k="군">군 행사</button>
+      <button type="button" data-k="기관">읍면·기관단체</button>
+    </div>
+    <div class="ev-head"><h2 id="evTitle"></h2><span class="cnt" id="evCnt"></span></div>
+    <div class="ev-list" id="evList"></div>`;
+  const anchor=document.getElementById('bwInfo')||document.getElementById('bwCards');
+  wrap.insertBefore(el,anchor);
+  el.querySelectorAll('#evKinds button').forEach(b=>b.onclick=()=>{
+   evKind=b.dataset.k;
+   el.querySelectorAll('#evKinds button').forEach(x=>x.classList.toggle('on',x.dataset.k===evKind));
+   renderDayPills(); renderMonthCal(); renderEvents();
+  });
+  el.querySelectorAll('#evSpan button').forEach(b=>b.onclick=()=>{
+   evSpan=b.dataset.s;
+   el.querySelectorAll('#evSpan button').forEach(x=>x.classList.toggle('on',x.dataset.s===evSpan));
+   /* 월간 달력으로 오면, 지금 보고 있던 날짜가 든 달을 펼친다 */
+   if(evSpan==='month'){
+    const S=BWUI.api.state;
+    EVM=(S.scope==='day'&&S.day?S.day:VIEW_WEEK).slice(0,7);
+    if(!EV_MONTHS.includes(EVM))EVM=EV_MONTHS[EV_MONTHS.length-1];
+   }
+   applySpanUI(); renderMonthCal(); renderEvents();
+  });
+  el.querySelector('#evmPrev').onclick=()=>stepMonth(-1);
+  el.querySelector('#evmNext').onclick=()=>stepMonth(1);
+  applySpanUI();
+ }
+ /* 주간 보기면 위쪽 주간 달력을, 월간 보기면 달력 격자를 쓴다 */
+ function applySpanUI(){
+  const strip=document.getElementById('wstrip'), m=document.getElementById('evMonth');
+  /* 월간 달력은 공통 기간이 '1개월'일 때만. 기간 UI 자체는 늘 보인다. */
+  const monthly=(MODE==='event'&&BWUI.api.state.scope==='month');
+  if(m)m.style.display=monthly?'':'none';
+  if(strip)strip.style.display='';
+ }
+ function stepMonth(dir){
+  const i=EV_MONTHS.indexOf(EVM)+dir;
+  if(i<0||i>=EV_MONTHS.length)return;
+  EVM=EV_MONTHS[i]; renderMonthCal(); renderEvents();
+ }
+ function renderMonthCal(){
+  const grid=document.getElementById('evmGrid'); if(!grid)return;
+  const [y,mo]=EVM.split('-').map(Number);
+  document.getElementById('evmTitle').textContent=`${y}년 ${mo}월`;
+  const i=EV_MONTHS.indexOf(EVM);
+  document.getElementById('evmPrev').disabled=i<=0;
+  document.getElementById('evmNext').disabled=i>=EV_MONTHS.length-1;
+  const first=new Date(y,mo-1,1), last=new Date(y,mo,0).getDate();
+  const lead=first.getDay();                          /* 일요일 시작 */
+  const S=BWUI.api.state, today=BWUI.api.today;
+  let html='';
+  for(let k=0;k<lead;k++)html+='<div class="evm-cell empty"></div>';
+  for(let d=1;d<=last;d++){
+   const day=`${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+   const n=evCntOf(day), dow=new Date(y,mo-1,d).getDay(), we=(dow===0?'sun':dow===6?'sat':'');
+   html+=`<button type="button" class="evm-cell ${we} ${n?'':'zero'} ${day===today?'today':''} ${(S.scope==='day'&&S.day===day)?'on':''}" data-day="${day}">
+     <span class="d">${d}</span><span class="n">${n}</span></button>`;
+  }
+  grid.innerHTML=html;
+  grid.querySelectorAll('.evm-cell[data-day]').forEach(b=>b.onclick=()=>setDay(b.dataset.day));
+ }
+ /* 행사 상세 — 원자료(주간행사표)에 있는 항목은 시간·장소·인원이 전부다.
+    대신 여기서 바로 캘린더에 담고 친구에게 보낼 수 있게 한다. */
+ function eventModal(e){
+  AV('행사상세','행사:'+e.date+'|'+e.title,e.title);
+  let m=document.getElementById('evModal');
+  if(!m){m=document.createElement('div');m.id='evModal';m.className='modal';document.body.appendChild(m)}
+  const d=BW.d2(e.date);
+  const when=`${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}.(${BW.DOW[d.getDay()]}) ${e.time}`;
+  m.innerHTML=`<div class="mbox">
+    <h2>${E(e.title)}</h2>
+    <div class="mbody" style="padding:6px 18px 2px">
+     <div class="hint" style="font-size:14px;line-height:1.9;color:var(--ink)">
+      🗓️ ${E(when)}<br>
+      📍 ${E(e.place||'장소 미기재')}<br>
+      👥 ${e.people?E(e.people)+'명':'인원 미기재'}<br>
+      🏷️ ${e.kind==='군'?'군 행사':'읍면·기관단체 행사'}
+     </div>
+     <div class="note" style="padding:10px 0 0">봉화군 주간행사표에 실린 내용입니다. 자세한 사항은 담당 부서로 문의해 주세요.</div>
+    </div>
+    <div style="padding:10px 18px 2px"><button class="callbtn" id="evCal" style="width:100%">📅 캘린더에 담기</button></div>
+    <div style="padding:8px 18px 2px"><button class="callbtn" id="evShare" style="width:100%;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔗 친구에게 공유하기</button></div>
+    <div class="mfoot"><span style="flex:1"></span><button id="evClose">닫기</button></div>
+  </div>`;
+  m.classList.add('open');
+  const close=()=>m.classList.remove('open');
+  m.querySelector('#evClose').onclick=close;
+  m.onclick=ev=>{if(ev.target===m)close()};
+  m.querySelector('#evCal').onclick=()=>{
+   const ics=evICS(e);
+   downloadICS(ics,'봉화행사_'+e.title.replace(/[^가-힣0-9a-zA-Z]/g,'').slice(0,14)+'.ics');
+   BWUI.toast('파일이 열리면 [추가]를 누르면 캘린더에 들어갑니다'); close();
+  };
+  m.querySelector('#evShare').onclick=()=>{
+   AA('공유_누름','행사:'+e.date+'|'+e.title,e.title);
+   const text=`[오늘의 봉화] ${e.title}\n${when} · ${e.place||''}`.trim();
+   nativeShare({title:'오늘의 봉화',text,url:location.href.split('?')[0]},location.href.split('?')[0]);
+  };
+ }
+ function evICS(e){
+  const [h,mi]=e.time.split(':').map(Number);
+  const s=BW.d2(e.date), en=new Date(s.getFullYear(),s.getMonth(),s.getDate(),h+1,mi);
+  const p=n=>String(n).padStart(2,'0');
+  const stamp=icsD(e.date)+'T'+p(h)+p(mi)+'00';
+  const endS=icsD(BW.ymd(en))+'T'+p(en.getHours())+p(en.getMinutes())+'00';
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Bonghwa//events//KO','CALSCALE:GREGORIAN',
+   'BEGIN:VEVENT','UID:bhev'+uidHash(e.date+e.time+e.title)+'@bonghwa','DTSTAMP:'+icsStamp(),
+   'DTSTART:'+stamp,'DTEND:'+endS,'SUMMARY:'+icsEsc(e.title),
+   'LOCATION:'+icsEsc(e.place||''),'DESCRIPTION:'+icsEsc('봉화군 주간행사 안내'),
+   'BEGIN:VALARM','TRIGGER:-PT2H','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(e.title),'END:VALARM',
+   'END:VEVENT','END:VCALENDAR'].join('\r\n');
+ }
+ function renderEvents(){
+  if(MODE!=='event')return;
+  const S=BWUI.api.state, q=(S.q||'').trim().toLowerCase();
+  /* 기간은 맨 위 공통 UI가 정한다. 검색도 같은 칸을 쓴다. */
+  const rows=EV.filter(e=>inPeriod(e.date)
+      && (!evKind||e.kind===evKind)
+      && (!q || (e.title+' '+(e.place||'')+' '+(e.org||'')).toLowerCase().includes(q)))
+    .sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(a.time<b.time?-1:1));
+  const t=document.getElementById('evTitle'), c=document.getElementById('evCnt'), list=document.getElementById('evList');
+  if(!t)return;
+  t.textContent=(S.scope==='day')
+    ? ((S.day===BWUI.api.today?'오늘':dLabel(S.day))+' 행사')
+    : (q ? `‘${q}’ 검색 결과` : periodWord()+' 행사');
+  c.textContent=rows.length?rows.length+'건':'';
+  if(!rows.length){
+   list.innerHTML=`<div class="ev-empty">${q?'찾으시는 행사가 없어요':periodWord()+'에는 예정된 행사가 없어요'}<br>
+     <span style="font-size:12.5px">위에서 ${q?'다른 낱말로 찾아보시거나 ':''}기간을 넓혀 보세요</span></div>`;
+   return;
+  }
+  /* 기간·검색·갈래가 바뀌면 상한을 처음으로 되돌린다 */
+  const sig=JSON.stringify([S.scope,S.day,S.month,S.from,S.to,VIEW_WEEK,q,evKind]);
+  if(sig!==evSig){ evSig=sig; evLimit=10; }
+  const part=rows.slice(0,evLimit);
+
+  let lastDate='';
+  list.innerHTML=part.map((e,i)=>{
+   const head=(S.scope!=='day'&&e.date!==lastDate)?(lastDate=e.date,`<div class="feed-divider" style="grid-column:1/-1">${E(dLabel(e.date))}</div>`):'';
+   return head+`<div class="ev-card" data-i="${i}">
+     <div class="ev-time">${E(e.time)}</div>
+     <div class="ev-body">
+      <div class="ev-title">${E(e.title)}<span class="ev-badge ${e.kind==='군'?'gun':'org'}">${e.kind==='군'?'군 행사':'읍면·기관'}</span></div>
+      <div class="ev-meta">📍 ${E(e.place||'장소 미기재')}${e.people?` · 👥 ${E(e.people)}명`:''}</div>
+     </div></div>`;
+  }).join('')
+   +(rows.length>evLimit
+     ? `<button class="morebtn" id="evMore" style="grid-column:1/-1">${rows.length-evLimit}건 더 보기</button>`
+     : '');
+  list.querySelectorAll('.ev-card').forEach(c=>c.onclick=()=>eventModal(part[+c.dataset.i]));
+  const mb=list.querySelector('#evMore'); if(mb)mb.onclick=()=>{evLimit+=10;renderEvents()};
+ }
+
+ /* ═══ 뉴스 화면 ═══ (원칙은 위 NEWS 선언부의 주석 참고 — 제목·언론사·날짜·링크만) */
+ function markNewsSeen(){
+  const newest=NEWS.length?NEWS[0].ts:0;
+  if(newest>nwSeen){ try{localStorage.setItem(NWKEY,String(newest))}catch(e){} }
+  /* nwMissed 는 일부러 그대로 둔다 — 보고 있는 중에 목록이 사라지면 당황스럽다 */
+  const dot=document.querySelector('#tabbar [data-t="news"] .dot'); if(dot)dot.remove();
+ }
+ function buildNewsView(){
+  const wrap=document.querySelector('.bw-wrap');
+  if(!wrap||!NEWS.length||document.getElementById('nwView'))return;
+  const el=document.createElement('div'); el.id='nwView';
+  el.innerHTML=`
+    <div class="nw-search">
+      <input type="search" id="nwQ" placeholder="뉴스 제목·언론사로 찾기" autocomplete="off" enterkeyhint="search">
+      <button type="button" class="clr" id="nwClr" aria-label="지우기" hidden>✕</button>
+    </div>
+    <div id="nwBody"></div>
+    <div class="nw-note">
+      제목을 누르면 <b>그 기사를 쓴 언론사 홈페이지</b>로 새 창이 열립니다.
+      이 화면은 제목·언론사·날짜만 모아 두는 곳이고, 기사 내용은 담고 있지 않습니다.
+      <b>기사의 저작권은 각 언론사에 있습니다.</b><br>
+      각 언론사가 공개해 둔 RSS를 2시간마다 받아, 제목에 '봉화'가 들어간 것만 자동으로 추립니다.
+      <b>사람이 기사를 고르거나 순서를 바꾸지 않습니다.</b> 봉화군 공식 발표가 아닙니다.
+      <a class="nw-more" href="news-about.html" target="_blank" rel="noopener noreferrer">어떻게 모으나요? ›</a>
+    </div>`;
+  const anchor=document.getElementById('bwInfo')||document.getElementById('bwCards');
+  wrap.insertBefore(el,anchor);
+  /* 검색은 맨 위 공통 검색칸(psearch)이 맡는다 — 이 칸은 CSS 로 감춰 두고 자리만 남긴다.
+     두 개를 함께 두면 어느 쪽이 듣는지 알 수 없어 반드시 헷갈린다. */
+ }
+ function renderNews(){
+  const box=document.getElementById('nwBody'); if(!box)return;
+  const nwDate=d=>{const x=BW.d2(d);return `${x.getMonth()+1}.${x.getDate()}.(${BW.DOW[x.getDay()]})`;};
+  const missed=new Set(nwMissed.map(n=>n.id));
+  const card=n=>`<a class="nw-card" href="${E(n.u)}" target="_blank" rel="noopener noreferrer">
+     <div class="nw-title">${missed.has(n.id)?'<span class="nw-badge">NEW</span>':''}${E(n.t)}</div>
+     <div class="nw-meta"><span class="nw-press">${E(n.p)}</span><span>${nwDate(n.d)}</span>
+      <span class="nw-out">기사 원문 ↗</span></div>
+   </a>`;
+
+  /* 기간은 맨 위 공통 UI가 정한다. 검색도 같은 칸(psearch)을 쓴다. */
+  const St=BWUI.api.state;
+  nwQ=(St.q||'').trim();
+  const POOL=NEWS.filter(n=>inPeriod(n.d));
+  /* 기간이나 검색어가 바뀌면 '더 보기'로 펼쳐 둔 것을 처음으로 되돌린다 */
+  const nsig=JSON.stringify([St.scope,St.day,St.month,St.from,St.to,VIEW_WEEK,nwQ]);
+  if(nsig!==nwSig){ nwSig=nsig; nwLimit=10; }
+
+  /* 검색 중에는 시기별로 나누지 않고 한 목록으로 — 찾는 사람은 언제 나온 기사인지보다 그 기사를 원한다 */
+  if(nwQ){
+   const k=nwQ.toLowerCase();
+   const rows=POOL.filter(n=>(n.t+' '+n.p).toLowerCase().includes(k));
+   box.innerHTML=rows.length
+    ? `<div class="ev-head"><h2>‘${E(nwQ)}’ 검색 결과</h2><span class="cnt">${rows.length}건</span></div>
+       <div class="nw-list">${rows.slice(0,nwLimit).map(card).join('')}</div>`
+      +(rows.length>nwLimit?`<button class="morebtn" id="nwMore">${rows.length-nwLimit}건 더 보기</button>`:'')
+    : `<div class="ev-head"><h2>‘${E(nwQ)}’ 검색 결과</h2></div>
+       <div class="nw-list"><div class="nw-empty">찾으시는 뉴스가 없어요<br>
+        <span style="font-size:12.5px">다른 낱말로 찾아보시거나, 위에서 기간을 넓혀 보세요</span></div></div>`;
+   const mb=document.getElementById('nwMore'); if(mb)mb.onclick=()=>{nwLimit+=10;renderNews()};
+   return;
+  }
+
+  /* 시기별로 겹치지 않게 나눈다 — 위에서 이미 담은 기사는 아래 묶음에서 빼므로 한 번씩만 나온다 */
+  const today=BWUI.api.today, weekAgo=Math.floor(Date.now()/1000)-7*86400;
+  const used=new Set(), secs=[];
+  const take=(title,pred)=>{
+   const rows=POOL.filter(n=>!used.has(n.id)&&pred(n));
+   rows.forEach(n=>used.add(n.id));
+   if(rows.length)secs.push([title,rows]);
+  };
+  take('📰 오늘의 뉴스',       n=>n.d===today);
+  take('🆕 내가 놓친 뉴스',    n=>missed.has(n.id));
+  take('🗓️ 지난 1주일',        n=>n.ts>=weekAgo);
+  take('📁 그 이전',           n=>true);
+  /* 기간을 좁혀 놓으면 묶음이 하나만 남는 일이 잦다 — 그럴 땐 제목을 기간 이름으로 바꾼다 */
+  if(secs.length===1)secs[0][0]='📰 '+periodWord()+' 봉화 소식';
+
+  let budget=nwLimit, html='', shown=0, total=POOL.length;
+  for(const [title,rows] of secs){
+   if(budget<=0)break;
+   const part=rows.slice(0,budget); budget-=part.length; shown+=part.length;
+   html+=`<div class="ev-head"><h2>${title}</h2><span class="cnt">${rows.length}건</span></div>
+          <div class="nw-list">${part.map(card).join('')}</div>`;
+  }
+  if(!html){
+   html=`<div class="nw-list"><div class="nw-empty">${periodWord()}에는 올라온 소식이 없어요<br>
+     <span style="font-size:12.5px">위에서 기간을 넓혀 보세요</span></div></div>`;
+  }else if(shown<total){
+   html+=`<button class="morebtn" id="nwMore">${total-shown}건 더 보기</button>`;
+  }
+  box.innerHTML=html;
+  const mb=document.getElementById('nwMore'); if(mb)mb.onclick=()=>{nwLimit+=10;renderNews()};
+  box.querySelectorAll('.nw-card').forEach(a=>a.addEventListener('click',()=>AA('뉴스',a.querySelector('.nw-press').textContent)));
+ }
+
+ decorateHeader();
+ buildDayStrip();
+ buildSearchCard();   /* 검색을 기간 카드보다 위에 둔다 — 검색 전에 기간부터 고르러 올라가지 않도록 */
+ if(EV.length||NEWS.length)buildModeTabs();
+ if(isStandalone())document.body.classList.add('standalone');
+ paintFavicon();
+ document.body.classList.toggle('profon',profOn());
+ try{applyFs(localStorage.getItem(BIGKEY)||0)}catch(e){applyFs(0)}   /* 지난번에 고른 글씨 크기 그대로 */
+ buildHero();
+ buildEventView();
+ buildNewsView();
+ buildTabBar();
+ buildNotices();
+ /* 기본: 오늘이 이번 자료 주간이면 '오늘 소식'부터, 아니면 이번 주 전체 */
+ if(daysOf(D.weekStart).includes(BWUI.api.today)) setDay(BWUI.api.today); else setScope('week');
+
+ /* 링크로 들어온 경우 처리 — 인트로를 건너뛰고 해당 안건으로 바로 간다.
+    코드는 짧은 해시(i·r)를 쓰되, 예전 긴 링크(item·remind, 전체 안건번호)도 계속 열리게 둔다. */
+ const params=new URLSearchParams(location.search);
+ const resumeCode=params.get('r')||params.get('remind');   /* 카카오톡 → 기본 브라우저 전환(알림 팝업까지) */
+ const openCode=params.get('i')||params.get('item');        /* 친구가 보낸 공유 링크(상세만 열기) */
+ /* 짧은 해시 또는 예전 전체 ID 둘 다로 안건을 찾는다 */
+ const matchCodes=csv=>{const cs=csv.split(',');return BWUI.api.issues.filter(i=>cs.includes(uidHash(i._id))||cs.includes(i._id))};
+ if(resumeCode){
+  history.replaceState(null,'',location.pathname);      /* 주소창은 깨끗하게 되돌려 둔다 */
+  const targets=matchCodes(resumeCode);
+  targets.forEach(i=>{ if(!fav[i._id])fav[i._id]={at:BW.ymd(new Date())} });  /* 이 브라우저에도 관심 표시를 맞춘다 */
+  if(targets.length)saveFav();
+  if(targets.length===1){
+   BWUI.api.openSheet(targets[0]);
+   calModal(targets,'봉화군_'+targets[0].title.replace(/[^가-힣0-9a-zA-Z]/g,'').slice(0,14));
+  }else if(targets.length){
+   calModal(targets,'봉화군_관심일정');
+  }
+ }else if(openCode){
+  const wantShare=params.get('s')==='1';   /* 카카오톡에서 '기본 브라우저로 열기'로 넘어온 경우 */
+  history.replaceState(null,'',location.pathname);
+  const target=matchCodes(openCode)[0];
+  if(target){
+   BWUI.api.openSheet(target);        /* 공유받은 소식 바로 펼치기(알림·관심 강제 안 함) */
+   /* 공유 시트는 사용자가 직접 눌러야만 열리므로(자동 실행은 브라우저가 막는다) 안내만 한다 */
+   if(wantShare)setTimeout(()=>BWUI.toast('이제 아래 [친구에게 공유하기]를 누르면 카카오톡·문자를 고를 수 있어요'),400);
+   /* 링크를 받고 처음 온 분께 '바탕화면에 추가'를 한 번 권한다.
+      브라우저는 페이지가 스스로 설치하는 것을 막으므로, 누르기만 하면 되는 창을 대신 띄운다.
+      소식을 먼저 펼쳐 놓고 그 위에 얹어, 닫으면 보러 온 소식이 그대로 남는다. */
+   if(params.get('a')==='1')offerInstall('공유링크');
+  }
+  else{ BWUI.toast('공유된 소식을 찾지 못했어요 — 지난주 자료이거나 정보가 바뀌었을 수 있어요'); }
+ }else if(!isStandalone() && params.get('add')!=='1'){   /* 설치하러 넘어온 경우도 인사 화면은 건너뛴다 */
+  /* 바탕화면 아이콘으로 열었으면 인트로를 건너뛴다 —
+     아이콘을 눌러 들어온 사람에게 같은 그림을 또 보여 주고 [시작하기]까지 누르게 하면 단계만 늘어난다.
+     브라우저에서 주소로 처음 들어온 경우에만 인사 화면을 보여 준다. */
+  setupIntro();
+ }
+ /* 카카오톡에서 '기본 브라우저로 열기'로 넘어온 경우 — 바로 추가 창을 띄운다 */
+ if(params.get('add')==='1'){
+  history.replaceState(null,'',location.pathname);
+  setTimeout(installSheet,700);
+ }
+
+ /* 인트로를 건너뛴 모든 경우(바탕화면·공유링크) — 헤더 마스코트는 바로 보여 준다 */
+ if(!document.getElementById('intro'))putHeadMascot(true);
+
+ /* ── 휴대폰인데 화면이 PC처럼 넓게 잡히는 경우 되돌리기 ──
+    삼성 인터넷 등에서 '데스크톱 사이트로 보기'가 켜져 있으면 이 사이트의 viewport 설정이
+    무시되고 레이아웃 폭이 980px 안팎으로 잡힌다. 그 넓은 화면을 기기 화면에 욱여넣어
+    보여주므로 글씨가 깨알같이 작아지고 카드도 PC처럼 2단으로 깔린다.
+    실제 기기 화면(screen.width)보다 레이아웃 폭이 훨씬 넓으면, 그 비율만큼 확대해
+    레이아웃 폭을 기기 화면 폭과 같게 만든다 → 사용자가 설정을 바꾸지 않아도 평소 화면이 된다.
+    (접는 폰처럼 진짜로 넓은 기기는 비율 차이가 없으므로 확대하지 않고, 대신 한 줄로만 깐다) */
+ function fitPhone(){
+  const el=document.documentElement;
+  const phone=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  let eff=el.clientWidth;                             /* 확대까지 반영한 '실제로 쓰는 폭' */
+  if(phone){
+   el.style.zoom='';                                  /* 원래 폭으로 되돌려 다시 잰다 */
+   const sw=(window.screen&&screen.width)||0, vw=el.clientWidth;
+   if(sw&&vw>sw*1.25){ el.style.zoom=(vw/sw).toFixed(3); eff=sw; }
+   else eff=vw;
+  }
+  document.body.classList.toggle('wide-phone', phone&&eff>760);
+ }
+ fitPhone();
+ /* 가로·세로를 돌렸을 때만 다시 잰다 — resize 마다 재면 우리가 준 확대가 다시 resize 를 불러 맴돈다 */
+ window.addEventListener('orientationchange',()=>setTimeout(fitPhone,120));
+
+ AV(document.getElementById('intro')?'인트로':'홈');   /* 이번 방문의 첫 화면 */
+
+ document.body.classList.add('ready');   /* 이제 화면이 다 준비됐다 — 푸터도 이제부터 보인다 */
+}
+</script>
+</body>
+</html>

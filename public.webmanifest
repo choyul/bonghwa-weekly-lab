@@ -1,0 +1,31 @@
+{
+ "name": "[테스트] 오늘의 봉화",
+ "short_name": "[테스트] 오늘의 봉화",
+ "description": "봉화의 이번 주 소식·행사·고시공고를 한눈에",
+ "display": "standalone",
+ "background_color": "#F7F8FA",
+ "theme_color": "#16A34A",
+ "lang": "ko",
+ "scope": "/bonghwa-weekly-lab/",
+ "start_url": "/bonghwa-weekly-lab/",
+ "icons": [
+  {
+   "src": "icon-m192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-m512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-mmask512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}

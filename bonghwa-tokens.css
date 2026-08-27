@@ -1,0 +1,152 @@
+/* ═══════════════════════════════════════════════════════════════
+   봉화 위클리 · 디자인 토큰 (Bonghwa Weekly Design Tokens)
+   Version 1.0 · 2026
+   ───────────────────────────────────────────────────────────────
+   이 파일 하나만 <link>로 걸면 전역 색·타입·간격이 통일됩니다.
+   기존 :root 블록보다 늦게 로드되도록 순서를 조정해 주세요.
+   ═══════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: "NanumBarunGothicYet";
+  src: url("assets/fonts/NanumBarunGothicYetHangul.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  /* 옛한글 · KS X 1001 확장 커버 */
+  unicode-range: U+AC00-D7A3, U+1100-11FF, U+3130-318F, U+A960-A97F,
+                 U+D7B0-D7FF, U+0020-007E, U+2000-206F, U+2E80-2FDF,
+                 U+3000-303F, U+FF00-FFEF;
+}
+
+:root {
+  /* ── Brand ─────────────────────────────────────────────── */
+  --bh-primary:        #1F4B3F;   /* 봉화 이끼 · 신뢰의 녹 */
+  --bh-primary-ink:    #143128;   /* 본문 위 녹, 대비 강화용 */
+  --bh-primary-soft:   #E8F0EC;   /* 배경 · 활성 칩 */
+  --bh-primary-tint:   #F1F6F3;   /* 카드 hover, 이번 주 셀 */
+
+  --bh-accent:         #B08528;   /* 송화 골드 · 예정/포인트 */
+  --bh-accent-soft:    #F6EFDD;
+
+  --bh-warn:           #B23A2F;   /* 석양 벽돌 · 주말/경고 */
+  --bh-warn-soft:      #FBEAE7;
+
+  /* ── Neutral ──────────────────────────────────────────── */
+  --bh-ink:            #1A1D22;   /* 본문 */
+  --bh-ink-2:          #3A414A;   /* 강조 없는 본문 */
+  --bh-sub:            #5B6470;   /* 보조 텍스트 */
+  --bh-sub-2:          #8A929C;   /* 캡션 */
+  --bh-line:           #E3E2DB;   /* 경계선 (한지톤) */
+  --bh-line-2:         #EEEDE7;   /* 흐린 경계 */
+  --bh-bg:             #F7F6F1;   /* 배경 · 한지 오프화이트 */
+  --bh-paper:          #FFFFFF;   /* 카드 표면 */
+
+  /* ── Semantic (상태) ──────────────────────────────────── */
+  --bh-st-done:        #8B929B;   /* 완료 · 무채 */
+  --bh-st-ongoing:     #1F4B3F;   /* 진행중 · 브랜드 녹 */
+  --bh-st-upcoming:    #B08528;   /* 예정 · 골드 */
+  --bh-st-none:        #B7BBC1;
+
+  /* 주말 텍스트 */
+  --bh-weekend:        #B23A2F;
+
+  /* ── Type Scale ──────────────────────────────────────── */
+  --bh-font:  "NanumBarunGothicYet", -apple-system, "Apple SD Gothic Neo",
+              "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+
+  --bh-fs-12: 12px;
+  --bh-fs-13: 13px;
+  --bh-fs-14: 14px;
+  --bh-fs-15: 15px;
+  --bh-fs-16: 16px;   /* base */
+  --bh-fs-19: 19px;
+  --bh-fs-22: 22px;
+  --bh-fs-28: 28px;
+  --bh-fs-34: 34px;
+
+  --bh-lh-tight: 1.35;
+  --bh-lh-base:  1.55;
+  --bh-lh-loose: 1.7;
+
+  --bh-tracking:      -0.01em;
+  --bh-tracking-tight:-0.02em;
+
+  --bh-w-regular: 400;
+  --bh-w-medium:  600;
+  --bh-w-bold:    800;
+
+  /* ── Spacing (4pt grid) ──────────────────────────────── */
+  --bh-s-1:  4px;
+  --bh-s-2:  8px;
+  --bh-s-3:  12px;
+  --bh-s-4:  16px;
+  --bh-s-5:  20px;
+  --bh-s-6:  24px;
+  --bh-s-8:  32px;
+  --bh-s-12: 48px;
+
+  /* ── Radius ──────────────────────────────────────────── */
+  --bh-r-sm:  8px;
+  --bh-r:     12px;
+  --bh-r-lg:  16px;
+  --bh-r-xl:  20px;
+  --bh-r-pill:999px;
+
+  /* ── Elevation ───────────────────────────────────────── */
+  --bh-shadow-1: 0 1px 2px rgba(31,75,63,.04),
+                 0 2px 8px rgba(31,75,63,.06);
+  --bh-shadow-2: 0 2px 6px rgba(31,75,63,.06),
+                 0 8px 20px rgba(31,75,63,.10);
+  --bh-shadow-cta: 0 8px 22px rgba(31,75,63,.28);
+
+  /* ── Motion ──────────────────────────────────────────── */
+  --bh-dur-fast: 120ms;
+  --bh-dur:      180ms;
+  --bh-dur-slow: 320ms;
+  --bh-ease:     cubic-bezier(.2,.7,.3,1);
+
+  /* ── Hit target ──────────────────────────────────────── */
+  --bh-touch:    44px;
+}
+
+/* 기존 CSS와의 호환 alias — 기존 --ink / --acc / --bg 를 참조하는
+   모든 코드를 건드리지 않아도 자동으로 새 팔레트가 적용됩니다. */
+:root {
+  --ink:      var(--bh-ink);
+  --sub:      var(--bh-sub);
+  --line:     var(--bh-line);
+  --bg:       var(--bh-bg);
+  --paper:    var(--bh-paper);
+  --acc:      var(--bh-primary);
+  --acc-soft: var(--bh-primary-soft);
+  --done:     var(--bh-st-done);
+  --ongoing:  var(--bh-st-ongoing);
+  --upcoming: var(--bh-st-upcoming);
+  --none:     var(--bh-st-none);
+  --warn:     var(--bh-warn);
+  --gold:     var(--bh-accent);
+  --r:        var(--bh-r);
+}
+
+/* 전역 폰트 · 렌더링 튜닝 */
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--bh-font);
+  font-size:   var(--bh-fs-16);
+  line-height: var(--bh-lh-base);
+  letter-spacing: var(--bh-tracking);
+  color:       var(--bh-ink);
+  background:  var(--bh-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* prefers-reduced-motion 존중 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
