@@ -78,65 +78,74 @@
       alarm(3, `[마감 3일 전] ${title}`) + alarm(1, `[마감 전날] ${title}`) + 'END:VEVENT');
   }
 
+  /* 두 단계 — 질문 화면에서 [결과 보기]를 누르면 결과 화면으로 바뀐다.
+     한 화면에 질문과 결과를 같이 두면 '결과 보기' 단추가 결과 옆에 남아 어수선하다. */
   function open(iss, sub, H) {
     let m = document.getElementById('subModal');
     if (!m) { m = document.createElement('div'); m.id = 'subModal'; m.className = 'modal'; document.body.appendChild(m); }
     const c = sub.conditions, qs = questionsOf(c), P = prof();
-    const a = { age: P.age ?? '', residency: P.residency ?? '', farm: P.farm ?? '', gender: P.gender ?? '' };
+    /* 나이가 '자녀(아동)' 같은 남의 나이면 내 프로필 값을 미리 채우지도, 저장하지도 않는다 */
+    const childAge = !!c.ageSubject;
+    const a = { age: childAge ? '' : (P.age ?? ''), residency: P.residency ?? '',
+                farm: P.farm ?? '', gender: P.gender ?? '' };
 
-    const qHtml = {
-      age: `<div class="sub-q">나이가 어떻게 되세요?</div>
-        <div class="sub-opts"><input class="sub-age" id="subAge" type="number" min="0" max="120"
-          inputmode="numeric" placeholder="예: 45" value="${E(a.age)}"> <span style="align-self:center">세</span></div>`,
-      residency: `<div class="sub-q">봉화군에 주소를 두고 계신가요?</div>
-        <div class="sub-opts" data-k="residency">
-          <button type="button" data-v="yes">예</button><button type="button" data-v="no">아니오</button>
-          <button type="button" data-v="idk">모르겠음</button></div>`,
-      farm: `<div class="sub-q">농업경영체 등록을 하셨나요?</div>
-        <div class="sub-opts" data-k="farm">
-          <button type="button" data-v="yes">예</button><button type="button" data-v="no">아니오</button>
-          <button type="button" data-v="idk">모르겠음</button></div>`,
-      gender: `<div class="sub-q">주민등록상 ${E(c.gender)}이신가요?</div>
-        <div class="sub-opts" data-k="gender">
-          <button type="button" data-v="yes">예</button><button type="button" data-v="no">아니오</button>
-          <button type="button" data-v="idk">모르겠음</button></div>`,
+    const head = `<h2>내가 받을 수 있나</h2><div class="note">${E(sub.title)}</div>`;
+    const foot = inner => `<div class="mfoot">${inner}<span style="flex:1"></span>
+      <button type="button" id="subClose">닫기</button></div>`;
+    const wire = () => {
+      m.querySelector('#subClose').onclick = () => m.classList.remove('open');
+      m.onclick = e => { if (e.target === m) m.classList.remove('open'); };
     };
-    m.innerHTML = `<div class="mbox">
-      <h2>내가 받을 수 있나</h2>
-      <div class="note">${E(sub.title)}</div>
-      ${qs.map(k => qHtml[k]).join('')}
-      <div id="subOut"></div>
-      <div class="sub-raw"><details><summary>근거 원문 보기</summary><pre>${E(sub.rawLines.join('\n'))}</pre></details></div>
-      ${sub.status !== 'reviewed' ? `<div class="sub-note" style="color:#9A3A2E">
-        ⚠ 조건을 계획서 원문에서 자동으로 읽은 초안입니다. 아직 담당과 검수 전이라 잘못 읽었을 수 있습니다.</div>` : ''}
-      <div class="sub-note">답하신 내용은 이 휴대폰에만 저장되며 어디에도 전송되지 않습니다.<br>
-        최종 결정은 담당 부서 심사로 정해집니다.</div>
-      <div class="mfoot"><button id="subGo" class="pri">결과 보기</button>
-        <span style="flex:1"></span><button id="subClose">닫기</button></div>
-    </div>`;
-    m.classList.add('open');
-    m.querySelector('#subClose').onclick = () => m.classList.remove('open');
-    m.onclick = e => { if (e.target === m) m.classList.remove('open'); };
-    m.querySelectorAll('.sub-opts[data-k] button').forEach(b => {
-      const k = b.parentElement.dataset.k;
-      if (a[k] === b.dataset.v) b.classList.add('on');
-      b.onclick = () => {
-        a[k] = b.dataset.v;
-        b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
-      };
-    });
 
-    m.querySelector('#subGo').onclick = () => {
-      const ageI = m.querySelector('#subAge'); if (ageI) a.age = ageI.value;
-      saveProf({ ...prof(), ...a });                    /* 다음 사업의 기본값으로 */
-      const v = judge(c, a);
-      const out = m.querySelector('#subOut');
+    function renderAsk() {
+      const qHtml = {
+        age: `<div class="sub-q">${c.ageSubject ? '해당되는 ' + E(c.ageSubject) + '의 나이가 어떻게 되세요?'
+                                                : '나이가 어떻게 되세요?'}</div>
+          <div class="sub-opts"><input class="sub-age" id="subAge" type="number" min="0" max="120"
+            inputmode="numeric" placeholder="예: 45" value="${E(a.age)}"> <span style="align-self:center">세</span></div>`,
+        residency: `<div class="sub-q">봉화군에 주소를 두고 계신가요?</div>
+          <div class="sub-opts" data-k="residency">
+            <button type="button" data-v="yes">예</button><button type="button" data-v="no">아니오</button>
+            <button type="button" data-v="idk">모르겠음</button></div>`,
+        farm: `<div class="sub-q">농업경영체 등록을 하셨나요?</div>
+          <div class="sub-opts" data-k="farm">
+            <button type="button" data-v="yes">예</button><button type="button" data-v="no">아니오</button>
+            <button type="button" data-v="idk">모르겠음</button></div>`,
+        gender: `<div class="sub-q">주민등록상 ${E(c.gender)}이신가요?</div>
+          <div class="sub-opts" data-k="gender">
+            <button type="button" data-v="yes">예</button><button type="button" data-v="no">아니오</button>
+            <button type="button" data-v="idk">모르겠음</button></div>`,
+      };
+      m.innerHTML = `<div class="mbox">${head}
+        <div class="sub-body">${qs.map(k => qHtml[k]).join('')}
+          <div class="sub-note">답은 이 휴대폰에만 저장됩니다.</div></div>
+        ${foot('<button type="button" id="subGo" class="pri">결과 보기</button>')}</div>`;
+      wire();
+      m.querySelectorAll('.sub-opts[data-k] button').forEach(b => {
+        const k = b.parentElement.dataset.k;
+        if (a[k] === b.dataset.v) b.classList.add('on');
+        b.onclick = () => { a[k] = b.dataset.v;
+          b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); };
+      });
+      m.querySelector('#subGo').onclick = () => {
+        const ageI = m.querySelector('#subAge'); if (ageI) a.age = ageI.value;
+        const keep = { ...prof(), residency: a.residency, farm: a.farm, gender: a.gender };
+        if (!childAge) keep.age = a.age;          /* 자녀 나이는 내 프로필에 남기지 않는다 */
+        saveProf(keep);
+        renderResult(judge(c, a));
+      };
+    }
+
+    function renderResult(v) {
       const today = window.BWUI ? BWUI.api.today : new Date().toISOString().slice(0, 10);
+      const tel = H.tel || '';
+      let body = '';
       if (v.r === 'no') {
-        out.innerHTML = `<div class="sub-verdict no">${E(v.fails.join(', '))} 조건에서 해당되지 않습니다.</div>`;
+        body = `<div class="sub-verdict no">${E(v.fails.join(', '))} 조건에서 해당되지 않습니다.</div>`;
       } else if (v.r === 'ask') {
-        out.innerHTML = `<div class="sub-verdict ask">자동으로 판단할 수 없습니다. 담당과에 문의하세요.<br>
-          <span style="font-weight:400">확인이 필요한 것: ${E(v.unknown.join(', '))}</span></div>`;
+        body = `<div class="sub-verdict ask">자동으로 판단할 수 없습니다. 담당과에 문의하세요.<br>
+            <span style="font-weight:400">확인이 필요한 것: ${E(v.unknown.join(', '))}</span></div>
+          ${tel ? `<div class="sub-follow"><a class="callbtn" href="tel:${E(tel)}">📞 담당과 전화</a></div>` : ''}`;
       } else {
         let follow = '';
         if (c.applyEnd) {
@@ -147,26 +156,34 @@
         if (sub.apply && sub.apply.place) follow += `<div>접수처: ${E(sub.apply.place)}</div>`;
         if (sub.apply && sub.apply.documents && sub.apply.documents.length)
           follow += `<div>챙길 서류: ${E(sub.apply.documents.join(', '))}</div>`;
-        const tel = H.tel || '';
         const canIcs = c.applyEnd && dday(c.applyEnd, today) >= 0;
         follow += `<div class="row">
           ${tel ? `<a class="callbtn" style="flex:1" href="tel:${E(tel)}">📞 담당과 전화</a>` : ''}
           ${canIcs ? `<button type="button" id="subIcs" class="callbtn" style="flex:1;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔔 마감 알림</button>` : ''}
         </div>`;
-        if (!sub.apply || !sub.apply.place) follow += `<div class="sub-note">접수처 안내가 아직 없습니다 — 담당과 전화로 확인하세요.</div>`;
-        out.innerHTML = `<div class="sub-verdict ok">해당될 수 있습니다. 신청 전에 담당과에 확인하세요.</div>
+        body = `<div class="sub-verdict ok">해당될 수 있습니다. 신청 전에 담당과에 확인하세요.</div>
           <div class="sub-follow">${follow}</div>`;
-        const ib = out.querySelector('#subIcs');
-        if (ib) ib.onclick = () => {
-          /* 마감일 하루짜리 일정으로 — 기존 생성기를 그대로 쓰려고 가짜 현안을 만든다 */
-          const fake = { _id: 'sublab:' + sub.id, title: '[신청 마감] ' + sub.title, dept: sub.dept,
-            list: [{ week: sub.week, item: { title: sub.title, lines: [{ lv: 1, txt: `기간: ${c.applyEnd.replace(/-/g, '. ')}.` }] } }] };
-          const txt = icsWithAlarms(H, fake, c.applyEnd, sub.title);
-          if (txt) H.downloadICS(txt, '봉화군_마감알림_' + sub.id + '.ics');
-        };
       }
-      out.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    };
+      m.innerHTML = `<div class="mbox">${head}
+        <div class="sub-body">${body}
+          <div class="sub-raw"><details><summary>근거 원문 보기</summary><pre>${E(sub.rawLines.join('\n'))}</pre></details></div>
+          <div class="sub-note">${sub.status !== 'reviewed'
+            ? '계획서에서 자동으로 읽은 초안이에요. 최종 자격은 담당과 심사로 정해집니다.'
+            : '최종 자격은 담당과 심사로 정해집니다.'}</div></div>
+        ${foot('<button type="button" id="subBack">다시 답하기</button>')}</div>`;
+      wire();
+      m.querySelector('#subBack').onclick = renderAsk;
+      const ib = m.querySelector('#subIcs');
+      if (ib) ib.onclick = () => {
+        const fake = { _id: 'sublab:' + sub.id, title: '[신청 마감] ' + sub.title, dept: sub.dept,
+          list: [{ week: sub.week, item: { title: sub.title, lines: [{ lv: 1, txt: `기간: ${c.applyEnd.replace(/-/g, '. ')}.` }] } }] };
+        const txt = icsWithAlarms(H, fake, c.applyEnd, sub.title);
+        if (txt) H.downloadICS(txt, '봉화군_마감알림_' + sub.id + '.ics');
+      };
+    }
+
+    renderAsk();
+    m.classList.add('open');
   }
 
   /* ── 목록에서 찾을 수 있게 ──

@@ -5,6 +5,8 @@
  border:1px solid var(--line,#DDE8E2);border-radius:12px;padding:10px 13px;line-height:1.55}
 .sub-hold b{color:var(--ink,#121E18)}
 #subModal .mbox{max-height:86vh;overflow-y:auto}
+/* 본문은 .mbox 의 제목·안내와 같은 18px 안쪽 여백을 쓴다 — 좌우가 흐트러지지 않게 */
+.sub-body{padding:2px 18px 12px}
 .sub-q{margin:14px 0 6px;font-weight:800;font-size:calc(15.5px*var(--fsx,1))}
 .sub-opts{display:flex;gap:7px;flex-wrap:wrap}
 .sub-opts button{min-height:44px;padding:9px 16px;border:1px solid var(--line,#DDE8E2);
@@ -20,7 +22,7 @@
 .sub-verdict.ask{background:var(--gold-soft,#FEF4D8);color:#8A6210}
 .sub-follow{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .sub-follow .row{display:flex;gap:8px}
-.sub-note{margin-top:12px;font-size:calc(12px*var(--fsx,1));color:var(--sub,#5F7168);line-height:1.55}
+.sub-note{margin-top:12px;font-size:calc(12.5px*var(--fsx,1));color:var(--sub,#5F7168);line-height:1.6}
 .sub-raw{margin-top:10px;font-size:calc(12.5px*var(--fsx,1));color:var(--sub,#5F7168)}
 .sub-raw pre{white-space:pre-wrap;background:var(--bg,#F4F5F2);border-radius:10px;
  padding:10px 12px;margin:6px 0 0;font-family:inherit;line-height:1.6}

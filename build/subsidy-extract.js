@@ -56,6 +56,13 @@ function collect(lines) {
 }
 
 /* ── 값 정규화 — 없으면 null, 추측 금지 ── */
+/* 나이 조건이 누구의 나이인지 — 아동 대상 사업에서 부모가 제 나이를 넣는 혼동을 막는다 */
+function parseAgeSubject(t) {
+  if (/아동|자녀|어린이|유아/.test(t)) return '자녀(아동)';
+  if (/청소년/.test(t)) return '청소년 자녀';
+  if (/학생/.test(t)) return '학생 자녀';
+  return null;
+}
 function parseAge(t) {
   const min = t.match(/(?:만\s*)?(\d{1,3})\s*세\s*이상/);
   const max = t.match(/(\d{1,3})\s*세\s*(미만|이하)/);
@@ -161,6 +168,8 @@ for (const g of cand) {
     status: 'draft',                       /* 검수 전 — 판정에 쓰지 않는다 */
     conditions: {
       ageMin: age.ageMin, ageMax: age.ageMax, ageMaxInclusive: age.ageMaxInclusive,
+      ageSubject: (age.ageMin !== null || age.ageMax !== null)
+        ? parseAgeSubject(last.item.title + ' ' + targetT) : null,
       residency: parseResidency(targetT),
       needsFarmRegistry: parseFarm(targetT),
       gender: parseGender(last.item.title + ' ' + targetT),
