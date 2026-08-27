@@ -349,7 +349,13 @@
   if (window.LABAPI && window.SUBCFG) LABAPI.pullCfg().then(r => {
     SUBCFG.setAll(r.cfg);
     titleSet = null;                       /* 표식을 다시 계산 */
-    if (window.BWUI && BWUI.api) BWUI.api.render();
+    /* 엔진이 아직 시작 전이면 기다렸다 다시 그린다 —
+       설정을 먼저 받아 놓고 render() 를 부르면 CFG 가 없어 터진다 */
+    (function redraw(n) {
+      const ready = window.BWUI && BWUI.api && BWUI.api.issues && BWUI.api.issues.length;
+      if (ready) { try { BWUI.api.render(); } catch (e) { } return; }
+      if (n < 40) setTimeout(() => redraw(n + 1), 250);
+    })(0);
   });
   function markCards() {
     const T = reviewedTitles(); if (!T) return;
