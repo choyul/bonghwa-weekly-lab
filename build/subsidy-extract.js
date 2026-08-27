@@ -77,9 +77,24 @@ function parseAge(t) {
     ageMaxInclusive: max ? max[2] === '이하' : null,
   };
 }
+/* 거주 요건은 '어디에' 사는지가 사업마다 다르다 — 봉화군 / 경상북도.
+   한 문장에 '경북도 내 주민등록' 처럼 도 단위로 적힌 것을 봉화군으로 읽으면
+   질문이 통째로 빠지거나 엉뚱해진다. */
 function parseResidency(t) {
-  return /봉화군(?:에|내)?\s*(?:주소|거주)|관내(?:에)?\s*(?:주소|거주)|봉화군에\s*주민등록|주소를\s*둔/.test(t.replace(/\s+/g, ' ')) ? '봉화군' : null;
+  const c = t.replace(/\s+/g, ' ');
+  if (/경상북도|경북도|도내|도 내/.test(c) && /주민등록|주소|거주/.test(c)) return '경상북도';
+  if (/봉화군|관내/.test(c) && /주민등록|주소|거주|둔/.test(c)) return '봉화군';
+  return null;
 }
+function parseFarming(t) { return /계속(해서)?\s*영농\s*종사|영농에\s*종사|실제\s*경작/.test(t.replace(/\s+/g,' ')) ? true : null; }
+function parseFarmArea(t) {                       /* 최소 경작 면적 (ha) */
+  const m = t.replace(/\s+/g,'').match(/(\d+(?:\.\d+)?)(ha|헥타)이상/);
+  if (m) return +m[1];
+  const m2 = t.replace(/\s+/g,'').match(/(\d{3,6})(㎡|제곱미터)이상/);
+  return m2 ? +(+m2[1] / 10000).toFixed(4) : null;
+}
+function parseIncome(t) { return /중위\s*소득|소득\s*기준|소득이\s*\d/.test(t.replace(/\s+/g,' ')) ? true : null; }
+function parseBiz(t) { return /사업자\s*등록/.test(t) ? true : null; }
 function parseFarm(t) { return /농업\s*경영체\s*등록|경영체\s*등록/.test(t) ? true : null; }
 function parseGender(t) { return /여성\s*농업인|여성\s*농어업인|여성\s*어업인|여성농/.test(t) ? '여성' : null; }
 function parseRates(t) {
@@ -172,6 +187,10 @@ for (const g of cand) {
         ? parseAgeSubject(last.item.title + ' ' + targetT) : null,
       residency: parseResidency(targetT),
       needsFarmRegistry: parseFarm(targetT),
+      needsFarming: parseFarming(targetT),
+      farmAreaMin: parseFarmArea(targetT),
+      hasIncomeRule: parseIncome(targetT),
+      needsBizRegistry: parseBiz(targetT),
       gender: parseGender(last.item.title + ' ' + targetT),
       subsidyRate: rates.subsidyRate, selfPayRate: rates.selfPayRate,
       applyStart: dates.applyStart, applyEnd: dates.applyEnd, dateInferred: dates.dateInferred,
@@ -205,6 +224,7 @@ const pct = n => (n / items.length * 100).toFixed(0) + '%';
 console.log(`필드 추출률 — 지원대상 ${pct(fieldN.target)}, 신청기간 ${pct(fieldN.period)}, 사업비 ${pct(fieldN.money)}, 신청방법 ${pct(fieldN.method)}`);
 const judgeable = items.filter(i => {
   const c = i.conditions;
-  return c.ageMin !== null || c.ageMax !== null || c.residency || c.needsFarmRegistry || c.gender;
+  return c.ageMin !== null || c.ageMax !== null || c.residency || c.needsFarmRegistry
+      || c.gender || c.needsFarming || c.farmAreaMin !== null || c.needsBizRegistry;
 });
 console.log('문답을 만들 조건이 1개 이상:', judgeable.length, '건 (' + pct(judgeable.length) + ')');

@@ -1,0 +1,298 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>[테스트] 보조사업 자격·접수 설정</title>
+<link rel="stylesheet" href="bonghwa-tokens.css">
+<style>
+:root{--paper:#fff;--bg:#F4F5F2;--ink:#121E18;--sub:#5F7168;--faint:#98A2AE;
+ --line:#DDE8E2;--acc:#16A34A;--acc-soft:#E8F7EE;--warn:#B85C22;--warn-soft:#FBEFE5;--r:14px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font-family:Pretendard,-apple-system,'Apple SD Gothic Neo',sans-serif;font-size:15px;line-height:1.65}
+#labBanner{position:sticky;top:0;z-index:99;background:#C2410C;color:#fff;text-align:center;
+ font-size:13px;font-weight:800;padding:8px 12px}
+.wrap{max-width:920px;margin:0 auto;padding:16px 14px 80px}
+h1{font-size:20px;margin:14px 0 4px;letter-spacing:-.02em}
+.lead{color:var(--sub);font-size:13.5px;margin:0 0 16px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select,textarea{font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:10px;
+ background:var(--paper);color:var(--ink);min-height:42px}
+input[type=text],input[type=search],textarea{width:100%}
+button{font:inherit;padding:9px 14px;min-height:42px;border:1px solid var(--line);border-radius:10px;
+ background:var(--paper);color:var(--ink);cursor:pointer;font-weight:600}
+button.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+button.sm{min-height:34px;padding:5px 10px;font-size:13px}
+button.del{color:var(--warn);border-color:var(--warn-soft)}
+.list{display:grid;gap:8px;max-height:52vh;overflow-y:auto}
+.item{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);
+ border-radius:12px;background:var(--paper);cursor:pointer}
+.item:hover{border-color:var(--acc)}
+.item.on{border-color:var(--acc);background:var(--acc-soft)}
+.item .t{flex:1;min-width:0;font-weight:600;font-size:14px;
+ overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .d{font-size:12px;color:var(--faint);white-space:nowrap}
+.pill{font-size:11px;font-weight:800;border-radius:100px;padding:2px 8px;white-space:nowrap}
+.pill.on{background:var(--acc-soft);color:#0F7A38}
+.pill.off{background:var(--bg);color:var(--faint)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.fld{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--paper)}
+.fld .top{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.fld .top b{flex:1;font-size:14px}
+.fld label{font-size:12.5px;color:var(--sub);display:block;margin:6px 0 3px}
+.fld .agrix{font-size:11px;font-weight:800;color:#1D5DBB;background:#E7F0FF;border-radius:100px;padding:2px 8px}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;cursor:pointer;
+ border:1px solid var(--line);border-radius:100px;padding:6px 12px;min-height:40px;background:var(--paper)}
+.chk.on{background:var(--acc-soft);border-color:var(--acc);color:#0F7A38;font-weight:700}
+.hint{font-size:12.5px;color:var(--sub);margin:6px 0 0;line-height:1.6}
+h2{font-size:15px;margin:18px 0 8px}
+.sp{flex:1}
+#gate{max-width:360px;margin:60px auto;text-align:center}
+textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monospace,Menlo,monospace}
+.prev{background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:12px}
+.prev .q{font-weight:800;font-size:14.5px;margin:10px 0 5px}
+.prev .o{display:flex;gap:6px;flex-wrap:wrap}
+.prev .o span{border:1px solid var(--line);border-radius:100px;padding:5px 12px;font-size:13px;background:var(--paper)}
+</style></head><body>
+<div id="labBanner">테스트 버전입니다. 여기 설정한 내용은 이 기기에만 저장됩니다.</div>
+<div class="wrap">
+
+<div id="gate">
+  <h1>보조사업 자격·접수 설정</h1>
+  <p class="lead">담당자 화면입니다. 열람 코드를 넣어 주세요.</p>
+  <div class="row"><input type="password" id="code" placeholder="열람 코드" style="flex:1">
+    <button class="pri" id="go">들어가기</button></div>
+  <p class="hint">시험용 코드: <b>bonghwa</b></p>
+</div>
+
+<div id="app" style="display:none">
+  <h1>보조사업 자격·접수 설정</h1>
+  <p class="lead">사업을 고르면 <b>무엇을 물을지</b>와 <b>온라인 접수를 받을지</b>를 정할 수 있습니다.
+    정한 내용은 이 기기에만 남습니다 — 모두에게 적용하려면 맨 아래 [설정 내보내기]로 받아
+    <code>build/subsidy-review.json</code>에 넣으세요.</p>
+
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <input type="search" id="q" placeholder="사업 이름으로 찾기" style="flex:1">
+      <button type="button" class="chk on" id="onlyOpen">신청·접수 건만</button>
+    </div>
+    <div class="list" id="list"></div>
+    <p class="hint" id="cnt"></p>
+  </div>
+
+  <div id="editor" style="display:none">
+    <div class="card">
+      <h2 style="margin-top:0">① 무엇을 물을까요</h2>
+      <div id="fields"></div>
+      <div class="row">
+        <select id="addField"></select>
+        <button id="addBtn">항목 추가</button>
+        <span class="sp"></span>
+        <button class="sm" id="resetBtn">자동 추출값으로 되돌리기</button>
+      </div>
+      <p class="hint">파란 <span class="agrix">경영체 자동확인</span> 표시가 붙은 항목은
+        주민이 농업경영체 정보를 불러오면 <b>자동으로 채워집니다.</b></p>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">② 온라인으로 접수를 받을까요</h2>
+      <button type="button" class="chk" id="onlineChk">이 사업은 온라인 접수를 받습니다</button>
+      <div id="onlineBox" style="display:none;margin-top:12px">
+        <label style="font-size:12.5px;color:var(--sub)">받을 정보 (자격을 통과한 분에게만 보입니다)</label>
+        <div class="row" id="askList" style="margin:6px 0 12px"></div>
+        <div class="row">
+          <div><label style="font-size:12.5px;color:var(--sub)">접수 마감일 (비우면 원문 그대로)</label>
+            <input type="date" id="endDate" style="width:170px"></div>
+          <div><label style="font-size:12.5px;color:var(--sub)">접수 정원 (비우면 제한 없음)</label>
+            <input type="number" id="capacity" min="1" placeholder="예: 50" style="width:150px"></div>
+          <div style="flex:1;min-width:220px"><label style="font-size:12.5px;color:var(--sub)">접수 화면에 띄울 안내</label>
+            <input type="text" id="note" placeholder="예: 통장 사본은 방문 시 지참하세요"></div>
+        </div>
+        <label class="chk on" id="agreeChk" style="margin-top:10px">
+          <input type="checkbox" checked hidden>개인정보 수집·이용 동의를 받습니다</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">③ 주민 화면 미리보기</h2>
+      <div class="prev" id="prev"></div>
+    </div>
+
+    <div class="card">
+      <div class="row"><button class="pri" id="save">저장</button>
+        <span class="sp"></span>
+        <button id="export">설정 내보내기</button>
+        <button id="csv">접수 내역 CSV</button></div>
+      <p class="hint" id="saved"></p>
+      <textarea id="out" style="display:none;margin-top:10px" readonly></textarea>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="subsidy-data.js"></script>
+<script src="subsidy-config.js"></script>
+<script src="agrix-mock.js"></script>
+<script>
+(function(){
+ 'use strict';
+ const $=s=>document.querySelector(s), E=s=>String(s==null?'':s)
+   .replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const ITEMS=(window.BW_SUBSIDY&&BW_SUBSIDY.items)||[];
+ const CODE='bonghwa', GKEY='bhlab.admin.in';
+ let cur=null, cfg=null, onlyOpen=true;
+
+ /* ── 열람 코드 ── */
+ function enter(){ if($('#code').value.trim()!==CODE){alert('코드가 다릅니다');return;}
+   try{sessionStorage.setItem(GKEY,'1')}catch(e){} show(); }
+ function show(){ $('#gate').style.display='none'; $('#app').style.display=''; renderList(); }
+ $('#go').onclick=enter;
+ $('#code').onkeydown=e=>{if(e.key==='Enter')enter()};
+ try{ if(sessionStorage.getItem(GKEY)==='1')show(); }catch(e){}
+
+ /* 접수 가능한 건인가 — 기간이 남아 있거나 기간이 안 적힌 것 */
+ const today=new Date().toISOString().slice(0,10);
+ const openable=it=>!it.conditions.applyEnd||it.conditions.applyEnd>=today;
+
+ function renderList(){
+  const q=($('#q').value||'').trim();
+  const all=SUBCFG.load();
+  let rows=ITEMS.filter(it=>(!q||it.title.includes(q))&&(!onlyOpen||openable(it)));
+  rows=rows.sort((a,b)=>(b.week<a.week?-1:1));
+  $('#list').innerHTML=rows.slice(0,200).map(it=>{
+    const c=all[it.id];
+    const on=c&&c.online, set=!!c;
+    return `<div class="item ${cur&&cur.id===it.id?'on':''}" data-id="${it.id}">
+      <span class="t">${E(it.title)}</span>
+      <span class="d">${E(it.dept)} · ${E(it.week)}</span>
+      ${on?'<span class="pill on">온라인 접수</span>':set?'<span class="pill off">설정됨</span>':''}
+      ${it.conditions.applyEnd&&it.conditions.applyEnd<today?'<span class="pill warn">마감</span>':''}
+    </div>`}).join('')||'<p class="hint">해당하는 사업이 없습니다.</p>';
+  $('#cnt').textContent=`${rows.length}건 (설정된 사업 ${Object.keys(all).length}건)`;
+  $('#list').querySelectorAll('.item').forEach(el=>el.onclick=()=>pick(el.dataset.id));
+ }
+ $('#q').oninput=renderList;
+ $('#onlyOpen').onclick=()=>{ onlyOpen=!onlyOpen; $('#onlyOpen').classList.toggle('on',onlyOpen); renderList(); };
+
+ function pick(id){ cur=ITEMS.find(i=>i.id===id); cfg=JSON.parse(JSON.stringify(SUBCFG.forItem(cur)));
+   $('#editor').style.display=''; renderList(); renderEditor();
+   $('#editor').scrollIntoView({behavior:'smooth',block:'start'}); }
+
+ function renderEditor(){
+  /* 자격 항목 */
+  $('#fields').innerHTML=cfg.fields.map((f,i)=>{
+   const F=SUBCFG.FIELDS[f.k]||{label:f.k};
+   let extra='';
+   if(f.k==='age')extra=`<div class="row">
+      <div><label>최소(세)</label><input type="number" data-i="${i}" data-p="min" value="${f.min??''}" style="width:100px"></div>
+      <div><label>최대(세)</label><input type="number" data-i="${i}" data-p="max" value="${f.max??''}" style="width:100px"></div>
+      <div><label>최대 포함</label><select data-i="${i}" data-p="maxInclusive">
+        <option value="true"${f.maxInclusive?' selected':''}>이하</option>
+        <option value="false"${!f.maxInclusive?' selected':''}>미만</option></select></div></div>`;
+   if(f.k==='residency')extra=`<label>어디에 주소</label>
+      <select data-i="${i}" data-p="v" style="width:160px">
+        <option${f.v==='봉화군'?' selected':''}>봉화군</option>
+        <option${f.v==='경상북도'?' selected':''}>경상북도</option></select>`;
+   if(f.k==='farmArea')extra=`<label>최소 면적(ha)</label>
+      <input type="number" step="0.01" data-i="${i}" data-p="min" value="${f.min??''}" style="width:120px">`;
+   if(f.k==='gender')extra=`<label>대상</label>
+      <select data-i="${i}" data-p="v" style="width:120px">
+        <option${f.v==='여성'?' selected':''}>여성</option><option${f.v==='남성'?' selected':''}>남성</option></select>`;
+   return `<div class="fld">
+     <div class="top"><b>${E(F.label)}</b>
+       ${F.agrix?'<span class="agrix">경영체 자동확인</span>':''}
+       <button type="button" class="chk sm ${f.required?'on':''}" data-i="${i}" data-p="required">필수</button>
+       <button class="sm del" data-del="${i}">삭제</button></div>
+     <label>주민에게 보일 질문</label>
+     <input type="text" data-i="${i}" data-p="q" value="${E(SUBCFG.qText(f))}">
+     ${extra}</div>`;
+  }).join('')||'<p class="hint">물을 항목이 없습니다. 아래에서 추가하세요.</p>';
+
+  $('#fields').querySelectorAll('input[data-p],select[data-p]').forEach(el=>{
+   el.oninput=el.onchange=()=>{
+    const f=cfg.fields[+el.dataset.i], p=el.dataset.p;
+    let v=el.value;
+    if(p==='min'||p==='max')v=v===''?null:+v;
+    if(p==='maxInclusive')v=v==='true';
+    f[p]=v; renderPrev();
+   };
+  });
+  $('#fields').querySelectorAll('.chk[data-p=required]').forEach(el=>el.onclick=()=>{
+   const f=cfg.fields[+el.dataset.i]; f.required=!f.required; el.classList.toggle('on',f.required);
+  });
+  $('#fields').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
+   cfg.fields.splice(+b.dataset.del,1); renderEditor();
+  });
+
+  const used=new Set(cfg.fields.map(f=>f.k));
+  $('#addField').innerHTML=Object.entries(SUBCFG.FIELDS).filter(([k])=>!used.has(k))
+    .map(([k,F])=>`<option value="${k}">${E(F.label)}</option>`).join('')||'<option value="">추가할 항목 없음</option>';
+
+  /* 온라인 접수 */
+  $('#onlineChk').classList.toggle('on',!!cfg.online);
+  $('#onlineBox').style.display=cfg.online?'':'none';
+  $('#askList').innerHTML=Object.entries(SUBCFG.ASK).map(([k,A])=>
+    `<button type="button" class="chk ${cfg.ask.includes(k)?'on':''}" data-ask="${k}">${E(A.label)}${A.agrix?' 🌱':''}</button>`).join('');
+  $('#askList').querySelectorAll('[data-ask]').forEach(el=>el.onclick=()=>{
+   const k=el.dataset.ask, i=cfg.ask.indexOf(k);
+   if(i<0)cfg.ask.push(k); else cfg.ask.splice(i,1);
+   el.classList.toggle('on',i<0); renderPrev();
+  });
+  $('#capacity').value=cfg.capacity??''; $('#note').value=cfg.note||'';
+  $('#endDate').value=cfg.applyEnd||cur.conditions.applyEnd||'';
+  $('#agreeChk').classList.toggle('on',cfg.agree!==false);
+  renderPrev();
+ }
+ $('#addBtn').onclick=()=>{ const k=$('#addField').value; if(!k)return;
+   cfg.fields.push({k,on:true,required:true,q:SUBCFG.FIELDS[k].q,v:null,min:null,max:null}); renderEditor(); };
+ $('#resetBtn').onclick=()=>{ cfg.fields=SUBCFG.defaultsFrom(cur.conditions); renderEditor(); };
+ $('#onlineChk').onclick=()=>{ cfg.online=!cfg.online; renderEditor(); };
+ $('#capacity').oninput=()=>{ cfg.capacity=$('#capacity').value===''?null:+$('#capacity').value; };
+ $('#note').oninput=()=>{ cfg.note=$('#note').value; };
+ $('#endDate').oninput=()=>{ cfg.applyEnd=$('#endDate').value||null; renderPrev(); };
+ $('#agreeChk').onclick=()=>{ cfg.agree=cfg.agree===false; $('#agreeChk').classList.toggle('on',cfg.agree); };
+
+ function renderPrev(){
+  const qs=cfg.fields.map(f=>{
+   const F=SUBCFG.FIELDS[f.k]||{};
+   const opts=F.type==='number'?`<span>숫자 입력 ${E(F.unit||'')}</span>`
+     :'<span>예</span><span>아니오</span><span>모르겠음</span>';
+   return `<div class="q">${E(SUBCFG.qText(f))}${f.required?'':' <span style="font-weight:400;color:var(--faint)">(선택)</span>'}</div>
+     <div class="o">${opts}</div>`;
+  }).join('');
+  const end=cfg.applyEnd||cur.conditions.applyEnd;
+  const today=new Date().toISOString().slice(0,10);
+  const ask=cfg.online?`<div class="q" style="margin-top:14px">자격을 통과하면 — 온라인 접수${
+    end&&end<today?' <span style="color:var(--warn);font-weight:700">(마감일이 지나 접수가 닫힙니다)</span>':''}</div>
+    <div class="o">${cfg.ask.map(k=>`<span>${E(SUBCFG.ASK[k].label)}</span>`).join('')||'<span style="color:var(--faint)">받을 정보를 고르세요</span>'}</div>
+    ${cfg.agree!==false?'<div class="q" style="font-size:12.5px;font-weight:600;color:var(--sub);margin-top:8px">개인정보 수집·이용 동의</div>':''}`
+   :`<div class="q" style="margin-top:14px;color:var(--faint)">온라인 접수를 받지 않습니다 — 담당과 전화만 안내</div>`;
+  $('#prev').innerHTML=(qs||'<p class="hint">물을 항목이 없습니다.</p>')+ask;
+ }
+
+ $('#save').onclick=()=>{ SUBCFG.put(cur.id,cfg);
+   $('#saved').textContent=`저장했습니다 — ${cur.title} (이 기기에만 남습니다)`;
+   renderList(); };
+
+ $('#export').onclick=()=>{
+  const all=SUBCFG.load(), out={};
+  Object.entries(all).forEach(([id,c])=>{ out[id]={status:'reviewed',reviewedBy:'담당자 설정',
+    reviewedAt:new Date().toISOString().slice(0,10), adminConfig:c}; });
+  const t=$('#out'); t.style.display=''; t.value=JSON.stringify(out,null,2); t.select();
+  $('#saved').textContent='아래 내용을 build/subsidy-review.json 에 넣고 node build/subsidy-extract.js 를 실행하세요.';
+ };
+
+ $('#csv').onclick=()=>{
+  let rows=[]; try{ rows=JSON.parse(localStorage.getItem('bhlab.apply.log'))||[] }catch(e){}
+  if(!rows.length){ $('#saved').textContent='접수된 건이 없습니다.'; return; }
+  const cols=['접수번호','접수일시','사업','이름','연락처','생년월일','주소','경영체번호','계좌','남기실 말','경영체확인'];
+  const csv=[cols.join(',')].concat(rows.map(r=>[r.no,r.at,r.title,r.d.name||'',r.d.phone||'',r.d.birth||'',
+    r.d.addr||'',r.d.farmNo||'',r.d.account||'',(r.d.memo||'').replace(/[\r\n,]/g,' '),
+    r.agrix?`${r.agrix.no} ${r.agrix.status} ${r.agrix.area}ha`:''].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))).join('\r\n');
+  const b=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b);
+  a.download='봉화군_온라인접수_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  $('#saved').textContent=`접수 ${rows.length}건을 내려받았습니다.`;
+ };
+})();
+</script></body></html>

@@ -1,0 +1,74 @@
+/* ═══════════════════════════════════════════════════════════════
+   subsidy-config.js — 사업별 '자격 확인 항목'과 '온라인 접수' 설정을 다루는 공용 코드.
+   관리자 화면(admin.html)과 주민 화면(subsidy.js)이 같은 파일을 쓴다.
+
+   서버가 없으므로 설정은 이 기기의 localStorage 에만 쌓인다(bhlab.admin.cfg).
+   담당자가 [설정 내보내기]로 JSON 을 받아 build/subsidy-review.json 에 넣으면
+   모든 사람에게 고정된다 — 그때까지는 이 기기에서만 보이는 시험용 설정이다.
+   ═══════════════════════════════════════════════════════════════ */
+(function (G) {
+  'use strict';
+  const CKEY = 'bhlab.admin.cfg';
+
+  /* 물어볼 수 있는 자격 항목 — 관리자가 켜고 끄고 문구를 고친다.
+     agrix:true 는 농업경영체 정보로 자동 확인이 되는 항목이다. */
+  const FIELDS = {
+    age:        { label: '나이', q: '나이가 어떻게 되세요?', type: 'number', unit: '세' },
+    residency:  { label: '거주지', q: '{값}에 주소를 두고 계신가요?', type: 'yesno' },
+    farm:       { label: '농업경영체 등록', q: '농업경영체 등록을 하셨나요?', type: 'yesno', agrix: true },
+    farming:    { label: '계속 영농종사', q: '지금도 농사를 짓고 계신가요?', type: 'yesno', agrix: true },
+    farmArea:   { label: '경작 면적', q: '경작 면적이 어떻게 되세요?', type: 'number', unit: 'ha', agrix: true },
+    gender:     { label: '성별', q: '주민등록상 {값}이신가요?', type: 'yesno' },
+    biz:        { label: '사업자등록', q: '사업자등록을 하셨나요?', type: 'yesno' },
+    income:     { label: '소득기준', q: '소득 기준이 있는 사업입니다. 확인이 필요하세요?', type: 'yesno' },
+  };
+
+  /* 온라인 접수 때 받을 수 있는 정보 — 관리자가 고른 것만 입력받는다. */
+  const ASK = {
+    name:    { label: '이름', type: 'text', required: true },
+    phone:   { label: '연락처', type: 'tel', ph: '010-0000-0000' },
+    birth:   { label: '생년월일', type: 'date' },
+    addr:    { label: '주소', type: 'text', ph: '봉화군 ○○면 ○○리' },
+    farmNo:  { label: '농업경영체 등록번호', type: 'text', agrix: true },
+    account: { label: '입금 계좌', type: 'text', ph: '은행 / 계좌번호 / 예금주' },
+    memo:    { label: '남기실 말', type: 'textarea' },
+  };
+
+  /* 자동 추출 조건 → 기본 자격 항목 */
+  function defaultsFrom(c) {
+    const out = [];
+    const add = (k, v) => out.push({ k, on: true, required: true, v: v === undefined ? null : v,
+                                     q: FIELDS[k].q });
+    if (c.ageMin !== null || c.ageMax !== null)
+      out.push({ k: 'age', on: true, required: true, min: c.ageMin, max: c.ageMax,
+                 maxInclusive: c.ageMaxInclusive, subject: c.ageSubject || null,
+                 q: c.ageSubject ? `해당되는 ${c.ageSubject}의 나이가 어떻게 되세요?` : FIELDS.age.q });
+    if (c.residency) add('residency', c.residency);
+    if (c.needsFarmRegistry) add('farm');
+    if (c.needsFarming) add('farming');
+    if (c.farmAreaMin !== null && c.farmAreaMin !== undefined)
+      out.push({ k: 'farmArea', on: true, required: true, min: c.farmAreaMin, q: FIELDS.farmArea.q });
+    if (c.gender) add('gender', c.gender);
+    if (c.needsBizRegistry) add('biz');
+    if (c.hasIncomeRule) out.push({ k: 'income', on: true, required: false, q: FIELDS.income.q });
+    return out;
+  }
+
+  function load() { try { return JSON.parse(localStorage.getItem(CKEY)) || {}; } catch (e) { return {}; } }
+  function save(all) { try { localStorage.setItem(CKEY, JSON.stringify(all)); } catch (e) { } }
+
+  /* 그 사업의 최종 설정 — 저장해 둔 것이 없으면 자동 추출값으로 만든다 */
+  function forItem(sub) {
+    const all = load();
+    if (all[sub.id]) return all[sub.id];
+    return { fields: defaultsFrom(sub.conditions), online: false, ask: ['name', 'phone'],
+             agree: true, capacity: null, note: '' };
+  }
+  function put(id, cfg) { const all = load(); all[id] = cfg; save(all); }
+  function reset(id) { const all = load(); delete all[id]; save(all); }
+
+  /* 질문 문구 — {값} 을 실제 값(봉화군/여성 등)으로 바꾼다 */
+  function qText(f) { return (f.q || (FIELDS[f.k] && FIELDS[f.k].q) || f.k).replace('{값}', f.v || ''); }
+
+  G.SUBCFG = { FIELDS, ASK, defaultsFrom, load, save, forItem, put, reset, qText, CKEY };
+})(window);

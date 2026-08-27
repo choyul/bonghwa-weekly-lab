@@ -20,6 +20,7 @@
     q: '', status: '', dept: '', type: '', annual: false, custom: '', axis: {}, limit: 60,
     onLimit: 12,       /* '전부터 이어지는' 묶음에서 한 번에 보여줄 개수 */
     govOpen: false,    /* '군청이 하는 일' 접힘 상태 — 군민용(옛 방식)에서만 쓴다 */
+    applyOnly: false,  /* '지금 바로 접수되는 것만' 켜짐 */
     grpTab: 'apply'    /* 갈래 탭 — apply(신청·참여) | gov(군정 소식) | notice(고시·공고) */
   };
   let curIssue = null, simExpanded = false, onSig = '';
@@ -535,6 +536,19 @@
         /* 탭은 화면 위에 붙어 있으므로 자리는 그대로 두고 목록만 바뀐다 */
       });
       const note = t => { const d = document.createElement('div'); d.className = 'grpnote'; d.textContent = t; box.appendChild(d); };
+      /* 지금 바로 온라인 접수가 되는 건만 따로 보기 — 화면이 그 판별을 준다 */
+      let applyOnly = false;
+      if (CFG.canApplyNow && S.grpTab === 'apply') {
+        const n = applyNew.concat(applyOld).filter(CFG.canApplyNow).length;
+        if (n) {
+          const t = document.createElement('button');
+          t.type = 'button'; t.className = 'applyfilter' + (S.applyOnly ? ' on' : '');
+          t.innerHTML = `⚡ 지금 바로 접수되는 것만 <b>${n}건</b>`;
+          t.onclick = () => { S.applyOnly = !S.applyOnly; S.limit = 60; S.onLimit = 12; render(); };
+          box.appendChild(t);
+          applyOnly = !!S.applyOnly;
+        } else if (S.applyOnly) S.applyOnly = false;
+      }
       const sub = (icon, text, n) => {
         const d = document.createElement('div'); d.className = 'grpsub';
         d.innerHTML = `<span class="gsi">${icon}</span><span class="gst">${E(text)}</span><span class="gsn">${n}건</span>`;
@@ -550,7 +564,8 @@
         } else note('이 조건에 맞는 고시·공고가 없어요');
       } else {
         const gov = S.grpTab === 'gov';
-        const fresh = gov ? govNew : applyNew, cont = gov ? govOld : applyOld;
+        let fresh = gov ? govNew : applyNew, cont = gov ? govOld : applyOld;
+        if (applyOnly) { fresh = fresh.filter(CFG.canApplyNow); cont = cont.filter(CFG.canApplyNow); }
         if (!fresh.length && !cont.length) {
           note(gov ? '이 조건에 맞는 군정 소식이 없어요' : '이 조건으로 신청·참여할 수 있는 일은 없어요');
         } else {

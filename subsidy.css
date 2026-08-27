@@ -30,3 +30,38 @@
 .sub-badge{display:inline-block;vertical-align:2px;font-size:calc(11px*var(--fsx,1));font-weight:800;
  background:var(--brand-soft,#E8F7EE);color:var(--brand-ink,#0F7A38);
  border:1px solid var(--brand,#16A34A);border-radius:100px;padding:1px 8px;margin-left:2px;white-space:nowrap}
+/* 바로 접수 배지 */
+.sub-badge.apply{background:#FFF3D8;color:#8A6210;border-color:#F0C24B}
+/* 목록 위 '지금 바로 접수되는 것만' 토글 */
+.applyfilter{display:block;width:100%;margin:2px 0 10px;padding:11px 14px;border-radius:12px;
+ border:1px solid var(--line,#DDE8E2);background:var(--paper,#fff);color:var(--ink,#121E18);
+ font-family:inherit;font-size:calc(13.5px*var(--fsx,1));font-weight:700;text-align:left;cursor:pointer}
+.applyfilter b{color:var(--brand,#16A34A)}
+.applyfilter.on{background:var(--brand,#16A34A);border-color:var(--brand,#16A34A);color:#fff}
+.applyfilter.on b{color:#FFF3B8}
+/* 경영체 조회 */
+.sub-agrix{display:block;width:100%;margin:4px 0 12px;padding:12px 14px;border-radius:12px;
+ border:1.5px solid #1D5DBB;background:#E7F0FF;color:#1D5DBB;font-family:inherit;
+ font-size:calc(14.5px*var(--fsx,1));font-weight:800;text-align:left;cursor:pointer}
+.sub-agrix span{display:block;font-size:calc(12px*var(--fsx,1));font-weight:500;margin-top:2px;opacity:.85}
+.sub-agrix-card{border:1px solid var(--line,#DDE8E2);border-radius:12px;padding:11px 13px;margin:4px 0 12px;
+ background:var(--bg,#F4F5F2)}
+.sub-agrix-card .t{font-size:calc(13.5px*var(--fsx,1));font-weight:800;margin-bottom:7px}
+.sub-agrix-card .mockflag{font-size:10.5px;font-weight:800;background:#FBEFE5;color:#B85C22;
+ border-radius:100px;padding:1px 7px;margin-left:5px;vertical-align:1px}
+.sub-agrix-card .g{display:flex;gap:8px;font-size:calc(12.5px*var(--fsx,1));padding:2px 0}
+.sub-agrix-card .g span{width:72px;color:var(--sub,#5F7168);flex:none}
+.sub-agrix-card .g b.ok{color:#0F7A38} .sub-agrix-card .g b.no{color:#B85C22}
+.sub-auto{font-size:10.5px;font-weight:800;background:#E7F0FF;color:#1D5DBB;border-radius:100px;
+ padding:1px 7px;margin-left:6px;vertical-align:2px}
+/* 접수 폼 */
+.ap-lab{display:block;font-size:calc(12.5px*var(--fsx,1));color:var(--sub,#5F7168);margin:10px 0 4px}
+.ap-lab b{color:#B85C22}
+.ap-in{width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line,#DDE8E2);
+ border-radius:11px;font:inherit;font-size:calc(15px*var(--fsx,1));background:var(--paper,#fff);color:var(--ink,#121E18)}
+textarea.ap-in{min-height:70px}
+.ap-agree{display:flex;gap:8px;align-items:flex-start;margin-top:14px;padding:11px 12px;
+ border:1px solid var(--line,#DDE8E2);border-radius:11px;font-size:calc(13px*var(--fsx,1));
+ line-height:1.55;cursor:pointer}
+.ap-agree.on{background:var(--brand-soft,#E8F7EE);border-color:var(--brand,#16A34A)}
+.ap-agree input{margin-top:3px;width:18px;height:18px;flex:none}
