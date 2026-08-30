@@ -5,6 +5,9 @@
   "compatibility_date": "2026-01-01",
   "vars": { "ALLOW_ORIGIN": "https://choyul.github.io" },
   "triggers": { "crons": ["0 19 * * *"] },   // 한국 시각 새벽 4시
+  "r2_buckets": [
+    { "binding": "PHOTOS", "bucket_name": "bonghwa-lab-photos" }
+  ],
   "d1_databases": [
     { "binding": "DB", "database_name": "bonghwa-lab", "database_id": "c607fde0-8f15-4716-99d6-874603282d91" }
   ]

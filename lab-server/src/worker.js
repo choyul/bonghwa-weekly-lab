@@ -18,6 +18,9 @@
      POST   /market/:id/ok       "고칠 것 없습니다" (수정키)
      POST   /market/:id/sold     몇 개 나갔는지     (수정키)
      POST   /market/:id/done     "다 팔렸어요"      (수정키)
+     POST   /market/:id/photo    사진 올리기 (수정키. 3장·400KB·webp/jpeg)
+     DELETE /market/:id/photo/:p 사진 지우기 (수정키)
+     GET    /photo/:id/:p        사진 보기   (공개. 가리면 그 자리에서 안 보인다)
      POST   /market/:id/report   신고 (공개)
      GET·POST /admin/seller      한 달에 5분 — 멈춤 풀기·재발급
      GET·POST /admin/market      기록 보기·긴급 삭제
@@ -116,6 +119,11 @@ const PICKUP_DAYS   = 7;    /* 수령일 + 이만큼이면 저절로 종료 */
 const PURGE_DAYS    = 90;   /* 종료 + 이만큼이면 글 내용을 지운다 */
 const IDLE_DAYS     = 90;   /* 활동 없음 이만큼이면 연락처를 지운다 */
 const SUSPEND_DAYS  = 7;    /* 자동 정지 기간 */
+/* 사진 — 용량은 '들어올 때' 정해진다. 나중에 관리하는 것이 아니라 크게 못 들어오게 한다. */
+const MAX_PHOTOS    = 3;
+const MAX_BYTES     = 400 * 1024;   /* 브라우저에서 1280px·WebP 로 줄이면 보통 100~200KB */
+const PHOTO_DAYS    = 30;           /* 종료 + 이만큼이면 사진을 지운다 */
+const PHOTO_TYPES   = { 'image/webp': 'webp', 'image/jpeg': 'jpg' };
 
 /* 목록에서 앞뒤를 가르는 기본 점수 — 지우지 않고 뒤로 민다 */
 const BASE = { '판매중': 0, '수확예정': 1000, '확인중': 3000, '마감': 4000, '종료': 5000 };
@@ -190,9 +198,16 @@ async function after_report(env, m, why, now) {
     return { acted: '해당 없음' };
   }
   if (why === 'photo') {
-    await env.DB.prepare('UPDATE market SET notice=?2 WHERE id=?1')
-      .bind(m.id, '사진 신고가 들어왔습니다. 사진을 확인해 주세요.').run();
-    return { acted: '사진 가림(사진 기능 준비 중)' };
+    /* 글씨는 읽어야 알지만 사진은 눈에 들어오는 순간 이미 피해다. 그래서 한 건에 가린다.
+       글은 그대로 둔다 — 사진만 다시 올리면 된다. */
+    if (!pics(m).length) {
+      await env.DB.prepare("UPDATE report SET state='무효' WHERE mid=?1 AND why='photo' AND state='유효'")
+        .bind(m.id).run();
+      return { acted: '해당 없음' };
+    }
+    await env.DB.prepare('UPDATE market SET phold=1, notice=?2 WHERE id=?1')
+      .bind(m.id, '사진 신고가 들어와 사진을 가렸습니다. 사진을 지우고 다시 올려 주세요.').run();
+    return { acted: '사진 가림' };
   }
   /* 나머지는 서로 다른 기기 두 곳이 모여야 움직인다 */
   const c = await env.DB.prepare(
@@ -256,6 +271,28 @@ async function recover(env, m, now, kind) {
     showAt, note: slow ? '두 번째라 하루 뒤에 다시 뜹니다.' : '' };
 }
 
+/* ── 사진 ──
+   보내온 것이 정말 사진인지 앞머리 몇 바이트로 확인한다.
+   확장자나 content-type 은 아무나 적어 보낼 수 있다. */
+function isImage(buf, type) {
+  const b = new Uint8Array(buf);
+  if (type === 'image/webp')
+    return b.length > 12 && b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
+           b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50;   /* RIFF....WEBP */
+  if (type === 'image/jpeg')
+    return b.length > 3 && b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF;      /* JPEG */
+  return false;
+}
+const pics = m => { try { const a = JSON.parse(m.photos || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+/* 글에 딸린 사진을 모두 지운다. 글이 사라지면 사진도 남을 이유가 없다. */
+async function wipe(env, m) {
+  const ps = pics(m);
+  if (!ps.length || !env.PHOTOS) return 0;
+  for (const p of ps) { try { await env.PHOTOS.delete(`photo/${m.id}/${p}`); } catch (e) { } }
+  await env.DB.prepare("UPDATE market SET photos='[]' WHERE id=?1").bind(m.id).run();
+  return ps.length;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    새벽 청소 — 이 함수가 이 장터의 청소부다.
    모든 것에 수명을 주면 사람이 지울 것이 남지 않는다.
@@ -295,6 +332,10 @@ async function sweep(env) {
         end++; continue;
       }
     }
+    /* ③-2 종료된 지 한 달이면 사진을 지운다. 거래가 끝난 사진은 아무에게도 쓸모가 없다. */
+    if (m.state === '종료' && m.edited && t - MS(m.edited) >= PHOTO_DAYS * 86400000 && pics(m).length) {
+      out.photos = (out.photos || 0) + await wipe(env, m);
+    }
     /* ④ 종료된 지 오래면 내용을 지운다. 남기는 것은 품목과 달뿐이다. */
     if (m.state === '종료' && m.edited && t - MS(m.edited) >= PURGE_DAYS * 86400000 && d['설명']) {
       await env.DB.prepare('UPDATE market SET data=?2 WHERE id=?1')
@@ -330,7 +371,7 @@ async function sweep(env) {
     "COALESCE(NULLIF(seenAt,''), at) <= ?1").bind(idle).run();
 
   return { at: now, 마감: close, 종료: end, 무응답정리: drop, 거래완료: done,
-    글내용파기: out.purged || 0, 신고정당: good, 무고: bad,
+    사진파기: out.photos || 0, 글내용파기: out.purged || 0, 신고정당: good, 무고: bad,
     정지해제: (up.meta && up.meta.changes) || 0, 연락처파기: (pg.meta && pg.meta.changes) || 0 };
 }
 
@@ -387,12 +428,32 @@ export default {
     }
 
     /* ═══════════════════════════════════════════════════════════
+       사진 보여주기 (공개)
+       R2 를 공개 버킷으로 열지 않는다. 주소를 아는 사람은 가려도 계속 보게 된다.
+       ═══════════════════════════════════════════════════════════ */
+    const pm = u.pathname.match(/^\/photo\/(m_[0-9a-z]{8})\/(p_[0-9a-z]{8}\.(?:webp|jpg))$/);
+    if (pm && req.method === 'GET') {
+      if (!env.PHOTOS) return new Response('사진 저장소가 없습니다', { status: 503 });
+      const m = await env.DB.prepare('SELECT id,state,photos,phold FROM market WHERE id=?1').bind(pm[1]).first();
+      const gone = !m || m.phold || !pics(m).includes(pm[2]) ||
+        ['삭제됨', '숨김'].includes(m.state);
+      if (gone) return new Response('없는 사진입니다', { status: 404 });
+      const o = await env.PHOTOS.get(`photo/${pm[1]}/${pm[2]}`);
+      if (!o) return new Response('없는 사진입니다', { status: 404 });
+      return new Response(o.body, { headers: {
+        'content-type': pm[2].endsWith('.webp') ? 'image/webp' : 'image/jpeg',
+        /* 짧게 잡는다 — 신고로 가려졌을 때 오래 남아 있으면 안 된다 */
+        'cache-control': 'public, max-age=300',
+        'access-control-allow-origin': '*' } });
+    }
+
+    /* ═══════════════════════════════════════════════════════════
        장터 — 주민 화면이 읽는 곳
        ═══════════════════════════════════════════════════════════ */
     if (u.pathname === '/market' && req.method === 'GET') {
       const now = NOW();
       const r = await env.DB.prepare(
-        `SELECT id,seller,nick,data,state,sold,holds,heldAt,showAt,at
+        `SELECT id,seller,nick,data,state,sold,holds,heldAt,showAt,photos,phold,at
            FROM market WHERE state IN ('판매중','수확예정','확인중','마감','종료')
             AND (showAt='' OR showAt<=?1) LIMIT 500`).bind(now).all();
       /* 신고 수 — 가중치가 0이 된 기기(무고 3회)는 세지 않는다 */
@@ -408,6 +469,7 @@ export default {
         let d = {}; try { d = JSON.parse(x.data); } catch (e) { }
         const n = nrep[x.id] || 0, dn = done[x.seller] || 0;
         return { id: x.id, nick: x.nick, state: x.state, sold: x.sold || 0, at: x.at, data: d,
+          photos: x.phold ? [] : pics(x), phold: !!x.phold,
           held: x.state === '확인중', reports: n, holds: x.holds || 0,
           sprout: dn < SPROUT_DONE,                       /* '새로 오신 분' 배지 */
           _score: BASE[x.state] + n * 50 + (x.holds || 0) * 100 - Math.min(dn, 10) * 20,
@@ -498,6 +560,48 @@ export default {
         note: first ? '처음 올리신 글이라 24시간 뒤에 목록에 뜹니다.' : '' }, env);
     }
 
+    /* 사진 올리기·지우기 — 글 주인만 */
+    const um = u.pathname.match(/^\/market\/(m_[0-9a-z]{8})\/photo(?:\/(p_[0-9a-z]{8}\.(?:webp|jpg)))?$/);
+    if (um) {
+      const me = await whoami(req, env);
+      const m = await env.DB.prepare('SELECT * FROM market WHERE id=?1').bind(um[1]).first();
+      if (!m || m.state === '삭제됨') return json({ error: '그 글을 찾지 못했습니다' }, env, 404);
+      if (!me || me.id !== m.seller) return json({ error: '이 글은 올리신 분만 고칠 수 있습니다' }, env, 403);
+      if (!env.PHOTOS) return json({ error: '사진 저장소가 아직 없습니다' }, env, 503);
+      const ps = pics(m), now = NOW();
+
+      if (!um[2] && req.method === 'POST') {
+        if (ps.length >= MAX_PHOTOS) return json({ error: `사진은 ${MAX_PHOTOS}장까지 올리실 수 있습니다` }, env, 400);
+        const type = (req.headers.get('content-type') || '').split(';')[0].trim();
+        if (!PHOTO_TYPES[type]) return json({ error: '사진 파일만 올리실 수 있습니다' }, env, 400);
+        const buf = await req.arrayBuffer();
+        if (!buf.byteLength) return json({ error: '사진이 비어 있습니다' }, env, 400);
+        if (buf.byteLength > MAX_BYTES)
+          return json({ error: `사진 한 장이 ${Math.round(MAX_BYTES / 1024)}KB 를 넘습니다. 다시 찍어 주세요.` }, env, 413);
+        if (!isImage(buf, type)) return json({ error: '사진 파일이 아닙니다' }, env, 400);
+        const pid = newId('p') + '.' + PHOTO_TYPES[type];
+        await env.PHOTOS.put(`photo/${m.id}/${pid}`, buf, { httpMetadata: { contentType: type } });
+        const next = ps.concat(pid);
+        /* 사진을 새로 올리면 사진 가림은 풀린다 — 고치면 저절로 복귀하는 것과 같은 규칙이다 */
+        await env.DB.prepare('UPDATE market SET photos=?2, phold=0, notice=?3, edited=?4 WHERE id=?1')
+          .bind(m.id, JSON.stringify(next), m.phold ? '' : m.notice, now).run();
+        if (m.phold) await env.DB.prepare("UPDATE report SET state='해소' WHERE mid=?1 AND why='photo'").bind(m.id).run();
+        await touch(env, me.id, now);
+        return json({ ok: true, pid, url: `/photo/${m.id}/${pid}`, photos: next, bytes: buf.byteLength }, env);
+      }
+
+      if (um[2] && req.method === 'DELETE') {
+        if (!ps.includes(um[2])) return json({ error: '그 사진이 없습니다' }, env, 404);
+        try { await env.PHOTOS.delete(`photo/${m.id}/${um[2]}`); } catch (e) { }
+        const next = ps.filter(x => x !== um[2]);
+        await env.DB.prepare('UPDATE market SET photos=?2, edited=?3 WHERE id=?1')
+          .bind(m.id, JSON.stringify(next), now).run();
+        await touch(env, me.id, now);
+        return json({ ok: true, photos: next }, env);
+      }
+      return json({ error: '없는 주소입니다' }, env, 404);
+    }
+
     const mm = u.pathname.match(/^\/market\/(m_[0-9a-z]{8})(?:\/(ok|done|sold|report))?$/);
     if (mm) {
       const id = mm[1], sub = mm[2] || '';
@@ -577,6 +681,7 @@ export default {
 
       /* ── 지우기 ── */
       if (!sub && req.method === 'DELETE') {
+        await wipe(env, m);                       /* 글이 사라지면 사진도 남을 이유가 없다 */
         await env.DB.prepare("UPDATE market SET state='삭제됨', data='{}', notice='', edited=?2 WHERE id=?1")
           .bind(id, now).run();
         await env.DB.prepare('DELETE FROM report WHERE mid=?1').bind(id).run();

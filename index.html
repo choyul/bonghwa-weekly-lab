@@ -86,14 +86,34 @@ footer{max-width:430px}
  align-items:center;gap:2px;font-family:inherit}
 .h-mas img{width:112px;height:112px;object-fit:contain;
  filter:drop-shadow(0 8px 14px rgba(0,0,0,.22))}
-.h-mas .h-mas-t{font-size:calc(11.5px*var(--fsx));font-weight:800;color:#fff;
- background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.34);border-radius:100px;
- padding:2px 10px;white-space:nowrap;max-width:112px;overflow:hidden;text-overflow:ellipsis}
+/* 이름표는 '눌러도 되는 것'으로 보이게 — 반투명 딱지는 그냥 설명글로 읽혔다.
+   흰 바탕 + 아래 화살표로 고르는 칸임을 알린다. */
+.h-mas .h-mas-t{font-size:calc(11.5px*var(--fsx));font-weight:800;color:var(--brand-ink);
+ background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:100px;
+ box-shadow:0 3px 8px rgba(0,0,0,.18);
+ padding:3px 9px 3px 11px;white-space:nowrap;max-width:112px;overflow:hidden;text-overflow:ellipsis;
+ display:flex;align-items:center;gap:3px}
+.h-mas .h-mas-t .cv{font-size:9px;opacity:.75;transform:translateY(1px)}
 .h-mas:active img{transform:scale(.96)}
+.h-mas:active .h-mas-t{transform:translateY(1px)}
+/* 캐릭터 뒤에 흰 동그라미를 깔아 '눌러도 되는 것'처럼 보이게 한다 —
+   초록 바탕에 그림만 떠 있으면 장식으로 읽힌다. */
+.h-mas::before{content:'';position:absolute;left:50%;top:2px;width:108px;height:108px;
+ margin-left:-54px;border-radius:50%;background:rgba(255,255,255,.13);pointer-events:none}
+/* 아직 한 번도 안 눌러 본 사람에게만 — 그 동그라미가 한 번씩 커졌다 돌아온다 */
+.h-mas.nudge::before{animation:masRing 2.4s ease-in-out infinite}
+.h-mas.nudge .h-mas-t{animation:masTap 2.4s ease-in-out infinite}
+@keyframes masRing{0%,60%,100%{transform:scale(1);background:rgba(255,255,255,.13)}
+ 78%{transform:scale(1.09);background:rgba(255,255,255,.26)}}
+@keyframes masTap{0%,72%,100%{transform:translateY(0)}80%{transform:translateY(-3px)}88%{transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){
+ .h-mas.nudge::before,.h-mas.nudge .h-mas-t{animation:none}
+}
 @media (max-width:359px){
  .h-week,.h-title{padding-right:86px}
  .h-mas{width:94px;height:114px}
  .h-mas img{width:94px;height:94px}
+ .h-mas::before{top:2px;width:90px;height:90px;margin-left:-45px}
 }
 /* 대상 고르기 창 */
 .aud-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:4px 18px 6px}
@@ -2095,6 +2115,11 @@ function init(){
       행사     : 이 기간에 갈 만한 행사가 몇 개인가
       언론속봉화: 오늘 새로 올라온 소식이 몇 개인가
     기간은 맨 위 공통 UI를 따르므로, 기간을 바꾸면 세 화면의 숫자가 함께 움직인다. */
+ /* 캐릭터를 눌러 대상을 바꿀 수 있다는 걸 모르고 지나치는 사람이 많다.
+    한 번 눌러 볼 때까지만 이름표가 까딱이고 동그라미가 퍼진다. 누르면 다시 안 한다. */
+ const AUDHINT='bhlab.audhint';
+ function audHintOn(){ try{ return !localStorage.getItem(AUDHINT) }catch(e){ return false } }
+ function audHintOff(){ try{ localStorage.setItem(AUDHINT,'1') }catch(e){} }
  /* 지금 고른 대상 — 첫 칸 아이콘과 아래 목록이 같은 값을 본다 */
  function meAud(){ return (BWUI.api.state.axis&&BWUI.api.state.axis.aud)||''; }
  function meSrc(){ const a=meAud(), f=a&&CHAR_FILE[a];
@@ -2192,10 +2217,13 @@ function init(){
   el.innerHTML=`
     <div class="h-week">${head}</div>
     <div class="h-title">${title}</div>
-    <button type="button" class="h-mas" id="hMas" aria-label="누구를 위한 일인지 고르기">
-      <img src="${meSrc()}" alt="" decoding="async"><span class="h-mas-t">${me?E(me):'누구?'}</span>
+    <button type="button" class="h-mas${audHintOn()?' nudge':''}" id="hMas"
+      aria-haspopup="dialog" aria-label="누구를 위한 일인지 고르기">
+      <img src="${meSrc()}" alt="" decoding="async">
+      <span class="h-mas-t">${me?E(me):'눌러서 골라요'}<span class="cv">▼</span></span>
     </button>`;
-  const hb=el.querySelector('#hMas'); if(hb)hb.onclick=audModal;
+  const hb=el.querySelector('#hMas');
+  if(hb)hb.onclick=()=>{ audHintOff(); hb.classList.remove('nudge'); audModal(); };
  }
 
  /* ── 홈 화면 '이번 주 장터' 카드 (§4-1) — 소식 카드와 같은 시각 언어 ── */

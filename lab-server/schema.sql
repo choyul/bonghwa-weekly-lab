@@ -58,6 +58,8 @@ CREATE TABLE IF NOT EXISTS market (
   backAt  TEXT DEFAULT '',       -- 복귀한 시각
   showAt  TEXT DEFAULT '',       -- 이 시각이 지나야 목록에 뜬다 (첫 글 24시간)
   notice  TEXT DEFAULT '',       -- 게시자에게 보일 통보
+  photos  TEXT DEFAULT '[]',     -- 사진 이름들. 사진 자체는 R2 에 있다 (최대 3장)
+  phold   INTEGER DEFAULT 0,     -- 사진 신고로 가려졌는가 (글은 그대로 둔다)
   at      TEXT NOT NULL,
   edited  TEXT DEFAULT ''
 );
