@@ -337,16 +337,45 @@
   /* ───────── 분류축 (달력 / 주제 / 대상 / 지역) ─────────
      화면이 CFG.axes 로 정의한다. 값마다 건수를 세어 보여주고,
      비어 있는 값은 흐리게 둔다 — 눌렀는데 아무것도 없는 일을 막는다. */
-  function countFor(ax, v) {
-    const keep = S.axis[ax.key]; S.axis[ax.key] = '';
+  /* ── 축 숫자의 바탕 무리 ──
+     축의 숫자는 '지금 갈래 탭이 실제로 보여 주는 것'과 같은 무리를 세야 한다.
+     기간 안에 실린 것(rows)만 세면 ①아직 진행 중이라 끌어온 것(extra)과
+     ②갈래 탭 구분을 빼먹어 [신청·참여 10]인데 축에는 34로 나온다. */
+  let AX_BASE = null, AX_BASE_ALL = null;
+  function buildAxisBase() {
+    const axes = CFG.axes || [], keep = {};
+    axes.forEach(a => { keep[a.key] = S.axis[a.key]; S.axis[a.key] = ''; });
+    const rows = ISSUES.filter(matches);
+    const ext = CFG.ongoingSection ? ongoingExtra(rows) : [];
+    axes.forEach(a => { S.axis[a.key] = keep[a.key]; });
+    let all = rows.concat(ext);
+    if (CFG.groupTabs && CFG.splitAdmin) {
+      if (S.grpTab === 'gov') all = all.filter(i => !CFG.splitAdmin(i));
+      else if (S.grpTab === 'apply') all = all.filter(i => CFG.splitAdmin(i));
+    }
+    return all;
+  }
+  function axisBase(global) {
     /* 키워드처럼 '1년 동안'을 세야 하는 축은 지금 보고 있는 기간을 무시한다 */
-    const keepScope = S.scope;
-    if (ax.globalCount) S.scope = 'all';
-    const n = v === '' ? ISSUES.filter(matches).length
-      : ISSUES.filter(i => matches(i) && ax.match(i, v)).length;
-    S.scope = keepScope;
-    S.axis[ax.key] = keep;
-    return n;
+    if (global) {
+      if (!AX_BASE_ALL) {
+        const k = S.scope; S.scope = 'all';
+        AX_BASE_ALL = buildAxisBase(); S.scope = k;
+      }
+      return AX_BASE_ALL;
+    }
+    if (!AX_BASE) AX_BASE = buildAxisBase();
+    return AX_BASE;
+  }
+  function countFor(ax, v) {
+    /* 고시·공고 탭에서는 업무가 아니라 공고를 센다 — 화면이 세는 법을 준다 */
+    if (S.grpTab === 'notice' && CFG.noticeTab && CFG.noticeTab.countAxis)
+      return CFG.noticeTab.countAxis(ax.key, v);
+    const axes = CFG.axes || [], base = axisBase(!!ax.globalCount);
+    return base.filter(i => axes.every(a => {
+      const val = a.key === ax.key ? v : S.axis[a.key];
+      return !val || a.match(i, val);
+    })).length;
   }
   /* 값 목록 앞에 '전체'를 붙인다. 아무것도 안 고른 상태가 곧 전체이므로 v 는 빈 값. */
   function axValues(ax) {
@@ -367,7 +396,7 @@
     if (axesOpen === null) axesOpen = CFG.axesOpen !== false;
     /* 축이 여럿이면 접어 둘 수 있게 — 목록까지 가는 길을 막지 않는다 */
     if (CFG.axesOpen === false) {
-      const picked = CFG.axes.filter(ax => S.axis[ax.key]).length;
+      const picked = CFG.axes.filter(ax => !ax.hidden && S.axis[ax.key]).length;
       const axLabel = CFG.axesLabel || '갈라 보기';
       if (!axesOpen) {
         host.innerHTML = `<button class="calfold" id="bwAxOpen">🔎 ${E(axLabel)}
@@ -379,6 +408,7 @@
     host.innerHTML = (CFG.axesOpen === false
       ? `<button class="calfold" id="bwAxClose" style="margin-bottom:8px">🔎 ${E(CFG.axesLabel || '갈라 보기')} <span class="hint">· 접기</span></button>` : '')
       + CFG.axes.map(ax => {
+      if (ax.hidden) return '';        /* 화면에는 안 그린다 — 거르기에는 그대로 쓴다 */
       if (ax.when && !ax.when(S)) return '';
       let vals = axValues(ax);
       /* 개수 많은 순 — '전체' 칸은 맨 앞에 둔 채 나머지만 정렬한다 */
@@ -458,6 +488,7 @@
 
   /* ───────── 목록 ───────── */
   function render() {
+    AX_BASE = AX_BASE_ALL = null;      /* 기간·갈래가 바뀌었을 수 있으니 바탕 무리를 다시 만든다 */
     const rows = ISSUES.filter(matches);
     if (CFG.sortWith) rows.sort((a, b) => CFG.sortWith(a, b) || (a.last < b.last ? 1 : -1));
     else if (CFG.sortPriority) {
@@ -944,6 +975,11 @@
     setCustom(name) { S.custom = S.custom === name ? '' : name; S.limit = 60; render(); },
     get state() { return S },
     get groupCounts() { return GRP_COUNTS },
+    /* 화면이 축 하나의 값별 건수를 물어볼 때 — 지금 보고 있는 기간·갈래와 같은 무리를 센다. */
+    axisCount(key, v) {
+      const ax = (CFG.axes || []).find(a => a.key === key);
+      return ax ? countFor(ax, v || '') : 0;
+    },
     ST_LABEL, typeLabel, E
   };
   global.BWUI = { start, toast, api };

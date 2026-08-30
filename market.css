@@ -95,3 +95,43 @@ body.mode-market .psearch{display:none}
 .mk-home .h .go{margin-left:auto;color:var(--brand,#16A34A);font-size:calc(13.5px*var(--fsx,1))}
 .mk-home .s{font-size:calc(14px*var(--fsx,1));color:var(--sub,#5F7168);margin-top:5px}
 .mk-home .s b{color:var(--ink,#121E18)}
+
+/* ── 판매자 등록 ──
+   신청 화면은 어르신이 혼자 채우는 곳이다. 칸 높이 52px, 글씨 17px 을 지킨다. */
+.mk-sellbtn{display:block;width:100%;min-height:52px;margin-bottom:10px;padding:12px 14px;
+ text-align:left;cursor:pointer;font-family:inherit;font-weight:700;
+ font-size:calc(15.5px*var(--fsx,1));line-height:1.5;
+ border:1.5px dashed var(--brand,#16A34A);border-radius:12px;
+ background:var(--brand-soft,#E8F7EE);color:var(--brand-ink,#0F7A38)}
+.mk-sellbtn.ok{border-style:solid}
+.mk-sellbtn.wait{border-color:#F0D48A;background:var(--gold-soft,#FEF4D8);color:#8A6210}
+
+.mk-lab{display:block;font-size:calc(15px*var(--fsx,1));font-weight:700;
+ color:var(--ink,#121E18);margin:14px 0 6px}
+.mk-in{display:block;width:100%;min-height:52px;padding:12px 14px;
+ font-family:inherit;font-size:calc(17px*var(--fsx,1));
+ border:1px solid var(--line,#DDE8E2);border-radius:12px;
+ background:var(--paper,#fff);color:var(--ink,#121E18)}
+.mk-in:focus{outline:2px solid var(--brand,#16A34A);outline-offset:1px;border-color:var(--brand,#16A34A)}
+.mk-hint{font-size:calc(13.5px*var(--fsx,1));line-height:1.6;color:var(--sub,#5F7168);margin:6px 0 0}
+.mk-hint b{color:var(--ink,#121E18)}
+
+.mk-agree{display:flex;gap:10px;align-items:center;min-height:56px;margin:16px 0 8px;
+ padding:10px 14px;cursor:pointer;border:1.5px solid var(--line,#DDE8E2);border-radius:12px;
+ background:var(--paper,#fff);font-size:calc(16px*var(--fsx,1));font-weight:700}
+.mk-agree input{width:24px;height:24px;accent-color:var(--brand,#16A34A)}
+.mk-consent{font-size:calc(13.5px*var(--fsx,1));line-height:1.75;color:var(--sub,#5F7168);
+ background:var(--bg,#F4F5F2);border:1px solid var(--line,#DDE8E2);border-radius:12px;
+ padding:12px 14px;margin-bottom:14px}
+.mk-err2{font-size:calc(14.5px*var(--fsx,1));font-weight:700;color:#B3261E;
+ background:#FDECEA;border-radius:10px;padding:10px 12px;margin:10px 0 0}
+
+.mk-keybox{border:1px solid var(--line,#DDE8E2);border-radius:12px;padding:12px 14px;
+ background:var(--bg,#F4F5F2);margin:12px 0}
+.mk-keybox .t{font-size:calc(13.5px*var(--fsx,1));font-weight:700;color:var(--sub,#5F7168)}
+.mk-keybox .k{font-size:calc(20px*var(--fsx,1));font-weight:800;letter-spacing:.06em;
+ margin:6px 0 10px;font-family:ui-monospace,Menlo,monospace;word-break:break-all}
+.mk-acts2{display:flex;gap:8px;margin-bottom:8px}
+.mk-sm{min-height:44px;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:inherit;
+ font-size:calc(14.5px*var(--fsx,1));font-weight:700;
+ border:1px solid var(--line,#DDE8E2);background:var(--paper,#fff);color:var(--ink,#121E18)}
