@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="bonghwa-tokens.css?v=b3e2a291">
 <link rel="stylesheet" href="ui.css?v=104d50e4">
 <link rel="stylesheet" href="subsidy.css">
+<link rel="stylesheet" href="market.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
 /* ═══════════════════════════════════════════════════════════════
@@ -628,6 +629,8 @@ body{padding-top:34px}
 <script src="lab-api.js"></script>
 <script src="subsidy-config.js"></script>
 <script src="agrix-mock.js"></script>
+<script src="market-config.js"></script>
+<script src="market.js"></script>
 <script src="subsidy.js"></script>
 <script>
 /* data.js(필수) → notices.js(고시·공고) → events.js(주간행사) → news.js(봉화 뉴스) → init
@@ -1731,6 +1734,12 @@ function init(){
   box.appendChild(sec);
  }
 
+ /* 장터가 캘린더 담기를 그대로 쓰도록 내어 준다 — .ics 생성기를 새로 만들지 않는다 */
+ window.BWLAB_ICS={buildICS,downloadICS};
+ /* 장터 화면으로 들어갈 때 다른 모드를 끈다 */
+ window.MKSETMODE=()=>{ document.querySelectorAll('#modetabs button').forEach(b=>b.classList.remove('on'));
+   const t=document.querySelector('#modetabs button[data-m="market"]'); if(t)t.classList.add('on');
+   document.querySelectorAll('#tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.t==='market')); };
  function setMode(m){
   if(m!==MODE)AV(m==='event'?'주간행사':m==='news'?'봉화뉴스':'주간업무');
   MODE=m;
@@ -1738,6 +1747,7 @@ function init(){
   document.body.classList.toggle('mode-news',m==='news');
   if(m==='news'){ markNewsSeen(); }
   document.querySelectorAll('#modetabs button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  if(m!=='market'&&window.MARKET&&MARKET.isMarket())location.hash='';
   /* 기간은 셋이 함께 쓰므로, 화면을 옮긴다고 사용자가 고른 기간을 건드리지 않는다.
      (예전에는 행사로 넘어갈 때 강제로 '그날'로 바꿨는데, 공통 기간에서는 자리를 빼앗는 셈이 된다) */
   renderEvents(); renderNews();
@@ -1752,9 +1762,13 @@ function init(){
   el.innerHTML=`
     <button type="button" data-m="work" class="on">📋 새소식</button>`
     +(EV.length?`<button type="button" data-m="event">🎪 행사</button>`:'')
-    +(NEWS.length?`<button type="button" data-m="news">📰 언론속봉화</button>`:'');
+    +(NEWS.length?`<button type="button" data-m="news">📰 언론속봉화</button>`:'')
+    +`<button type="button" data-m="market">🛒 장터</button>`;
   wrap.insertBefore(el,wrap.firstChild);
-  el.querySelectorAll('button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+   if(b.dataset.m==='market'){ if(window.MARKET)MARKET.go('#market'); return; }
+   setMode(b.dataset.m);
+  });
  }
  /* ═══ 뒤로가기로 팝업만 닫기 ═══
     안드로이드 뒤로가기는 기본이 '이전 페이지로'라, 상세 팝업을 열어 둔 채 누르면
@@ -2107,6 +2121,24 @@ function init(){
     <img class="h-mas" src="${MASCOT_SRC}" alt="" aria-hidden="true" decoding="async">`;
  }
 
+ /* ── 홈 화면 '이번 주 장터' 카드 (§4-1) — 소식 카드와 같은 시각 언어 ── */
+ async function buildMarketHome(){
+  if(!window.MARKET)return;
+  const wrap=document.querySelector('.bw-wrap'); if(!wrap)return;
+  const s=await MARKET.summary(); if(!s||!s.live)return;      /* 장터가 비면 카드도 없다 */
+  let el=document.getElementById('mkHome');
+  if(!el){ el=document.createElement('button'); el.type='button'; el.id='mkHome'; el.className='mk-home';
+   const gt=document.getElementById('bwGrpTabs')||document.getElementById('bwAxes');
+   wrap.insertBefore(el, gt||null);
+   el.onclick=()=>MARKET.go('#market'); }
+  el.innerHTML=`<div class="h"><span>🛒 이번 주 장터</span><span class="go">보러 가기 →</span></div>
+    <div class="s"><b>${s.live}건</b>이 올라와 있어요${s.soon?` · 마감 임박 ${s.soon}건`:''}${
+      s.top.length?` · ${s.top.map(t=>E(t)).join(', ')}`:''}</div>`;
+ }
+ /* 장터를 보는 동안에는 홈 카드도 감춘다 */
+ addEventListener('hashchange',()=>{ const h=document.getElementById('mkHome');
+   if(h)h.style.display=(window.MARKET&&MARKET.isMarket())?'none':''; });
+
  /* ── 하단 탭바 — 디자인의 5개 탭을 이 앱에 실제로 있는 기능에 이어 붙인다 ── */
  function buildTabBar(){
   if(document.getElementById('tabbar'))return;
@@ -2451,6 +2483,8 @@ function init(){
  buildNewsView();
  buildTabBar();
  buildNotices();
+ buildMarketHome();
+ if(window.MARKET)MARKET.route();          /* #market 로 바로 들어온 경우 */
  /* 기본: 오늘이 이번 자료 주간이면 '오늘 소식'부터, 아니면 이번 주 전체 */
  if(daysOf(D.weekStart).includes(BWUI.api.today)) setDay(BWUI.api.today); else setScope('week');
 
@@ -2486,7 +2520,9 @@ function init(){
    if(params.get('a')==='1')offerInstall('공유링크');
   }
   else{ BWUI.toast('공유된 소식을 찾지 못했어요 — 지난주 자료이거나 정보가 바뀌었을 수 있어요'); }
- }else if(!isStandalone() && params.get('add')!=='1'){   /* 설치하러 넘어온 경우도 인사 화면은 건너뛴다 */
+ }else if(!isStandalone() && params.get('add')!=='1' && !/^#market/.test(location.hash||'')){
+  /* 장터 링크(#market…)로 바로 들어온 경우도 인사 화면을 건너뛴다 —
+     안 그러면 인트로가 장터를 덮어 아무것도 누를 수 없다 */
   /* 바탕화면 아이콘으로 열었으면 인트로를 건너뛴다 —
      아이콘을 눌러 들어온 사람에게 같은 그림을 또 보여 주고 [시작하기]까지 누르게 하면 단계만 늘어난다.
      브라우저에서 주소로 처음 들어온 경우에만 인사 화면을 보여 준다. */
