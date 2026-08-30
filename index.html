@@ -81,11 +81,14 @@ footer{max-width:430px}
 .h-title{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.3;margin-bottom:0;position:relative;
  padding-right:104px;word-break:keep-all}
 /* 이번 주 소식을 전해 주는 캐릭터 — 오른쪽 빈자리에 선다 */
-.h-mas{position:absolute;right:6px;top:4px;width:112px;height:132px;z-index:2;
+/* top 은 움직일 자리까지 감안한 값이다 — 첫 칸은 overflow:hidden 이라
+   위로 뛰거나 몸을 세우면 4px 로는 머리가 잘렸다. */
+.h-mas{position:absolute;right:6px;top:11px;width:112px;height:132px;z-index:2;
  background:none;border:none;padding:0;cursor:pointer;display:flex;flex-direction:column;
  align-items:center;gap:2px;font-family:inherit}
 .h-mas img{width:112px;height:112px;object-fit:contain;
- filter:drop-shadow(0 8px 14px rgba(0,0,0,.22))}
+ filter:drop-shadow(0 8px 14px rgba(0,0,0,.22));
+ transform-origin:50% 92%}          /* 발끝을 축으로 — 사람이 몸을 쓰는 것처럼 움직인다 */
 /* 이름표는 '눌러도 되는 것'으로 보이게 — 반투명 딱지는 그냥 설명글로 읽혔다.
    흰 바탕 + 아래 화살표로 고르는 칸임을 알린다. */
 .h-mas .h-mas-t{font-size:calc(11.5px*var(--fsx));font-weight:800;color:var(--brand-ink);
@@ -106,8 +109,50 @@ footer{max-width:430px}
 @keyframes masRing{0%,60%,100%{transform:scale(1);background:rgba(255,255,255,.13)}
  78%{transform:scale(1.09);background:rgba(255,255,255,.26)}}
 @keyframes masTap{0%,72%,100%{transform:translateY(0)}80%{transform:translateY(-3px)}88%{transform:translateY(0)}}
+
+/* ── 캐릭터 움직임 ──
+   그림이 한 장뿐이라 팔만 따로 들 수 없다. 대신 몸 전체의 기울기·튐으로
+   그 사람다운 몸짓을 만든다. transform 만 써서 화면을 다시 그리지 않는다.
+   기본은 아주 약한 숨쉬기 — 살아 있다는 것만 알리고 읽기를 방해하지 않는다. */
+.h-mas img{animation:masBreath 5.4s ease-in-out infinite}
+.h-mas[data-a="어르신"]     img{animation:masNod   5.8s ease-in-out infinite}  /* 느릿하게 끄덕 */
+.h-mas[data-a="아이·청소년"] img{animation:masHop   2.0s ease-in-out infinite}  /* 통통 뛴다 */
+.h-mas[data-a="청년"]       img{animation:masStep  2.6s ease-in-out infinite}  /* 가볍게 발 구르듯 */
+.h-mas[data-a="농업인"]     img{animation:masSway  3.4s ease-in-out infinite}  /* 낫질하듯 좌우로 */
+.h-mas[data-a="소상공인"]   img{animation:masWave  2.2s ease-in-out infinite}  /* 어서 오세요, 인사 */
+.h-mas[data-a="여성·가족"]  img{animation:masRock  4.2s ease-in-out infinite}  /* 아기 어르듯 부드럽게 */
+.h-mas[data-a="주민 누구나"] img{animation:masBreath 4.6s ease-in-out infinite}
+@keyframes masBreath{0%,100%{transform:scale(1,1)}50%{transform:scale(1.015,.99)}}
+@keyframes masNod{0%,100%{transform:rotate(0) translateY(0)}
+ 55%{transform:rotate(1.6deg) translateY(1px)}}
+@keyframes masHop{0%,60%,100%{transform:translateY(0) scale(1,1)}
+ 68%{transform:translateY(1px) scale(1.06,.94)}    /* 웅크렸다가 */
+ 80%{transform:translateY(-4px) scale(.98,1.03)}   /* 뛴다 */
+ 92%{transform:translateY(0) scale(1.02,.98)}}
+@keyframes masStep{0%,100%{transform:translateY(0) rotate(0)}
+ 50%{transform:translateY(-3px) rotate(-1.5deg)}}
+/* 기울기는 2도 안쪽으로 — 더 크게 돌리면 첫 칸 모서리(overflow:hidden)에 잘린다 */
+@keyframes masSway{0%,100%{transform:rotate(-1.8deg)}50%{transform:rotate(1.8deg)}}
+@keyframes masWave{0%,100%{transform:rotate(-2.2deg) translateY(0)}
+ 50%{transform:rotate(2.2deg) translateY(-2px)}}
+@keyframes masRock{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg)}}
+
+/* ── 이름표를 가리키는 몸짓 ──
+   아래 이름표(소상공인·농업인…) 쪽으로 몸을 숙였다 편다. 이름표도 같이 커져
+   '이 사람 얘기예요' 가 한 몸짓으로 읽힌다. 아래 규칙이 위 몸짓을 덮는다. */
+.h-mas.nudge img{animation:masPoint 3.4s ease-in-out infinite}
+.h-mas.point img{animation:masPoint 1.5s ease-in-out 1}
+.h-mas.point .h-mas-t{animation:masTagPop 1.5s ease-in-out 1}
+@keyframes masPoint{0%,58%,100%{transform:translateY(0) rotate(0) scale(1,1)}
+ 68%{transform:translateY(-4px) rotate(-2.2deg) scale(.99,1.02)}  /* 몸을 세웠다가 */
+ 84%{transform:translateY(4px) rotate(2deg) scale(1.02,.97)}      /* 이름표 쪽으로 숙인다 */
+ 94%{transform:translateY(1px) rotate(.8deg) scale(1,1)}}
+@keyframes masTagPop{0%,60%,100%{transform:translateY(0) scale(1)}
+ 84%{transform:translateY(2px) scale(1.09)}}
+
+/* 화면 움직임을 줄여 둔 분에게는 아무것도 움직이지 않는다 */
 @media (prefers-reduced-motion:reduce){
- .h-mas.nudge::before,.h-mas.nudge .h-mas-t{animation:none}
+ .h-mas::before,.h-mas .h-mas-t,.h-mas img{animation:none !important}
 }
 @media (max-width:359px){
  .h-week,.h-title{padding-right:86px}
@@ -2165,6 +2210,10 @@ function init(){
    m.classList.remove('open');
    BWUI.api.render();
    window.scrollTo({top:0,behavior:'smooth'});
+   /* 바뀐 캐릭터가 자기 이름표를 한 번 가리킨다 — 무엇이 바뀌었는지 눈에 들어오게 */
+   setTimeout(()=>{const b2=document.getElementById('hMas');
+    if(!b2)return; b2.classList.add('point');
+    setTimeout(()=>b2.classList.remove('point'),1600);},80);
   });
  }
  function syncHero(){
@@ -2218,7 +2267,7 @@ function init(){
     <div class="h-week">${head}</div>
     <div class="h-title">${title}</div>
     <button type="button" class="h-mas${audHintOn()?' nudge':''}" id="hMas"
-      aria-haspopup="dialog" aria-label="누구를 위한 일인지 고르기">
+      data-a="${me?E(me):''}" aria-haspopup="dialog" aria-label="누구를 위한 일인지 고르기">
       <img src="${meSrc()}" alt="" decoding="async">
       <span class="h-mas-t">${me?E(me):'눌러서 골라요'}<span class="cv">▼</span></span>
     </button>`;

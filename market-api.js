@@ -81,5 +81,58 @@
 
   function signOut() { setMe(null); }
 
-  G.MKAPI = { EP, list, register, refresh, signIn, signOut, me, setMe, MEKEY };
+  /* ── 이 기기를 가리키는 아무 값 ── 신고를 두 번 못 하게 하려고만 쓴다.
+     누구인지는 서버도 모른다. */
+  const DKEY = 'bhlab.market.dev';
+  function devId() {
+    let v = ''; try { v = localStorage.getItem(DKEY) || ''; } catch (e) { }
+    if (!/^[A-Za-z0-9_-]{8,40}$/.test(v)) {
+      const b = new Uint8Array(12); (crypto.getRandomValues || (() => { }))(b);
+      v = 'd' + Array.from(b, x => x.toString(36)).join('').slice(0, 20) + Date.now().toString(36);
+      try { localStorage.setItem(DKEY, v); } catch (e) { }
+    }
+    return v;
+  }
+
+  /* ── 내 글 ── */
+  const wrap = p => p.then(j => ({ ok: true, ...j })).catch(e => ({ ok: false, why: e.message, status: e.status }));
+  const posts  = ()      => wrap(jf('/seller/posts', { cache: 'no-store', headers: head() }));
+  const post   = (d)      => wrap(jf('/market', { method: 'POST', headers: { 'content-type': 'application/json', ...head() }, body: JSON.stringify({ data: d }) }));
+  const edit   = (id, d)  => wrap(jf('/market/' + id, { method: 'PUT', headers: { 'content-type': 'application/json', ...head() }, body: JSON.stringify({ data: d }) }));
+  const remove = (id)     => wrap(jf('/market/' + id, { method: 'DELETE', headers: head() }));
+  const noFix  = (id)     => wrap(jf('/market/' + id + '/ok',   { method: 'POST', headers: head() }));
+  const allSold= (id)     => wrap(jf('/market/' + id + '/done', { method: 'POST', headers: head() }));
+  const setSold= (id, n)  => wrap(jf('/market/' + id + '/sold', { method: 'POST', headers: { 'content-type': 'application/json', ...head() }, body: JSON.stringify({ n }) }));
+  const report = (id, why)=> wrap(jf('/market/' + id + '/report', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ dev: devId(), why }) }));
+
+  /* ── 사진 ──
+     보내기 전에 브라우저에서 줄인다. 이것이 용량 관리의 아홉 할이다.
+     다시 그리는 김에 사진에 박힌 위치정보(EXIF)도 함께 사라진다. */
+  const PMAX = 1280, PBYTES = 400 * 1024;
+  async function shrink(file) {
+    const img = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    const s = Math.min(1, PMAX / Math.max(img.width, img.height));
+    const w = Math.max(1, Math.round(img.width * s)), h = Math.max(1, Math.round(img.height * s));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    c.getContext('2d').drawImage(img, 0, 0, w, h);
+    const draw = (type, q) => new Promise(r => c.toBlob(r, type, q));
+    let q = 0.8, b = await draw('image/webp', q);
+    if (!b) b = await draw('image/jpeg', q);                 /* 아주 옛 브라우저 */
+    while (b && b.size > PBYTES && q > 0.4) { q -= 0.15; b = await draw(b.type, q); }
+    try { img.close(); } catch (e) { }
+    return b;
+  }
+  async function addPhoto(id, file) {
+    let b; try { b = await shrink(file); } catch (e) { return { ok: false, why: '사진을 읽지 못했습니다' }; }
+    if (!b) return { ok: false, why: '사진을 줄이지 못했습니다' };
+    if (b.size > PBYTES) return { ok: false, why: '사진이 너무 큽니다. 다시 찍어 주세요.' };
+    return wrap(jf('/market/' + id + '/photo', { method: 'POST',
+      headers: { 'content-type': b.type, ...head() }, body: b }));
+  }
+  const delPhoto = (id, pid) => wrap(jf('/market/' + id + '/photo/' + pid, { method: 'DELETE', headers: head() }));
+  const photoURL = (id, pid) => EP + '/photo/' + id + '/' + pid;
+
+  G.MKAPI = { EP, list, register, refresh, signIn, signOut, me, setMe, MEKEY, devId,
+    posts, post, edit, remove, noFix, allSold, setSold, report,
+    addPhoto, delPhoto, photoURL, PBYTES };
 })(window);

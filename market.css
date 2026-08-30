@@ -135,3 +135,76 @@ body.mode-market .psearch{display:none}
 .mk-sm{min-height:44px;padding:8px 16px;border-radius:10px;cursor:pointer;font-family:inherit;
  font-size:calc(14.5px*var(--fsx,1));font-weight:700;
  border:1px solid var(--line,#DDE8E2);background:var(--paper,#fff);color:var(--ink,#121E18)}
+
+/* ── 자율정화·사진 ──
+   신고·확인중은 붉게 겁주지 않는다. 대부분은 고치면 끝나는 일이다. */
+.mk-mebar{display:flex;gap:8px;margin-bottom:10px}
+.mk-mebar .mk-sellbtn{margin:0}
+.mk-sellbtn.sub{flex:0 0 auto;width:auto;text-align:center;border-style:solid;
+ background:var(--paper,#fff);color:var(--ink,#121E18);border-color:var(--line,#DDE8E2)}
+.mk-hold{font-size:calc(14.5px*var(--fsx,1));line-height:1.7;color:#8A6210;
+ background:var(--gold-soft,#FEF4D8);border:1px solid #F0D48A;border-radius:12px;
+ padding:12px 14px;margin:0 0 12px}
+.mk-hold b{color:#5E430B}
+.mk-hold.big{margin-bottom:10px}
+.mk-hold .n{margin-top:4px}
+.mk-hold .mk-sm{display:block;margin-top:10px}
+.mk-card.held{border-color:#F0D48A;background:var(--gold-soft,#FEF4D8)}
+.mk-card.mine{display:block;cursor:default}
+.mk-new{display:inline-block;margin-left:5px;font-size:calc(11.5px*var(--fsx,1));font-weight:800;
+ border-radius:6px;padding:2px 7px;background:var(--blue-soft,#E7F0FF);color:#1D5DBB}
+.mk-state.s-확인중{background:var(--gold-soft,#FEF4D8);color:#8A6210}
+
+/* 목록 썸네일 — 사진이 있으면 카드가 가로로 나뉜다 */
+.mk-card{display:flex;gap:12px;align-items:flex-start}
+.mk-card .mk-body{flex:1;min-width:0}
+.mk-th{width:76px;height:76px;flex:0 0 76px;border-radius:10px;object-fit:cover;
+ background:var(--line-2,#F1F2F5)}
+
+/* 상세 사진 */
+.mk-photos{display:grid;grid-auto-flow:column;grid-auto-columns:78%;gap:8px;overflow-x:auto;
+ margin:12px 0;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.mk-photos img{width:100%;border-radius:12px;scroll-snap-align:center;
+ background:var(--line-2,#F1F2F5)}
+.mk-photos:has(img:only-child){grid-auto-columns:100%}
+
+/* 신고 시트 */
+.mk-report{display:block;width:100%;min-height:52px;margin-top:12px;padding:12px;
+ border:1px solid var(--line,#DDE8E2);border-radius:12px;background:var(--paper,#fff);
+ color:var(--sub,#5F7168);font-family:inherit;font-size:calc(14.5px*var(--fsx,1));
+ font-weight:700;cursor:pointer}
+.mk-sheet{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.4);
+ display:flex;align-items:flex-end;justify-content:center}
+.mk-sheetbox{width:100%;max-width:560px;max-height:88vh;overflow-y:auto;
+ background:var(--paper,#fff);border-radius:18px 18px 0 0;padding:18px 16px 26px}
+.mk-why{display:block;width:100%;min-height:60px;margin-bottom:8px;padding:12px 14px;
+ text-align:left;border:1px solid var(--line,#DDE8E2);border-radius:12px;
+ background:var(--paper,#fff);color:var(--ink,#121E18);font-family:inherit;cursor:pointer}
+.mk-why b{display:block;font-size:calc(16px*var(--fsx,1));font-weight:700}
+.mk-why span{display:block;margin-top:3px;font-size:calc(13px*var(--fsx,1));color:var(--sub,#5F7168)}
+.mk-why:active{background:var(--bg,#F4F5F2)}
+
+/* 내 글 */
+.mk-owner{margin-top:14px;padding-top:12px;border-top:1px solid var(--line,#DDE8E2)}
+.mk-owner .t{font-size:calc(13.5px*var(--fsx,1));font-weight:800;color:var(--sub,#5F7168);margin-bottom:8px}
+.mk-acts2{display:flex;gap:7px;flex-wrap:wrap}
+.mk-sm.pri{background:var(--brand,#16A34A);border-color:var(--brand,#16A34A);color:#fff}
+.mk-sm.del{color:#B3261E;border-color:#F3C0BA}
+.mk-lab .req{color:#B3261E}
+.mk-ta{min-height:110px;line-height:1.7;resize:vertical}
+
+/* 사진 올리는 칸 */
+.mk-pbox{border:1px solid var(--line,#DDE8E2);border-radius:12px;padding:12px 14px;
+ background:var(--bg,#F4F5F2);margin:0 0 14px}
+.mk-pbox .t{font-size:calc(14px*var(--fsx,1));font-weight:800;margin-bottom:9px}
+.mk-plist{display:flex;gap:8px;flex-wrap:wrap}
+.mk-pit{position:relative;width:92px;height:92px}
+.mk-pit img{width:100%;height:100%;object-fit:cover;border-radius:10px;
+ background:var(--line-2,#F1F2F5)}
+.mk-pit .x{position:absolute;top:-6px;right:-6px;width:28px;height:28px;border-radius:50%;
+ border:1px solid var(--line,#DDE8E2);background:var(--paper,#fff);color:#B3261E;
+ font-size:14px;font-weight:800;cursor:pointer;line-height:1;padding:0}
+.mk-padd{display:flex;align-items:center;justify-content:center;width:92px;height:92px;
+ border:1.5px dashed var(--brand,#16A34A);border-radius:10px;cursor:pointer;
+ color:var(--brand-ink,#0F7A38);font-size:calc(14px*var(--fsx,1));font-weight:700;
+ background:var(--paper,#fff)}

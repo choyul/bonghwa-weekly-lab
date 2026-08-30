@@ -431,6 +431,129 @@ const adm = await api('/admin/seller', { admin: true });
 const gone = adm.rows.find(r => r.id === N[4].id);
 ck('파기', '지워진 뒤 담당자 화면에도 번호가 없음', gone && !gone.phone, `phone='${gone && gone.phone}'`);
 
+/* ───── ⑬ 사진 ─────
+   서버는 사진을 해독하지 않는다. 앞머리 바이트로 사진인지만 보고,
+   크기·장수·수명으로 다스린다. 시험에는 1×1 짜리 진짜 WebP 를 쓴다. */
+const WEBP = Buffer.from('UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==', 'base64');
+const JPEG = Buffer.concat([Buffer.from([0xFF, 0xD8, 0xFF, 0xE0]), Buffer.alloc(200, 7), Buffer.from([0xFF, 0xD9])]);
+async function upload(mid, s, buf, type = 'image/webp') {
+  const r = await fetch(`${EP}/market/${mid}/photo`, { method: 'POST',
+    headers: { 'content-type': type, 'x-lab-key': s.hdr.key, 'x-lab-id': s.hdr.id }, body: buf });
+  return { status: r.status, ...(await r.json().catch(() => ({}))) };
+}
+const shot = async url => { const r = await fetch(EP + url); return { status: r.status, type: r.headers.get('content-type'), n: (await r.arrayBuffer()).byteLength }; };
+
+async function env_hold(p) {         /* 시험용 — 사진 가림을 한 번 더 건다 */
+  const [d] = pick(p.mid, 1);
+  if (d) await report(p.mid, d, 'photo');
+}
+const P = [];
+for (let i = 1; i <= 5; i++) {
+  const s = await join(`사진 판매자${i}`, '봉화읍');
+  const r = await put(s, ITEM(`사진품목${i}`));
+  backdate(`UPDATE market SET showAt='' WHERE id='${r.id}';`);
+  P.push({ s, mid: r.id, urls: [] });
+}
+runSQL();
+for (const [i, p] of P.entries()) {
+  for (let k = 0; k < 3; k++) {
+    const r = await upload(p.mid, p.s, k === 2 ? JPEG : WEBP, k === 2 ? 'image/jpeg' : 'image/webp');
+    if (r.url) p.urls.push(r.url);
+  }
+  ck('사진', `${i + 1}. 세 장까지 올라감`, p.urls.length === 3, `${p.urls.length}장`);
+  const over = await upload(p.mid, p.s, WEBP);
+  ck('사진', `${i + 1}. 네 장째는 막힘`, over.status === 400 && /3장/.test(over.error || ''), over.error);
+}
+const g1 = await shot(P[0].urls[0]);
+ck('사진', '공개 주소로 사진이 실제로 보임', g1.status === 200 && /image\//.test(g1.type || ''), `${g1.status} ${g1.type} ${g1.n}B`);
+ck('사진', '목록에도 사진 주소가 실림',
+  (find(await list(), P[0].mid) || {}).photos?.length === 3, '3장');
+
+/* 자리가 남은 글로 크기·형식·주인 검사 */
+const room = await join('빈자리 판매자', '춘양면');
+const roomM = (await put(room, ITEM('빈자리'))).id;
+backdate(`UPDATE market SET showAt='' WHERE id='${roomM}';`); runSQL();
+const big = Buffer.concat([WEBP, Buffer.alloc(500 * 1024, 1)]);
+const rb = await upload(roomM, room, big);
+ck('사진', '400KB 넘는 사진은 막힘', rb.status === 413, rb.error);
+const notimg = await upload(roomM, room, Buffer.from('<script>이건 사진이 아닙니다</script>'));
+ck('사진', '사진이 아닌 파일은 막힘 (앞머리 바이트로 본다)', notimg.status === 400, notimg.error);
+const other = await upload(roomM, P[1].s, WEBP);
+ck('사진', '남의 글에는 사진을 못 올림', other.status === 403, other.error);
+
+/* 사진 신고 — 한 건이면 바로 가린다. 글은 그대로 둔다. */
+for (const [i, p] of P.entries()) {
+  const [f] = await reportBy(p.mid, 'photo', 1);
+  ck('사진', `${i + 1}. 신고 한 건에 사진이 즉시 가려짐`, f.r.acted === '사진 가림', f.r.acted || f.r.error);
+}
+const lp = await list();
+ck('사진', '가려진 뒤 목록에 사진 주소가 없음', P.every(p => (find(lp, p.mid) || {}).photos.length === 0), '전부 0장');
+ck('사진', '글 자체는 살아 있음', P.every(p => (find(lp, p.mid) || {}).state === '판매중'), '판매중');
+const g2 = await shot(P[0].urls[0]);
+ck('사진', '가려진 사진은 주소를 알아도 안 보임 (404)', g2.status === 404, `${g2.status}`);
+/* 캐시로 살아남으면 안 된다 — 이미 본 사람의 브라우저에 남아 있어도 다시 물어보게 한다 */
+{
+  const pid = P[1].urls[0].split('/').pop();
+  const r1 = await fetch(EP + P[1].urls[0]);
+  ck('사진', '가려진 사진은 캐시 표(ETag)를 들고 와도 안 보임',
+    r1.status === 404, `${r1.status}`);
+}
+
+/* 가림을 푸는 길 ①: 문제된 사진을 지운다.
+   석 장이 다 찬 글은 새로 올릴 자리가 없으니, 지우는 것도 시정으로 쳐야 한다. */
+const rm = P[0].urls[0].split('/').pop();
+const del1 = await fetch(EP + '/market/' + P[0].mid + '/photo/' + rm,
+  { method: 'DELETE', headers: { 'x-lab-key': P[0].s.hdr.key, 'x-lab-id': P[0].s.hdr.id } });
+const dj = await del1.json();
+ck('사진', '사진 한 장만 골라 지움', del1.status === 200 && dj.photos.length === 2, `${dj.photos?.length}장`);
+ck('사진', '석 장이 찬 글도 지우면 가림이 풀림', dj.unheld === true, `unheld=${dj.unheld}`);
+const g4 = await shot(P[0].urls[0]);
+ck('사진', '지운 사진은 그 자리에서 안 보임', g4.status === 404, `${g4.status}`);
+const g3 = await shot(P[0].urls[1]);
+ck('사진', '풀린 뒤 남은 사진은 다시 보임', g3.status === 200, `${g3.status}`);
+{
+  const h = await fetch(EP + P[0].urls[1]);
+  const tag = h.headers.get('etag');
+  ck('사진', '볼 때마다 서버에 물어보게 되어 있음 (no-cache)',
+    /no-cache/.test(h.headers.get('cache-control') || ''), h.headers.get('cache-control'));
+  const h2 = await fetch(EP + P[0].urls[1], { headers: { 'if-none-match': tag } });
+  ck('사진', '바뀐 것이 없으면 304 — 사진을 다시 내려받지는 않음', h2.status === 304, `${h2.status}`);
+}
+
+/* 가림을 푸는 길 ②: 자리가 남았으면 새 사진을 올린다 */
+const [pf] = await reportBy(P[1].mid, 'photo', 1);   /* P[1] 은 아직 가려져 있다 */
+const rm2 = P[1].urls[0].split('/').pop();
+await fetch(EP + '/market/' + P[1].mid + '/photo/' + rm2,
+  { method: 'DELETE', headers: { 'x-lab-key': P[1].s.hdr.key, 'x-lab-id': P[1].s.hdr.id } });
+await env_hold(P[1]);
+const again2 = await upload(P[1].mid, P[1].s, WEBP);
+ck('사진', '자리가 남으면 새로 올려서도 풀림', again2.ok === true && again2.photos.length === 3,
+  again2.error || `${again2.photos?.length}장`);
+const l2 = find(await list(), P[1].mid);
+ck('사진', '풀린 뒤 목록에 사진이 다시 실림', l2 && l2.photos.length === 3, `${l2 && l2.photos.length}장`);
+
+/* 사진 없는 글에 사진 신고 → 해당 없음 */
+const np = await join('사진없는 판매자', '물야면');
+const npr = await put(np, ITEM('사진없음'));
+backdate(`UPDATE market SET showAt='' WHERE id='${npr.id}';`); runSQL();
+const nrp = await reportBy(npr.id, 'photo', 1);
+ck('사진', '사진이 없는 글에 사진 신고를 하면 해당 없음', nrp[0].r.acted === '해당 없음', nrp[0].r.acted);
+
+/* 글을 지우면 사진도 그 자리에서 사라진다 */
+const pd = P[4];
+await fetch(EP + '/market/' + pd.mid, { method: 'DELETE',
+  headers: { 'x-lab-key': pd.s.hdr.key, 'x-lab-id': pd.s.hdr.id } });
+const g5 = await shot(pd.urls[0]);
+ck('사진', '글을 지우면 사진도 즉시 사라짐', g5.status === 404, `${g5.status}`);
+
+/* 거래가 끝나고 한 달 — 사진은 저절로 지워진다 */
+for (const p of P.slice(1, 4))
+  backdate(`UPDATE market SET state='종료', edited='${T(-40, 12)}' WHERE id='${p.mid}';`);
+runSQL();
+const c6 = await cron();
+ck('사진', '종료 30일이면 사진이 저절로 파기됨', c6['사진파기'] >= 3, `${c6['사진파기']}장`);
+const g6 = await shot(P[1].urls[0]);
+ck('사진', '파기된 뒤에는 주소를 알아도 안 보임', g6.status === 404, `${g6.status}`);
 /* ───── ⑬ 공개 주소에 개인정보가 새지 않는가 ───── */
 const raw = await (await fetch(EP + '/market')).text();
 ck('개인정보', '공개 목록에 휴대폰·실명·메모가 없음',

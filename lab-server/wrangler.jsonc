@@ -5,8 +5,12 @@
   "compatibility_date": "2026-01-01",
   "vars": { "ALLOW_ORIGIN": "https://choyul.github.io" },
   "triggers": { "crons": ["0 19 * * *"] },   // 한국 시각 새벽 4시
-  "r2_buckets": [
-    { "binding": "PHOTOS", "bucket_name": "bonghwa-lab-photos" }
+  // 사진 저장소. 지금은 KV 를 쓴다 — R2 는 계정에 결제수단을 등록해야 켜진다.
+  // 나중에 R2 를 켜면 아래 두 줄의 주석을 풀기만 하면 된다. 코드는 R2 가 있으면 R2 를 먼저 쓴다.
+  //   npx wrangler r2 bucket create bonghwa-lab-photos
+  // "r2_buckets": [ { "binding": "PHOTOS", "bucket_name": "bonghwa-lab-photos" } ],
+  "kv_namespaces": [
+    { "binding": "PHOTO_KV", "id": "a6024b746d034ceebc4373d23edfc3d8" }
   ],
   "d1_databases": [
     { "binding": "DB", "database_name": "bonghwa-lab", "database_id": "c607fde0-8f15-4716-99d6-874603282d91" }

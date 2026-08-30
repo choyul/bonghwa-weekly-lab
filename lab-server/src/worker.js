@@ -12,6 +12,7 @@
      GET    /market              팔고 있는 글 (공개. 실명·전화는 절대 안 나간다)
      POST   /seller              판매자 등록 (공개. 자동 승인)
      GET    /seller/me           내 등록 상태와 통보 (수정키)
+     GET    /seller/posts        내 글 전부 (수정키. 아직 안 뜬 글도 보인다)
      POST   /market              글 올리기   (수정키)
      PUT    /market/:id          글 고치기   (수정키. 신고가 저절로 풀린다)
      DELETE /market/:id          글 지우기   (수정키)
@@ -284,11 +285,32 @@ function isImage(buf, type) {
   return false;
 }
 const pics = m => { try { const a = JSON.parse(m.photos || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+
+/* ── 사진을 어디에 둘 것인가 ──
+   R2 가 붙어 있으면 R2 를, 없으면 KV 를 쓴다.
+   R2 는 계정에 결제수단을 등록해야 켜지는데, 그것 때문에 사진 기능 전체가
+   멈춰 서지는 않게 한다. 나중에 R2 를 켜면 wrangler.jsonc 한 줄만 풀면 된다.
+
+   KV 에 넣을 때는 시한을 함께 건다 — 새벽 청소가 어느 날 죽더라도
+   사진은 저 혼자 사라진다. 안전망이 하나 더 생기는 셈이다. */
+const PHOTO_TTL = 180 * 86400;   /* 청소(종료+30일)보다 한참 길게 잡은 뒷그물 */
+function store(env) {
+  if (env.PHOTOS) return { kind: 'R2',
+    put: (k, buf, type) => env.PHOTOS.put(k, buf, { httpMetadata: { contentType: type } }),
+    get: async k => { const o = await env.PHOTOS.get(k); return o ? o.body : null; },
+    del: k => env.PHOTOS.delete(k) };
+  if (env.PHOTO_KV) return { kind: 'KV',
+    put: (k, buf, type) => env.PHOTO_KV.put(k, buf, { expirationTtl: PHOTO_TTL, metadata: { type } }),
+    get: k => env.PHOTO_KV.get(k, 'arrayBuffer'),
+    del: k => env.PHOTO_KV.delete(k) };
+  return null;
+}
+
 /* 글에 딸린 사진을 모두 지운다. 글이 사라지면 사진도 남을 이유가 없다. */
 async function wipe(env, m) {
-  const ps = pics(m);
-  if (!ps.length || !env.PHOTOS) return 0;
-  for (const p of ps) { try { await env.PHOTOS.delete(`photo/${m.id}/${p}`); } catch (e) { } }
+  const ps = pics(m), st = store(env);
+  if (!ps.length || !st) return 0;
+  for (const p of ps) { try { await st.del(`photo/${m.id}/${p}`); } catch (e) { } }
   await env.DB.prepare("UPDATE market SET photos='[]' WHERE id=?1").bind(m.id).run();
   return ps.length;
 }
@@ -370,7 +392,8 @@ async function sweep(env) {
   const pg = await env.DB.prepare("UPDATE seller SET phone='', name='' WHERE phone!='' AND " +
     "COALESCE(NULLIF(seenAt,''), at) <= ?1").bind(idle).run();
 
-  return { at: now, 마감: close, 종료: end, 무응답정리: drop, 거래완료: done,
+  return { at: now, 사진저장소: (store(env) || {}).kind || '없음',
+    마감: close, 종료: end, 무응답정리: drop, 거래완료: done,
     사진파기: out.photos || 0, 글내용파기: out.purged || 0, 신고정당: good, 무고: bad,
     정지해제: (up.meta && up.meta.changes) || 0, 연락처파기: (pg.meta && pg.meta.changes) || 0 };
 }
@@ -433,17 +456,25 @@ export default {
        ═══════════════════════════════════════════════════════════ */
     const pm = u.pathname.match(/^\/photo\/(m_[0-9a-z]{8})\/(p_[0-9a-z]{8}\.(?:webp|jpg))$/);
     if (pm && req.method === 'GET') {
-      if (!env.PHOTOS) return new Response('사진 저장소가 없습니다', { status: 503 });
+      const st = store(env);
+      if (!st) return new Response('사진 저장소가 없습니다', { status: 503 });
       const m = await env.DB.prepare('SELECT id,state,photos,phold FROM market WHERE id=?1').bind(pm[1]).first();
       const gone = !m || m.phold || !pics(m).includes(pm[2]) ||
         ['삭제됨', '숨김'].includes(m.state);
       if (gone) return new Response('없는 사진입니다', { status: 404 });
-      const o = await env.PHOTOS.get(`photo/${pm[1]}/${pm[2]}`);
+      /* 캐시를 두면 가린 뒤에도 이미 열어 본 사람에게는 그대로 남는다.
+         신고당한 사진에 그 시간을 줄 수 없어, 볼 때마다 서버에 한 번 묻게 한다.
+         바뀐 것이 없으면 304 만 돌려주므로 사진을 다시 내려받지는 않는다. */
+      const tag = '"' + pm[2] + '"';
+      if (req.headers.get('if-none-match') === tag)
+        return new Response(null, { status: 304, headers: {
+          'etag': tag, 'cache-control': 'no-cache', 'access-control-allow-origin': '*' } });
+      const o = await st.get(`photo/${pm[1]}/${pm[2]}`);
       if (!o) return new Response('없는 사진입니다', { status: 404 });
-      return new Response(o.body, { headers: {
+      return new Response(o, { headers: {
         'content-type': pm[2].endsWith('.webp') ? 'image/webp' : 'image/jpeg',
-        /* 짧게 잡는다 — 신고로 가려졌을 때 오래 남아 있으면 안 된다 */
-        'cache-control': 'public, max-age=300',
+        'etag': tag,
+        'cache-control': 'no-cache',
         'access-control-allow-origin': '*' } });
     }
 
@@ -527,6 +558,19 @@ export default {
         notices: nt.results || [] }, env);
     }
 
+    /* 내 글 — 아직 안 뜬 첫 글이나 내려간 글도 본인은 볼 수 있어야 고친다 */
+    if (u.pathname === '/seller/posts' && req.method === 'GET') {
+      const me = await whoami(req, env);
+      if (!me) return json({ error: '수정키가 맞지 않습니다' }, env, 401);
+      const r = await env.DB.prepare("SELECT id,data,state,sold,holds,heldAt,showAt,notice,photos,phold,at,edited " +
+        "FROM market WHERE seller=?1 AND state!='삭제됨' ORDER BY at DESC LIMIT 200").bind(me.id).all();
+      const rep = await env.DB.prepare("SELECT mid, COUNT(*) n FROM report r WHERE state='유효' GROUP BY mid").all();
+      const nr = {}; for (const x of (rep.results || [])) nr[x.mid] = x.n;
+      return json({ rows: (r.results || []).map(x => ({ ...x, photos: pics(x), phold: !!x.phold,
+        data: (() => { try { return JSON.parse(x.data); } catch (e) { return {}; } })(),
+        reports: nr[x.id] || 0 })) }, env);
+    }
+
     /* ═══════════════════════════════════════════════════════════
        글 올리기·고치기 — 판매자 본인만 (수정키)
        ═══════════════════════════════════════════════════════════ */
@@ -567,7 +611,8 @@ export default {
       const m = await env.DB.prepare('SELECT * FROM market WHERE id=?1').bind(um[1]).first();
       if (!m || m.state === '삭제됨') return json({ error: '그 글을 찾지 못했습니다' }, env, 404);
       if (!me || me.id !== m.seller) return json({ error: '이 글은 올리신 분만 고칠 수 있습니다' }, env, 403);
-      if (!env.PHOTOS) return json({ error: '사진 저장소가 아직 없습니다' }, env, 503);
+      const st = store(env);
+      if (!st) return json({ error: '사진 저장소가 아직 없습니다' }, env, 503);
       const ps = pics(m), now = NOW();
 
       if (!um[2] && req.method === 'POST') {
@@ -580,7 +625,7 @@ export default {
           return json({ error: `사진 한 장이 ${Math.round(MAX_BYTES / 1024)}KB 를 넘습니다. 다시 찍어 주세요.` }, env, 413);
         if (!isImage(buf, type)) return json({ error: '사진 파일이 아닙니다' }, env, 400);
         const pid = newId('p') + '.' + PHOTO_TYPES[type];
-        await env.PHOTOS.put(`photo/${m.id}/${pid}`, buf, { httpMetadata: { contentType: type } });
+        await st.put(`photo/${m.id}/${pid}`, buf, type);
         const next = ps.concat(pid);
         /* 사진을 새로 올리면 사진 가림은 풀린다 — 고치면 저절로 복귀하는 것과 같은 규칙이다 */
         await env.DB.prepare('UPDATE market SET photos=?2, phold=0, notice=?3, edited=?4 WHERE id=?1')
@@ -592,12 +637,15 @@ export default {
 
       if (um[2] && req.method === 'DELETE') {
         if (!ps.includes(um[2])) return json({ error: '그 사진이 없습니다' }, env, 404);
-        try { await env.PHOTOS.delete(`photo/${m.id}/${um[2]}`); } catch (e) { }
+        try { await st.del(`photo/${m.id}/${um[2]}`); } catch (e) { }
         const next = ps.filter(x => x !== um[2]);
-        await env.DB.prepare('UPDATE market SET photos=?2, edited=?3 WHERE id=?1')
-          .bind(m.id, JSON.stringify(next), now).run();
+        /* 지우는 것도 시정이다. 석 장이 다 찬 글이 사진 신고를 받으면
+           새로 올릴 자리가 없어 가림을 풀 길이 없어진다. */
+        await env.DB.prepare('UPDATE market SET photos=?2, phold=0, notice=?3, edited=?4 WHERE id=?1')
+          .bind(m.id, JSON.stringify(next), m.phold ? '' : m.notice, now).run();
+        if (m.phold) await env.DB.prepare("UPDATE report SET state='해소' WHERE mid=?1 AND why='photo'").bind(m.id).run();
         await touch(env, me.id, now);
-        return json({ ok: true, photos: next }, env);
+        return json({ ok: true, photos: next, unheld: !!m.phold }, env);
       }
       return json({ error: '없는 주소입니다' }, env, 404);
     }
