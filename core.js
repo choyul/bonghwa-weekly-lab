@@ -205,16 +205,41 @@
      주의: 이것은 '계획서에 적힌 기간'이지 실제 완료 여부가 아니다. */
   const PERIOD_LABEL = /(기\s*간|일\s*시|일\s*자|기\s*한|마\s*감|점검기간|사업기간|용역기간|과업기간|접수기간|모집기간|교육기간|운영기간|추진기간|공사기간|지급일|개최일|신청기한|제출기한|접수기한)/;
 
+  /* ── 접수 기한 우선 규칙 ──
+     채용·모집 공고는 '언제까지 신청할 수 있나'(접수기한)와
+     '붙으면 언제부터 일하나'(근무기간)를 한 장에 같이 적는다.
+     둘을 뭉뚱그려 가장 늦은 날짜를 끝으로 보면, 접수가 이미 끝난 공고가
+     근무기간이 남았다는 이유로 계속 '진행중'으로 뜬다(2026년 도시재생지원센터
+     코디네이터 채용 공고: 접수기한 2025.12.17. / 근무기간 2026.11.30.).
+     군민이 할 수 있는 일은 '접수'뿐이므로, 두 가지가 같이 적혀 있으면
+     상태(진행중·종료)와 마감 딱지는 접수 기한만 보고 정한다. */
+  const APPLY_LABEL = /(접수\s*기한|접수\s*기간|접수\s*마감|접수\s*일시|원서\s*접수|신청\s*기한|신청\s*기간|신청\s*마감|제출\s*기한|제출\s*기간|모집\s*기간|응모\s*기간|공모\s*기간|공고\s*기간)/;
+  const EXEC_LABEL  = /(근무\s*기간|근무\s*예정\s*기간|채용\s*기간|고용\s*기간|계약\s*기간|위탁\s*기간|활동\s*기간|수행\s*기간|임\s*기|사업\s*기간|용역\s*기간|과업\s*기간|공사\s*기간|교육\s*기간|운영\s*기간)/;
+
   function dateTokens(text, baseYear) {
     /* 반환: [{y,mo,d,ym:bool}] — ym:true 면 '2025. 9.' 처럼 일(日) 생략 */
     const out = [];
-    const re = /(20\d{2})\s*[.\-년]\s*(\d{1,2})\s*[.\-월]\s*(\d{1,2})\s*[.일]?|(20\d{2})\s*[.\-년]\s*(\d{1,2})\s*[.월](?!\s*\d)|(?:^|[^\d.])(\d{1,2})\s*\.\s*(\d{1,2})\s*[.\)]/g;
+    /* 마지막 갈래 [신규]: "2026. 7. ~ 9." 처럼 물결 뒤에 달만 적은 끝 —
+       예전에는 못 읽어 7월 말일이 끝이 되었다(3개월 사업이 한 달로 줄었다). */
+    const re = /(20\d{2})\s*[.\-년]\s*(\d{1,2})\s*[.\-월]\s*(\d{1,2})\s*[.일]?|(20\d{2})\s*[.\-년]\s*(\d{1,2})\s*[.월](?!\s*\d)|(?:^|[^\d.])(\d{1,2})\s*\.\s*(\d{1,2})\s*[.\)]|[~∼〜]\s*(\d{1,2})\s*([.월])(?!\s*\d)/g;
     let m;
     while ((m = re.exec(text))) {
       if (m[1]) out.push({ y: +m[1], mo: +m[2], d: +m[3], ym: false });
       else if (m[4]) out.push({ y: +m[4], mo: +m[5], d: null, ym: true });
       else if (m[6]) out.push({ y: null, mo: +m[6], d: +m[7], ym: false });
+      else if (m[8]) out.push({ tilde: +m[8], tildeMonth: m[9] === '월' });
     }
+    /* [신규] 물결 뒤의 숫자 하나는 앞이 무엇이냐에 따라 달도 되고 날도 된다.
+       "2026. 7. ~ 9." → 9월(앞이 달까지만 적힘)
+       "2025. 11. 8.(토) ~ 9.(일)" → 11월 9일(앞이 날까지 적힘) */
+    out.forEach((t, i) => {
+      if (t.tilde == null) return;
+      const p = out[i - 1];
+      if (!p) { t.valid = false; t.mo = 0; return; }
+      if (p.ym || t.tildeMonth) { t.y = p.y; t.mo = t.tilde; t.d = null; t.ym = true; }
+      else { t.y = p.y; t.mo = p.mo; t.d = t.tilde; t.ym = false; }
+      delete t.tilde; delete t.tildeMonth;
+    });
     /* 연도 보정: 생략된 연도는 기준 연도를 쓰되, 연말→연초 넘김이면 +1 */
     let lastY = baseYear;
     out.forEach(t => {
@@ -246,48 +271,139 @@
     }
     if (!texts.length) return null;
 
-    let start = null, end = null, openEnded = false;
-    texts.forEach(t => {
+    /* 접수 기한과 이행 기간(근무·교육 등)이 같이 적혀 있으면 접수 기한만 본다.
+       한쪽만 있을 때는 예전대로 적힌 날짜를 다 본다 — 멀쩡한 사업기간까지 좁히지 않는다. */
+    const applyTexts = texts.filter(t => APPLY_LABEL.test(t));
+    const execTexts  = texts.filter(t => EXEC_LABEL.test(t) && !APPLY_LABEL.test(t));
+    let byApply = applyTexts.length > 0 && execTexts.length > 0;
+
+    /* [신규] 기간 줄에는 진짜 기간 말고 '참고 날짜'가 붙어 온다.
+       "2026. 6. 12. ~ 7. 22. [2025. 12. 31. 기준]", "4. 24.까지 ※기존 4.3.까지",
+       "2026. 1. 16.까지(2025. 11월부터 시행)" 처럼.
+       이 날짜를 끝으로 읽어 '끝이 시작보다 빠른' 기간이 13건 나왔다.
+       ※·* 뒤를 자르고, 날짜가 든 괄호·대괄호를 걷어낸다. (금) 같은 요일은 숫자가 없어 남는다.
+       걷어냈더니 날짜가 하나도 안 남으면 원문을 그대로 쓴다 — 괄호 안이 본 기간인 경우. */
+    function trimRefDates(t) {
+      let s = String(t);
+      s = s.split(/[※*]/)[0];                       /* 주석 표시 뒤는 참고 */
+      s = s.split(/\/\s*\(/)[0];                     /* "… / (사전연습) 10. 30." 같은 곁가지 */
+      const DATE = /\d{1,2}\s*\.\s*\d{1,2}|20\d{2}\s*[.년]/;
+      /* 괄호를 하나씩 걷어내되, 걷어낸 뒤 밖에 날짜가 남을 때만 지운다.
+         "선거기간(5.21.∼6.3.)" 처럼 괄호 안이 본 기간인 줄을 통째로 잃지 않도록. */
+      const drop = re => { const cut = s.replace(re, ' '); if (DATE.test(cut)) s = cut; };
+      drop(/\[[^\]]*\d{1,2}\s*[.\/]\s*\d{1,2}[^\]]*\]/g);
+      drop(/\([^)]*\d{1,2}\s*[.\/월]\s*[^)]*\)/g);
+      return DATE.test(s) ? s : String(t);
+    }
+    function span(list) {
+      let start = null, end = null, openEnded = false;
+      list.forEach(raw => {
+        const t = trimRefDates(raw);
+        const toks = dateTokens(t, baseYear);
+        if (!toks.length) return;
+        /* '~ 소진 시까지', '계속' 처럼 종료가 열린 표현 */
+        if (/소진|계속|연중|상시/.test(t)) openEnded = true;
+        const first = toks[0], last = toks[toks.length - 1];
+        const sv = ymd(new Date(first.y, first.mo - 1, first.ym ? 1 : first.d));
+        /* 일 생략형 종료는 그 달 말일로 (사업기간 표기 관행) */
+        const ev = ymd(new Date(last.y, last.mo - 1, last.ym ? new Date(last.y, last.mo, 0).getDate() : last.d));
+        /* '~까지'만 있고 시작이 없으면 시작은 미상 */
+        const endOnly = /까지/.test(t) && toks.length === 1;
+        if (!endOnly && (!start || sv < start)) start = sv;
+        if (!end || ev > end) end = ev;
+      });
+      /* [신규] 끝이 시작보다 빠르면 해를 넘긴 것으로 본다 —
+         "2024. 12. 26. ~ 2024. 1. 10." 처럼 원문에 연도가 잘못 적힌 경우가 많다.
+         한 해를 더해도 앞뒤가 안 맞으면 끝을 모르는 것으로 둔다(거짓 종료일을 만들지 않는다). */
+      if (start && end && end < start) {
+        const rolls = +end.slice(5, 7) < +start.slice(5, 7);   /* 12월 → 1월 같은 진짜 해넘이만 */
+        const d = new Date(end + 'T00:00:00'); d.setFullYear(d.getFullYear() + 1);
+        const plus = ymd(d);
+        end = (rolls && plus > start && (new Date(plus) - new Date(start)) / 864e5 <= 400) ? plus : null;
+      }
+      return { start, end, openEnded };
+    }
+
+    let sp = span(byApply ? applyTexts : texts);
+    /* '접수기간: 3월 중' 처럼 접수 줄에 날짜가 없으면 접수 기준을 접는다 —
+       그것 때문에 기간을 통째로 모르는 것으로 만들면 되레 나빠진다. */
+    if (byApply && !sp.start && !sp.end) { byApply = false; sp = span(texts); }
+    const start = sp.start, end = sp.end, openEnded = sp.openEnded;
+    if (!start && !end) return null;
+    /* basis:'apply' 면 end 는 '접수 마감일'이다 — 화면에서 문구를 가려 쓸 수 있게 남긴다.
+       execEnd 는 뒤로 밀린 근무·교육 기간의 끝(참고용, 상태 판단에는 안 쓴다). */
+    let execEnd = null;
+    if (byApply) execTexts.forEach(t => {
       const toks = dateTokens(t, baseYear);
       if (!toks.length) return;
-      /* '~ 소진 시까지', '계속' 처럼 종료가 열린 표현 */
-      if (/소진|계속|연중|상시/.test(t)) openEnded = true;
-      const first = toks[0], last = toks[toks.length - 1];
-      const sv = ymd(new Date(first.y, first.mo - 1, first.ym ? 1 : first.d));
-      /* 일 생략형 종료는 그 달 말일로 (사업기간 표기 관행) */
+      const last = toks[toks.length - 1];
       const ev = ymd(new Date(last.y, last.mo - 1, last.ym ? new Date(last.y, last.mo, 0).getDate() : last.d));
-      /* '~까지'만 있고 시작이 없으면 시작은 미상 */
-      const endOnly = /까지/.test(t) && toks.length === 1;
-      if (!endOnly && (!start || sv < start)) start = sv;
-      if (!end || ev > end) end = ev;
+      if (!execEnd || ev > execEnd) execEnd = ev;
     });
-    if (!start && !end) return null;
-    return { start, end, openEnded };
+    /* [신규] 이 사업이 어느 해 것인가.
+       '예산 소진 시까지' 같은 열린 기간은 그 해 예산 얘기라, 해가 바뀌면 끝난 것이다.
+       제목에 적힌 연도를 먼저 믿고(2026년 …은 12월에 실려도 2026년 사업),
+       없으면 실린 주의 연도를 쓴다. 기간 시작 연도는 안 쓴다 — 올해 안내에도
+       작년 날짜가 함께 적히는 일이 흔해 잘못 늙는다. */
+    const ty = (item.title || '').match(/20\d{2}/);
+    const fiscalYear = ty ? +ty[0] : (occWeek ? +occWeek.slice(0, 4) : null);
+    return { start, end, openEnded, fiscalYear, basis: byApply ? 'apply' : 'all', execEnd };
   }
 
-  /* 오늘 기준 3상태. 반환: 'done'(종료) | 'ongoing'(진행중) | 'upcoming'(예정) | null(기간 미기재) */
-  function periodStatus(item, occWeek, today) {
-    const t = today || ymd(new Date());
-    const r = parseDateRange(item, occWeek);
+  /* [신규] 이 사업이 어느 해 것인가 — 제목의 연도가 먼저, 없으면 실린 주의 연도 */
+  function fiscalYearOf(item, week) {
+    const title = ((item && item.title) || '')
+      .replace(/20\d{2}\s*년?도?\s*기준/g, '')     /* '2025년 기준 경제총조사' — 조사 기준 연도 */
+      .replace(/20\d{2}\s*년\s*산/g, '');          /* '2024년산 공공비축미' — 수확 연도 */
+    const ty = title.match(/20\d{2}/);
+    return ty ? +ty[0] : (week ? +week.slice(0, 4) : null);
+  }
+  /* 기간 → 오늘 기준 3상태 */
+  function rangeStatus(r, t) {
     if (!r) return null;
-    if (r.openEnded) return r.start && r.start > t ? 'upcoming' : 'ongoing';
+    if (r.openEnded) {
+      if (r.start && r.start > t) return 'upcoming';
+      /* [신규] 지난 회계연도의 '예산 소진 시까지'는 작년 예산 얘기다 —
+         해가 바뀌었는데도 '지금 신청할 수 있다'고 말하면 헛걸음을 시킨다. */
+      if (r.fiscalYear && r.fiscalYear < +t.slice(0, 4)) return 'done';
+      return 'ongoing';
+    }
     if (r.end && r.end < t) return 'done';
     if (r.start && r.start > t) return 'upcoming';
+    /* [신규] 끝이 안 적혔는데 열린 기간도 아니면(끝을 못 읽은 경우) 시작일을 끝으로 본다 —
+       'ongoing' 으로 두면 몇 해 전 하루짜리 일정이 영영 진행중으로 남는다. */
+    if (r.start && !r.end && r.start < t) return 'done';
     return 'ongoing';
+  }
+  /* 오늘 기준 3상태. 반환: 'done'(종료) | 'ongoing'(진행중) | 'upcoming'(예정) | null(기간 미기재) */
+  function periodStatus(item, occWeek, today) {
+    return rangeStatus(parseDateRange(item, occWeek), today || ymd(new Date()));
+  }
+  /* [신규] 열린 기간이 사실상 언제 끝났다고 볼 것인가.
+     지난 회계연도 것이면 그 해 12월 31일, 올해 것이면 아직 안 끝난 것으로 본다.
+     화면에 날짜로 보여 주지 않고, '아직 진행 중인가'를 가릴 때만 쓴다. */
+  function effectiveEnd(r, today) {
+    if (!r) return null;
+    if (!r.openEnded) return r.end || r.start || null;
+    const y = +(today || ymd(new Date())).slice(0, 4);
+    return (r.fiscalYear && r.fiscalYear < y) ? r.fiscalYear + '-12-31' : '9999-12-31';
   }
   /* 현안 단위: 가장 최근 등장분의 기재 기간을 따른다 */
   function issuePeriodStatus(issue, today) {
-    for (let i = issue.list.length - 1; i >= 0; i--) {
-      const o = issue.list[i];
-      const st = periodStatus(o.item, o.week, today);
-      if (st) return st;
-    }
-    return null;
+    return rangeStatus(issueDateRange(issue), today || ymd(new Date()));
   }
   function issueDateRange(issue) {
+    /* [신규] 회계연도는 '가장 최근에 실린 때'로 본다.
+       올해 다시 실렸는데 기간 줄이 없어 작년 회차의 기간을 빌려 쓸 때
+       작년 연도를 그대로 달면, 살아 있는 사업이 종료로 뒤집힌다(장기기증 희망등록). */
+    const last = issue.list[issue.list.length - 1];
+    const lastFY = last ? fiscalYearOf(last.item, last.week) : null;
     for (let i = issue.list.length - 1; i >= 0; i--) {
       const r = parseDateRange(issue.list[i].item, issue.list[i].week);
-      if (r) return r;
+      if (r) {
+        if (lastFY && (r.fiscalYear == null || r.fiscalYear < lastFY)) r.fiscalYear = lastFY;
+        return r;
+      }
     }
     return null;
   }
@@ -736,7 +852,8 @@
     parsePeriodEnd, issueEndDate, issueStatus, statusByRecency,
     sparkline, progStage, escH,
     /* 사용성 검토 반영분 */
-    parseDateRange, periodStatus, issuePeriodStatus, issueDateRange, PERIOD_LABELS_KO,
+    parseDateRange, periodStatus, issuePeriodStatus, issueDateRange, effectiveEnd,
+    fiscalYearOf, rangeStatus, PERIOD_LABELS_KO,
     annualKey, annualGroups, annualInfo, dayOfYear,
     roundsView, splitLabeled,
     tokenize, buildIdf, findSimilar, STOPWORDS,

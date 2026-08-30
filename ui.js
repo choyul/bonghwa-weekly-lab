@@ -190,7 +190,9 @@
   function periodOverlaps(iss, from, to) {
     const r = iss._range;
     if (!r || !r.start) return false;
-    const end = r.openEnded ? '9999-12-31' : (r.end || r.start);
+    /* 끝이 안 적힌 '예산 소진 시까지'도 그 해 예산이 끝나면 끝난 것이다 —
+       예전에는 9999년까지 열어 두어, 작년 사업이 계속 '아직 신청할 수 있어요'로 올라왔다. */
+    const end = BW.effectiveEnd(r, TODAY) || (r.end || r.start);
     return r.start <= to && end >= from;
   }
   /* 고른 기간의 '주간계획에는 없지만 아직 진행 중'인 일 — 놓치기 쉬운 것들을 이어서 보여준다 */
