@@ -302,15 +302,23 @@
         const toks = dateTokens(t, baseYear);
         if (!toks.length) return;
         /* '~ 소진 시까지', '계속' 처럼 종료가 열린 표현 */
-        if (/소진|계속|연중|상시/.test(t)) openEnded = true;
+        const open = /소진|계속|연중|상시/.test(t);
+        if (open) openEnded = true;
         const first = toks[0], last = toks[toks.length - 1];
         const sv = ymd(new Date(first.y, first.mo - 1, first.ym ? 1 : first.d));
         /* 일 생략형 종료는 그 달 말일로 (사업기간 표기 관행) */
         const ev = ymd(new Date(last.y, last.mo - 1, last.ym ? new Date(last.y, last.mo, 0).getDate() : last.d));
+        /* [신규] 날짜가 물결·'부터' 앞에 있으면 그것은 시작일이다.
+           "2026. 1. 1. ~ 예산 소진 시까지" 의 '까지'는 날짜가 아니라 '소진 시'에 걸린다.
+           예전에는 이걸 마감일로 읽어, 다음 해 사업의 시작일을 통째로 잃었다. */
+        const mark = t.search(/[~∼〜]|부터/);
+        const startsBefore = mark > 0 && /\d/.test(t.slice(0, mark));
         /* '~까지'만 있고 시작이 없으면 시작은 미상 */
-        const endOnly = /까지/.test(t) && toks.length === 1;
+        const endOnly = /까지/.test(t) && toks.length === 1 && !startsBefore;
         if (!endOnly && (!start || sv < start)) start = sv;
-        if (!end || ev > end) end = ev;
+        /* 끝이 열려 있는데 날짜가 하나뿐이면 그 날짜는 시작일 — 끝으로 쓰지 않는다 */
+        const noEnd = open && toks.length === 1 && startsBefore;
+        if (!noEnd && (!end || ev > end)) end = ev;
       });
       /* [신규] 끝이 시작보다 빠르면 해를 넘긴 것으로 본다 —
          "2024. 12. 26. ~ 2024. 1. 10." 처럼 원문에 연도가 잘못 적힌 경우가 많다.
@@ -345,8 +353,10 @@
        제목에 적힌 연도를 먼저 믿고(2026년 …은 12월에 실려도 2026년 사업),
        없으면 실린 주의 연도를 쓴다. 기간 시작 연도는 안 쓴다 — 올해 안내에도
        작년 날짜가 함께 적히는 일이 흔해 잘못 늙는다. */
-    const ty = (item.title || '').match(/20\d{2}/);
-    const fiscalYear = ty ? +ty[0] : (occWeek ? +occWeek.slice(0, 4) : null);
+    let fiscalYear = fiscalYearOf(item, occWeek);
+    /* 기간이 그보다 늦게 시작하면 그 해 사업이다 — 12월에 알리는 다음 해 사업
+       ("2026. 1. 1. ~ 예산 소진 시까지")이 실린 해에 묶여 일찍 끝나지 않도록. */
+    if (start && fiscalYear && +start.slice(0, 4) > fiscalYear) fiscalYear = +start.slice(0, 4);
     return { start, end, openEnded, fiscalYear, basis: byApply ? 'apply' : 'all', execEnd };
   }
 
@@ -356,7 +366,18 @@
       .replace(/20\d{2}\s*년?도?\s*기준/g, '')     /* '2025년 기준 경제총조사' — 조사 기준 연도 */
       .replace(/20\d{2}\s*년\s*산/g, '');          /* '2024년산 공공비축미' — 수확 연도 */
     const ty = title.match(/20\d{2}/);
-    return ty ? +ty[0] : (week ? +week.slice(0, 4) : null);
+    const wy = week ? +week.slice(0, 4) : null;
+    if (!ty) return wy;
+    const y = +ty[0];
+    if (wy == null) return y;
+    /* 제목의 연도는 '실린 해'이거나 '그 다음 해'일 때만 사업연도로 믿는다.
+       ① 차년도 사업을 미리 알리는 일이 흔하다 — 2025년 12월에 실린
+          '2026년 봉화사랑상품권 판매(1. 1. ~ 예산 소진 시)'는 2026년 사업이다.
+       ② 그 밖의 연도는 사업연도가 아니라 딴 뜻이다 —
+          '2035 봉화 군관리계획', '2040세대 건강강좌', '경상북도 미래비전 2045'.
+          그대로 믿으면 열린 기간이 20년 동안 '진행중'으로 남는다.
+       ③ 지난 연도가 적힌 올해 안내('2025년 실적 보고')도 실린 해로 본다. */
+    return (y === wy || y === wy + 1) ? y : wy;
   }
   /* 기간 → 오늘 기준 3상태 */
   function rangeStatus(r, t) {
