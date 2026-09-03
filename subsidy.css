@@ -95,3 +95,17 @@ textarea.ap-in{min-height:70px}
 .sub-acts .pri{width:100%;min-height:48px;border:none;border-radius:12px;
  background:var(--brand,#16A34A);color:#fff;font-family:inherit;font-weight:800;
  font-size:calc(15.5px*var(--fsx,1));cursor:pointer}
+/* 신청서 맨 위 — 결과 화면을 건너뛰고 왔으므로 '무엇으로 확인됐는지'를 여기서 말한다 */
+.ap-ok{margin:2px 0 12px;padding:12px 14px;border-radius:12px;
+ background:var(--brand-soft,#E8F7EE);border:1px solid var(--brand,#16A34A);
+ color:var(--brand-ink,#0F7A38);font-size:calc(15px*var(--fsx,1));font-weight:800;line-height:1.5}
+.ap-ok span{display:block;font-size:calc(12.5px*var(--fsx,1));font-weight:500;margin-top:3px;opacity:.9}
+.ap-ok.self{background:var(--bg,#F4F5F2);border-color:var(--line,#DDE8E2);color:var(--ink,#121E18)}
+/* 얼마까지 신청할 수 있나 — 적는 칸보다 한도가 먼저 온다 */
+.ap-quota{margin:16px 0 10px;padding:14px 16px;border-radius:14px;
+ background:#E7F0FF;border:1.5px solid #BBD4F5;color:#1D5DBB}
+.ap-quota .t{font-size:calc(13px*var(--fsx,1));font-weight:700;opacity:.9}
+.ap-quota .n{font-size:calc(30px*var(--fsx,1));font-weight:800;line-height:1.15;letter-spacing:-.02em;margin-top:2px}
+.ap-quota .n span{font-size:calc(16px*var(--fsx,1));font-weight:700;margin-left:3px}
+.ap-quota .w{font-size:calc(12.5px*var(--fsx,1));font-weight:500;margin-top:4px;line-height:1.5;opacity:.85}
+.ap-quota.unknown{background:var(--bg,#F4F5F2);border-color:var(--line,#DDE8E2);color:var(--sub,#5F7168)}

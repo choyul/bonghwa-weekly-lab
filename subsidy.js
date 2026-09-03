@@ -241,7 +241,7 @@
     }
 
     /* ── ② 결과 ── */
-    function renderResult(v) {
+    function renderResult(v, stay) {
       const today = window.BWUI ? BWUI.api.today : new Date().toISOString().slice(0, 10);
       const tel = H.tel || '';
       /* 담당자가 관리자 화면에서 정한 마감일이 원문보다 앞선다 */
@@ -285,6 +285,9 @@
           else if (full) why = `접수 정원(${cfg.capacity}명)이 찼습니다. 담당과로 문의하세요.`;
         }
         const canApply = cfg.online && !already && !closed && !full;
+        /* 신청할 수 있는 사람에게 '결과'를 한 번 더 보여 주고 또 누르게 할 이유가 없다.
+           바로 신청서로 보낸다 — 자격 확인 내용은 신청서 맨 위에 그대로 얹는다. */
+        if (canApply && !stay) { renderApply(v); return; }
         const acts = `<div class="sub-acts">
           ${canApply ? '<button type="button" id="subApply" class="pri">📝 온라인 신청</button>' : ''}
           <div class="row">
@@ -294,7 +297,10 @@
           ${why ? `<p class="sub-note" style="margin-top:2px">${E(why)}</p>` : ''}
         </div>`;
 
-        body = `<div class="sub-verdict ok">해당될 수 있습니다. 신청 전에 담당과에 확인하세요.</div>
+        /* 온라인 접수를 안 받는 사업이라 여기까지 온 것 — 어디서 어떻게 내는지가 답이다.
+           '신청 전에 담당과에 확인하세요' 는 뺐다. 확인하러 전화하는 일 자체가
+           농민에게도 담당자에게도 일이다. */
+        body = `<div class="sub-verdict ok">해당됩니다. 아래 방법으로 신청하세요.</div>
           ${src}
           ${follow ? `<div class="sub-follow">${follow}</div>` : ''}
           ${acts}`;
@@ -337,8 +343,10 @@
       };
     }
 
-    /* ── ③ 온라인 접수 ── */
-    function renderApply() {
+    /* ── ③ 온라인 접수 ──
+       자격 확인을 거쳐 바로 들어오는 자리다. 그래서 맨 위에 '무엇으로 확인됐는지'를
+       한 번 더 얹는다 — 결과 화면을 건너뛰었으니 여기서 그 자리를 대신해야 한다. */
+    function renderApply(v) {
       const A = window.SUBCFG ? SUBCFG.ASK : {};
       const pre = prof();
       const q = cfg.qty;
@@ -354,30 +362,54 @@
           : `<input class="ap-in" data-k="${k}" type="${f.type}" value="${E(val)}" placeholder="${E(f.ph || '')}">`;
         return `<label class="ap-lab">${E(f.label)}${f.required ? ' <b>*</b>' : ''}</label>${inp}`;
       }).join('');
+      /* ── 얼마까지 신청할 수 있나 ──
+         적는 칸보다 한도가 먼저다. 얼마까지 되는지 모르고 숫자를 적으면
+         적어 놓고 깎이는 일이 생긴다. 근거(면적·1인 한도)도 함께 적는다. */
       const qtyRow = (q && q.on) ? `
-        <label class="ap-lab">${E(q.label || '신청 수량')}${q.unit ? ` (${E(q.unit)})` : ''}</label>
-        <input class="ap-in" id="apQty" type="number" min="0" inputmode="numeric"
+        <div class="ap-quota${cap != null ? '' : ' unknown'}">
+          <div class="t">신청할 수 있는 ${E(q.label || '양')}</div>
+          ${cap != null
+            ? `<div class="n">${cap}<span>${E(q.unit || '')}</span></div>
+               ${why ? `<div class="w">${E(why)}</div>` : ''}`
+            : '<div class="w">경작 면적이 확인되면 받을 수 있는 최대 수량을 알려 드립니다.</div>'}
+        </div>
+        <label class="ap-lab">얼마나 신청하시겠어요?${q.unit ? ` (${E(q.unit)})` : ''}</label>
+        <input class="ap-in" id="apQty" type="number" min="0" step="any" inputmode="decimal"
           placeholder="${cap != null ? '최대 ' + cap : '숫자로 적어 주세요'}">
         <div class="ap-cap" id="apCap">${cap != null
-          ? `신청할 수 있는 최대 <b>${cap}${E(q.unit || '')}</b>${why ? ` <span>(${E(why)})</span>` : ''}`
-          : '경작 면적을 확인하면 받을 수 있는 최대 수량을 알려 드립니다.'}</div>
+          ? `${cap}${E(q.unit || '')}까지 적으실 수 있습니다.` : ''}</div>
         <div class="ap-cap warn">신청한 수량이 그대로 나가지는 않습니다.
           <b>면적과 예산에 맞춰 자동으로 조정</b>되며, 최종 수량은 담당과 심사로 정해집니다.
           ${q.note ? E(q.note) : ''}</div>` : '';
+      const today = window.BWUI ? BWUI.api.today : new Date().toISOString().slice(0, 10);
+      const endD = cfg.applyEnd || c.applyEnd;
+      const dleft = endD ? dday(endD, today) : null;
+      /* 결과 화면을 건너뛰고 왔으므로, 무엇으로 자격이 확인됐는지를 여기 얹는다 */
+      const okLine = (apiMode() && agrix && PROV)
+        ? `<div class="ap-ok">✅ 자격이 확인되었습니다
+             <span>🔗 ${E(PROV.name)}로 확인했습니다</span></div>` + agrixCard(agrix)
+        : `<div class="ap-ok self">✅ 신청하실 수 있습니다
+             <span>✋ 적어 주신 내용 기준입니다. 담당자가 서류로 다시 확인합니다.</span></div>`;
       m.innerHTML = `<div class="mbox">${head}
         <div class="sub-body">
-          <div class="sub-q" style="margin-top:2px">온라인 신청</div>
+          ${okLine}
+          ${endD && dleft != null ? `<div class="sub-follow"><div>신청 마감까지
+            <b>${dleft === 0 ? '오늘까지' : dleft + '일'}</b> 남았습니다. (마감 ${E(endD)})</div></div>` : ''}
+          ${qtyRow}
+          <div class="sub-q" style="margin-top:16px">신청서</div>
           ${!apiMode() && cfg.ask.includes('farmNo')
             ? '<div class="sub-manual">등록번호를 모르시면 비워 두셔도 됩니다 — 담당자가 대장에서 찾습니다.</div>' : ''}
           ${rows || '<p class="sub-note">받을 정보가 정해지지 않았습니다.</p>'}
-          ${qtyRow}
           ${cfg.agree !== false ? `<label class="ap-agree" id="apAgree"><input type="checkbox">
             적어 주신 내용을 이 사업 심사에 쓰는 데 동의합니다. 심사가 끝나면 지웁니다.</label>` : ''}
+          <div class="sub-acts" style="margin-top:16px">
+            <button type="button" id="apGo" class="pri">📨 신청서 제출</button>
+          </div>
           <div class="sub-note">보내신 내용은 담당과가 확인합니다. 최종 자격은 담당과 심사로 정해집니다.</div>
         </div>
-        ${foot('<button type="button" id="apGo" class="pri">접수하기</button><button type="button" id="apBack">뒤로</button>')}</div>`;
+        ${foot('<button type="button" id="apBack">자세히 보기</button>')}</div>`;
       wire();
-      m.querySelector('#apBack').onclick = () => renderResult({ r: 'ok' });
+      m.querySelector('#apBack').onclick = () => renderResult({ r: 'ok' }, true);
       const qi = m.querySelector('#apQty');
       if (qi && cap != null) qi.oninput = () => {
         if (qi.value !== '' && +qi.value > cap) {
@@ -404,7 +436,7 @@
           d.qty = (cap != null ? Math.min(+qi.value, cap) : +qi.value) + (q.unit || '');
           if (why) d.qtyWhy = why;
         }
-        const btn = m.querySelector('#apGo'); btn.disabled = true; btn.textContent = '접수 중…';
+        const btn = m.querySelector('#apGo'); btn.disabled = true; btn.textContent = '보내는 중…';
         /* 담당자 화면이 두 판을 견주려면 건마다 '어느 판·무엇을 보고 통과했는지'가 남아야 한다 */
         const rec = { sid: sub.id, title: sub.title, dept: sub.dept, data: d, agrix,
           capacity: cfg.capacity || null,
@@ -416,7 +448,7 @@
         const res = window.LABAPI ? await LABAPI.apply(rec)
           : { ok: true, no: 'B-LOCAL-' + (applyLog().length + 1) };
         if (!res.ok) {
-          btn.disabled = false; btn.textContent = '접수하기';
+          btn.disabled = false; btn.textContent = '📨 신청서 제출';
           if (res.full) {
             /* 방금 마지막 자리가 나갔다 — 왜 안 되는지, 그다음 어디로 가는지를 그 자리에서 */
             const sb = m.querySelector('.sub-body');

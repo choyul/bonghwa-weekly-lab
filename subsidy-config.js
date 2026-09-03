@@ -134,7 +134,9 @@
     if (!q || !q.on) return null;
     let cap = q.max != null ? q.max : Infinity;
     if (q.perHa != null && areaHa != null && areaHa !== '' && !isNaN(+areaHa))
-      cap = Math.min(cap, Math.floor(+areaHa * q.perHa));
+      /* 소수 둘째 자리까지만 내림 — 묘목(주)은 정수 그대로지만,
+         면적(ha)은 통째로 버리면 1.24ha 가 1ha 가 되어 0.24ha 를 잃는다 */
+      cap = Math.min(cap, Math.floor(+areaHa * q.perHa * 100) / 100);
     return cap === Infinity ? null : Math.max(0, cap);
   }
   function qtyWhy(q, areaHa) {
