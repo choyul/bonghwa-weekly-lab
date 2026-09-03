@@ -1,0 +1,170 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>[테스트] 주간업무 — 접수 처리</title>
+<link rel="stylesheet" href="bonghwa-tokens.css">
+<style>
+/* ══════════════════════════════════════════════════════════════
+   주간업무 접수 처리 화면.
+   담당자가 주간업무를 하면서 '이번 주에 들어온 신청을 어떻게 할지'를
+   한 자리에서 끝내는 곳이다. admin.html(설정)과는 하는 일이 다르다.
+   ══════════════════════════════════════════════════════════════ */
+:root{--paper:#fff;--bg:#F4F5F2;--ink:#121E18;--sub:#5F7168;--faint:#98A2AE;
+ --line:#DDE8E2;--acc:#16A34A;--acc-soft:#E8F7EE;--warn:#B85C22;--warn-soft:#FBEFE5;
+ --blue:#1D5DBB;--blue-soft:#E7F0FF;--gold:#8A6210;--gold-soft:#FEF4D8;--r:14px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font-family:Pretendard,-apple-system,'Apple SD Gothic Neo',sans-serif;font-size:15px;line-height:1.65}
+#labBanner{background:#C2410C;color:#fff;text-align:center;font-size:13px;font-weight:800;padding:8px 12px}
+.wrap{max-width:1040px;margin:0 auto;padding:14px 14px 90px}
+h1{font-size:20px;margin:14px 0 4px;letter-spacing:-.02em}
+h2{font-size:15px;margin:0 0 10px}
+.lead{color:var(--sub);font-size:13.5px;margin:0 0 14px;word-break:keep-all}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sp{flex:1}
+button{font:inherit;padding:8px 13px;min-height:40px;border:1px solid var(--line);border-radius:10px;
+ background:var(--paper);color:var(--ink);cursor:pointer;font-weight:600}
+button.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+button.sm{min-height:32px;padding:4px 10px;font-size:12.5px}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{font:inherit;padding:8px 11px;border:1px solid var(--line);border-radius:10px;
+ background:var(--paper);color:var(--ink);min-height:40px}
+#gate{max-width:360px;margin:60px auto;text-align:center}
+.hint{font-size:12.5px;color:var(--sub);line-height:1.6;margin:6px 0 0;word-break:keep-all}
+
+/* ── 판 고르기 ── */
+.modebar{position:sticky;top:0;z-index:20;background:var(--bg);padding:10px 0 8px;margin-bottom:2px}
+.modetabs{display:flex;gap:6px}
+.modetabs button{flex:1;min-height:52px;border-radius:12px;font-weight:800;font-size:14px;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.25}
+.modetabs button small{font-size:11px;font-weight:600;color:var(--sub)}
+.modetabs button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.modetabs button.on small{color:#fff;opacity:.75}
+.modewhy{margin:8px 0 0;font-size:12.5px;color:var(--sub);line-height:1.55;word-break:keep-all}
+
+/* ── 요약 숫자 ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:11px 13px;background:var(--paper)}
+.stat .n{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.stat .l{font-size:12.5px;color:var(--sub);font-weight:600}
+.stat.hot .n{color:var(--warn)} .stat.ok .n{color:var(--acc)} .stat.blue .n{color:var(--blue)}
+.cost{margin-top:10px;border-radius:12px;padding:11px 13px;font-size:13.5px;line-height:1.6;word-break:keep-all}
+.cost.manual{background:var(--gold-soft);color:var(--gold);border:1px solid #F0C24B}
+.cost.api{background:var(--blue-soft);color:var(--blue);border:1px solid #BBD4F5}
+.cost b{font-size:15px}
+
+/* ── 사업 카드 ── */
+.biz{display:flex;gap:10px;align-items:center;padding:11px 13px;border:1px solid var(--line);
+ border-radius:12px;background:var(--paper);cursor:pointer;margin-bottom:8px}
+.biz:hover{border-color:var(--acc)}
+.biz.on{border-color:var(--acc);background:var(--acc-soft)}
+.biz .t{flex:1;min-width:0}
+.biz .t b{display:block;font-size:14.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.biz .t small{font-size:12px;color:var(--faint)}
+.biz .n{text-align:right;white-space:nowrap;font-size:12.5px;color:var(--sub)}
+.biz .n b{display:block;font-size:18px;color:var(--ink)}
+.bar{height:6px;border-radius:100px;background:var(--bg);overflow:hidden;margin-top:5px;width:120px}
+.bar i{display:block;height:100%;background:var(--acc)}
+.pill{display:inline-block;font-size:11px;font-weight:800;border-radius:100px;padding:2px 8px;white-space:nowrap}
+.pill.api{background:var(--blue-soft);color:var(--blue)}
+.pill.man{background:var(--gold-soft);color:var(--gold)}
+.pill.dday{background:var(--warn-soft);color:var(--warn)}
+.pill.done{background:var(--acc-soft);color:#0F7A38}
+.pill.demo{background:#F1E9FB;color:#6B3FA0}
+
+/* ── 접수 한 건 ── */
+.ap{border:1px solid var(--line);border-radius:12px;background:var(--paper);margin-bottom:9px;overflow:hidden}
+.ap.sel{border-color:var(--acc)} .ap.out{border-color:#E3C9C2;background:#FDFBFA}
+.ap .h{display:flex;gap:9px;align-items:center;padding:11px 13px;flex-wrap:wrap}
+.ap .h b{font-size:15px}
+.ap .h .who{font-size:12.5px;color:var(--sub)}
+.ap .b{padding:0 13px 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 14px;
+ font-size:13px;padding:2px 0 8px;border-top:1px dashed var(--line);margin-top:2px;padding-top:9px}
+.grid div span{color:var(--faint);margin-right:6px}
+.verdict{border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;line-height:1.55;margin:8px 0;word-break:keep-all}
+.verdict.ok{background:var(--acc-soft);color:#0F7A38}
+.verdict.no{background:#FDF0EE;color:#9A3A2E}
+.verdict.ask{background:var(--gold-soft);color:var(--gold)}
+.verdict small{display:block;font-weight:500;margin-top:2px;opacity:.9}
+/* 손으로 대조해야 하는 항목들 */
+.checks{display:flex;flex-direction:column;gap:5px;margin:8px 0}
+.chk{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;
+ padding:8px 11px;font-size:13px;cursor:pointer;background:var(--paper);text-align:left;min-height:0;font-weight:500}
+.chk .bx{flex:none;width:19px;height:19px;border:1.5px solid var(--faint);border-radius:6px;
+ display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;margin-top:1px}
+.chk.on{background:var(--acc-soft);border-color:var(--acc);color:#0F7A38;font-weight:700}
+.chk.on .bx{background:var(--acc);border-color:var(--acc);color:#fff}
+.chk.auto{background:var(--blue-soft);border-color:#BBD4F5;color:var(--blue);cursor:default;font-weight:700}
+.chk.auto .bx{background:var(--blue);border-color:var(--blue);color:#fff}
+.chk em{font-style:normal;display:block;font-size:11.5px;font-weight:500;color:var(--sub);margin-top:1px}
+.chk.on em{color:#3E7A56} .chk.auto em{color:#4E7CC0}
+.acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.acts .memo{flex:1;min-width:170px}
+button.go{background:var(--acc);border-color:var(--acc);color:#fff}
+button.no{background:#FDF0EE;border-color:#E3C9C2;color:#9A3A2E}
+.state{font-size:12px;font-weight:800;border-radius:100px;padding:3px 10px}
+.state.접수{background:var(--bg);color:var(--sub)}
+.state.확인{background:var(--blue-soft);color:var(--blue)}
+.state.보류{background:var(--gold-soft);color:var(--gold)}
+.state.선정{background:var(--acc-soft);color:#0F7A38}
+.state.제외{background:#FDF0EE;color:#9A3A2E}
+
+/* ── 나란히 비교 ── */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:700px){.cmp{grid-template-columns:1fr}}
+.cmp .col{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.cmp .col .ch{padding:11px 13px;font-weight:800;font-size:14.5px}
+.cmp .col.a .ch{background:var(--gold-soft);color:var(--gold)}
+.cmp .col.b .ch{background:var(--blue-soft);color:var(--blue)}
+.cmp .col ol{margin:0;padding:12px 12px 12px 30px;font-size:13.5px;line-height:1.7}
+.cmp .col li{margin-bottom:6px;word-break:keep-all}
+.cmp .col li.auto{color:var(--blue);font-weight:700}
+.cmp .col li.hand{color:var(--gold);font-weight:700}
+.cmp .foot{border-top:1px solid var(--line);padding:10px 13px;font-size:13px;background:var(--bg)}
+.cmp .foot b{font-size:16px}
+table.spec{width:100%;border-collapse:collapse;font-size:13px}
+table.spec th,table.spec td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+table.spec th{color:var(--sub);font-size:12px;font-weight:700;background:var(--bg)}
+table.spec code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+.warnbox{background:var(--warn-soft);border:1px solid #E8C4A8;color:#8A4413;border-radius:12px;
+ padding:11px 13px;font-size:13px;line-height:1.6;word-break:keep-all}
+textarea.out{width:100%;min-height:120px;font-size:12.5px;line-height:1.5;
+ font-family:ui-monospace,Menlo,monospace}
+</style></head><body>
+<div id="labBanner">테스트 버전입니다. 실제 접수·심사가 아닙니다.</div>
+<div class="wrap">
+
+<div id="gate">
+  <h1>주간업무 — 접수 처리</h1>
+  <p class="lead">담당자 화면입니다. 열람 코드를 넣어 주세요.</p>
+  <div class="row"><input type="password" id="code" placeholder="열람 코드" style="flex:1">
+    <button class="pri" id="go">들어가기</button></div>
+  <p class="hint">시험용 코드: <b>bonghwa</b></p>
+</div>
+
+<div id="app" style="display:none">
+  <h1>주간업무 — 접수 처리</h1>
+  <p class="lead">이번 주 온라인으로 들어온 신청을 여기서 끝냅니다.
+    같은 접수함을 <b>두 판</b>으로 처리해 보면, 경영체 정보 연동이 무엇을 대신해 주는지 그대로 보입니다.</p>
+
+  <div class="modebar">
+    <div class="modetabs" id="modeTabs">
+      <button type="button" data-m="api">🔗 연동판<small>경영체 정보가 붙어 있을 때</small></button>
+      <button type="button" data-m="manual">✋ 수기판<small>지금 그대로 — 손으로 대조</small></button>
+      <button type="button" data-m="both">⚖️ 나란히<small>두 판을 견줘 보기</small></button>
+    </div>
+    <p class="modewhy" id="modeWhy"></p>
+  </div>
+
+  <div id="main"></div>
+</div>
+</div>
+
+<script src="subsidy-data.js"></script>
+<script src="lab-api.js"></script>
+<script src="lab-mode.js"></script>
+<script src="subsidy-config.js"></script>
+<script src="desk.js"></script>
+</body></html>

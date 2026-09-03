@@ -12,6 +12,17 @@
 ## 표 만들기(처음 한 번)
     npx wrangler d1 execute bonghwa-lab --remote --file=schema.sql
 
+## 접수 처리 칸 더하기 (2026-09, 한 번만)
+    npx wrangler d1 execute bonghwa-lab --remote --file=schema-apply-v2.sql
+
+접수를 '받기만 하던' 표에 **처리 상태**를 담을 칸을 더한다
+(state·note·by·stateAt·checks·mode·verify).
+담당자 화면 `apply-desk.html` 이 이 칸들을 쓴다.
+
+배포와 순서가 뒤바뀌어도 주민 접수는 깨지지 않는다 — 칸이 없으면 워커가
+예전 칸으로만 넣는다. 다만 **칸을 더하기 전까지 처리 상태는 담당자 기기에만** 남는다.
+이미 돌렸다면 `duplicate column name` 으로 멈춘다. 그러면 그냥 두면 된다.
+
 ## 주소
 | 메서드 | 경로 | 누가 |
 |---|---|---|
@@ -19,6 +30,7 @@
 | PUT | `/cfg` | 관리자 코드 |
 | POST | `/apply` | 공개 — 온라인 접수 |
 | GET | `/apply?code=` | 관리자 코드 — 접수 내역 |
+| POST | `/apply/state` | 관리자 코드 — 접수 한 건 처리(확인·보류·선정·제외) |
 | GET | `/market` | 공개 — 팔고 있는 글. **실명·전화는 나가지 않는다** |
 | POST | `/seller` | 공개 — 판매자 등록 신청 |
 | GET | `/seller/me` | 수정키(`x-lab-key`) + 누구인지(`x-lab-id`) |

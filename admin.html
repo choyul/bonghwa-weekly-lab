@@ -53,6 +53,16 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
 .prev .q{font-weight:800;font-size:14.5px;margin:10px 0 5px}
 .prev .o{display:flex;gap:6px;flex-wrap:wrap}
 .prev .o span{border:1px solid var(--line);border-radius:100px;padding:5px 12px;font-size:13px;background:var(--paper)}
+table.spec{width:100%;border-collapse:collapse;font-size:13px}
+table.spec th,table.spec td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:middle}
+table.spec th{color:var(--sub);font-size:12px;font-weight:700;background:var(--bg)}
+table.spec input{min-height:34px;padding:5px 9px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;width:180px}
+table.spec .fix{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--sub)}
+.spec .tag{font-size:11px;font-weight:800;border-radius:100px;padding:2px 8px;white-space:nowrap}
+.spec .tag.a{background:#E7F0FF;color:#1D5DBB} .spec .tag.b{background:var(--bg);color:var(--faint)}
+.deskbar{display:flex;gap:8px;align-items:center;background:#111C17;color:#fff;border-radius:12px;
+ padding:11px 14px;margin-bottom:12px;font-size:13.5px;flex-wrap:wrap}
+.deskbar a{color:#9FE8BE;font-weight:800;text-decoration:none;border-bottom:1.5px solid #9FE8BE}
 </style></head><body>
 <div id="labBanner">테스트 버전입니다. 여기 설정한 내용은 이 기기에만 저장됩니다.</div>
 <div class="wrap">
@@ -70,6 +80,9 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
   <p class="lead">사업을 고르면 <b>무엇을 물을지</b>와 <b>온라인 접수를 받을지</b>를 정할 수 있습니다.
     정한 내용은 이 기기에만 남습니다 — 모두에게 적용하려면 맨 아래 [설정 내보내기]로 받아
     <code>build/subsidy-review.json</code>에 넣으세요.</p>
+
+  <div class="deskbar">여기는 <b>설정</b>하는 곳입니다. 들어온 신청을 처리하려면 →
+    <a href="apply-desk.html">주간업무 접수 처리 화면 열기</a></div>
 
   <div class="card">
     <div class="row" style="margin-bottom:10px">
@@ -90,8 +103,10 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
         <span class="sp"></span>
         <button class="sm" id="resetBtn">자동 추출값으로 되돌리기</button>
       </div>
-      <p class="hint">파란 <span class="agrix">경영체 자동확인</span> 표시가 붙은 항목은
-        주민이 농업경영체 정보를 불러오면 <b>자동으로 채워집니다.</b></p>
+      <p class="hint">파란 <span class="agrix">경영체 자동확인</span> 표시는 농업경영체 정보로,
+        보라 <span class="agrix" style="color:#7C3AED;background:#F1E9FB">복지자격 자동확인</span> 표시는
+        복지자격 정보로 — 주민이 불러오면 <b>자동으로 채워집니다.</b>
+        복지 사업이면 기초생활수급·차상위 같은 항목을 아래 [항목 추가]에서 더하세요.</p>
     </div>
 
     <div class="card">
@@ -136,7 +151,31 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
     </div>
 
     <div class="card">
-      <h2 style="margin-top:0">④ 주민 화면 미리보기</h2>
+      <h2 style="margin-top:0">④ 내부 시스템 연동</h2>
+      <p class="hint" style="margin:0 0 10px">위에서 <b>받을 정보를 고른 것만으로</b> 넘길 규격이 아래처럼 정해집니다.
+        따로 개발을 시킬 필요가 없습니다 — 칸 이름이 우리 시스템과 다르면 그 줄만 고쳐 쓰세요.</p>
+      <div class="row" style="margin-bottom:10px">
+        <div><label style="font-size:12.5px;color:var(--sub)">넘기는 방법</label>
+          <select id="linkHow" style="width:200px">
+            <option value="file">파일로 내려받아 올리기</option>
+            <option value="json">표준 JSON 내려받기</option>
+            <option value="hook">주소로 바로 보내기(웹훅)</option>
+          </select></div>
+        <div style="flex:1;min-width:220px"><label style="font-size:12.5px;color:var(--sub)">받는 곳 (웹훅일 때만)</label>
+          <input type="text" id="linkTarget" placeholder="예: https://내부시스템/보조사업/접수"></div>
+      </div>
+      <div style="overflow-x:auto"><table class="spec" id="linkSpec"></table></div>
+      <div class="row" style="margin-top:10px">
+        <button id="linkReset" class="sm">칸 이름 되돌리기</button>
+        <span class="sp"></span>
+        <button id="linkOut">연동 명세서 내려받기</button>
+      </div>
+      <p class="hint">🌱 표시가 붙은 칸은 <b>농업경영체 정보가 연동돼야 채워집니다.</b>
+        연동이 없으면 규격에는 남아 있되 늘 빈칸으로 나가고, 담당자가 손으로 채워야 합니다.</p>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0">⑤ 주민 화면 미리보기</h2>
       <div class="prev" id="prev"></div>
     </div>
 
@@ -231,6 +270,7 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
    return `<div class="fld">
      <div class="top"><b>${E(F.label)}</b>
        ${F.agrix?'<span class="agrix">경영체 자동확인</span>':''}
+       ${F.welfare?'<span class="agrix" style="color:#7C3AED;background:#F1E9FB">복지자격 자동확인</span>':''}
        <button type="button" class="chk sm ${f.required?'on':''}" data-i="${i}" data-p="required">필수</button>
        <button class="sm del" data-del="${i}">삭제</button></div>
      <label>주민에게 보일 질문</label>
@@ -271,8 +311,46 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
   $('#capacity').value=cfg.capacity??''; $('#note').value=cfg.note||'';
   $('#endDate').value=cfg.applyEnd||cur.conditions.applyEnd||'';
   $('#agreeChk').classList.toggle('on',cfg.agree!==false);
-  renderQty(); renderPrev();
+  renderQty(); renderLink(); renderPrev();
  }
+
+ /* ── ④ 내부 시스템 연동 ──
+    담당자가 고른 [받을 정보]에서 규격이 저절로 나온다. 여기서 하는 일은
+    '우리 시스템의 칸 이름이 다르면 그 줄만 고치는 것' 하나뿐이다. */
+ const L=()=>cfg.link||(cfg.link={how:'file',target:'',map:{}});
+ function renderLink(){
+  const l=L();
+  $('#linkHow').value=l.how||'file';
+  $('#linkTarget').value=l.target||'';
+  $('#linkTarget').disabled=(l.how!=='hook');
+  const spec=SUBCFG.linkSpec(cfg);
+  $('#linkSpec').innerHTML='<tr><th>우리 화면의 항목</th><th>내부 시스템 칸 이름</th><th>채우는 쪽</th></tr>'
+   +spec.map(s=>`<tr><td>${E(s.label)}${s.agrix?' 🌱':''}
+      ${s.note?`<div style="font-size:11.5px;color:var(--faint)">${E(s.note)}</div>`:''}</td>
+     <td><input type="text" data-col="${E(s.k)}" value="${E(s.col)}"></td>
+     <td>${s.agrix?'<span class="tag a">농업경영체 정보</span>'
+        :s.always?'<span class="tag b">접수 때 자동</span>':'<span class="tag b">신청인 입력</span>'}</td></tr>`).join('');
+  $('#linkSpec').querySelectorAll('input[data-col]').forEach(el=>el.oninput=()=>{
+   L().map[el.dataset.col]=el.value.trim();
+  });
+ }
+ $('#linkHow').onchange=()=>{ L().how=$('#linkHow').value; renderLink(); };
+ $('#linkTarget').oninput=()=>{ L().target=$('#linkTarget').value; };
+ $('#linkReset').onclick=()=>{ L().map={}; renderLink(); };
+ $('#linkOut').onclick=()=>{
+  const spec=SUBCFG.linkSpec(cfg), l=L();
+  const doc={ 사업:cur.title, 부서:cur.dept, 만든날:new Date().toISOString().slice(0,10),
+    넘기는방법:{file:'파일로 내려받아 올리기',json:'표준 JSON 내려받기',hook:'주소로 바로 보내기(웹훅)'}[l.how||'file'],
+    받는곳:l.target||'',
+    설명:'이 명세는 담당자가 고른 [받을 정보]에서 자동으로 만들어진 것입니다. 별도 개발 없이 이 칸 이름만 맞추면 됩니다.',
+    칸:spec.map(s=>({칸이름:s.col,뜻:s.label,
+      채우는쪽:s.agrix?'농업경영체 정보(연동 시 자동 / 미연동 시 빈칸)':s.always?'접수 시 자동':'신청인 입력'})),
+    연동안하면:'🌱 표시가 붙은 칸은 모두 빈칸으로 나갑니다. 담당자가 농관원 시스템을 따로 열어 한 건씩 채워야 합니다.' };
+  const b=new Blob(['\ufeff'+JSON.stringify(doc,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b);
+  a.download='연동명세서_'+cur.title.replace(/[\\/:*?"<>|]/g,'')+'.json'; a.click();
+  $('#saved').textContent='연동 명세서를 내려받았습니다. 정보화 담당자에게 이 파일만 주면 됩니다.';
+ };
  $('#addBtn').onclick=()=>{ const k=$('#addField').value; if(!k)return;
    cfg.fields.push({k,on:true,required:true,q:SUBCFG.FIELDS[k].q,v:null,min:null,max:null}); renderEditor(); };
  $('#resetBtn').onclick=()=>{ cfg.fields=SUBCFG.defaultsFrom(cur.conditions); renderEditor(); };

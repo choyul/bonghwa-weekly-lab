@@ -7,6 +7,8 @@
      PUT  /cfg              설정 저장        (관리자 코드 필요)
      POST /apply            온라인 접수      (공개)
      GET  /apply?code=...   접수 내역        (관리자 코드 필요)
+     POST /apply/state      접수 건 처리     (관리자 코드 필요)
+     GET  /count?sid=...    접수 건수        (공개 — 남은 자리 표시용)
 
    장터 — 판매자 등록제 + 자율정화 (담당자가 상시로 보지 않는다)
      GET    /market              팔고 있는 글 (공개. 실명·전화는 절대 안 나간다)
@@ -436,18 +438,67 @@ export default {
       const at = NOW();
       const seq = await env.DB.prepare('SELECT COUNT(*) n FROM apply').first();
       const no = 'B' + at.slice(2, 10).replace(/-/g, '') + '-' + String(((seq && seq.n) || 0) + 1).padStart(3, '0');
-      await env.DB.prepare('INSERT INTO apply (no,sid,title,dept,at,data,agrix) VALUES (?1,?2,?3,?4,?5,?6,?7)')
-        .bind(no, sid, S(b.title, 200), S(b.dept, 40), at,
-          JSON.stringify(b.data || {}).slice(0, 4000), JSON.stringify(b.agrix || null).slice(0, 2000)).run();
+      /* 어느 판으로 들어온 건인가 — 'api'(경영체 연동) 아니면 수기.
+         담당자 화면에서 두 판을 나란히 견주려면 건마다 이 표가 남아 있어야 한다. */
+      const mode = b.mode === 'api' ? 'api' : 'manual';
+      const D = JSON.stringify(b.data || {}).slice(0, 4000);
+      const G = JSON.stringify(b.agrix || null).slice(0, 2000);
+      try {
+        await env.DB.prepare('INSERT INTO apply (no,sid,title,dept,at,data,agrix,state,mode,verify,checks) ' +
+          'VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)')
+          .bind(no, sid, S(b.title, 200), S(b.dept, 40), at, D, G,
+            '접수', mode, JSON.stringify(b.verify || null).slice(0, 2000), '{}').run();
+      } catch (e) {
+        /* schema-apply-v2.sql 을 아직 안 돌린 저장소다.
+           주민의 접수가 배포 순서 때문에 실패하는 일은 없어야 하므로 예전 칸으로만 넣는다.
+           (처리 상태는 담당자 기기에 남았다가, 표를 고친 뒤부터 서버에 쌓인다) */
+        await env.DB.prepare('INSERT INTO apply (no,sid,title,dept,at,data,agrix) VALUES (?1,?2,?3,?4,?5,?6,?7)')
+          .bind(no, sid, S(b.title, 200), S(b.dept, 40), at, D, G).run();
+      }
       return json({ no, at }, env);
+    }
+
+    /* 그 사업에 몇 건 접수됐나 (공개) —
+       주민 화면이 '정원 50명 중 37명'을 보여 주려면 이 숫자가 필요하다.
+       개인을 알아볼 것은 아무것도 나가지 않는다. */
+    if (u.pathname === '/count' && req.method === 'GET') {
+      const sid = S(u.searchParams.get('sid'), 40);
+      if (!/^sub_[0-9a-f]{8}$/.test(sid)) return json({ error: '사업을 찾을 수 없습니다' }, env, 400);
+      const c = await env.DB.prepare('SELECT COUNT(*) n FROM apply WHERE sid=?1').bind(sid).first();
+      return json({ sid, n: (c && c.n) || 0 }, env);
     }
 
     if (u.pathname === '/apply' && req.method === 'GET') {
       if (!ok(req, env)) return json({ error: '코드가 맞지 않습니다' }, env, 401);
       const r = await env.DB.prepare('SELECT * FROM apply ORDER BY at DESC LIMIT 500').all();
+      const P = (v, d) => { try { return JSON.parse(v); } catch (e) { return d; } };   /* 옛 줄에는 없는 칸이 있다 */
       return json({ rows: (r.results || []).map(x => ({ ...x,
-        data: (() => { try { return JSON.parse(x.data); } catch (e) { return {}; } })(),
-        agrix: (() => { try { return JSON.parse(x.agrix); } catch (e) { return null; } })() })) }, env);
+        data: P(x.data, {}), agrix: P(x.agrix, null),
+        checks: P(x.checks, {}), verify: P(x.verify, null),
+        state: x.state || '접수', mode: x.mode || 'manual' })) }, env);
+    }
+
+    /* ── 접수 한 건을 처리한다 ──
+       담당자가 주간업무를 하면서 누르는 자리(apply-desk.html)가 여기로 온다.
+       상태만 바꾸는 것이 아니라 '누가 언제 무엇을 보고 그렇게 했는지'를 같이 남긴다 —
+       나중에 왜 떨어뜨렸느냐는 물음이 오면 이 세 가지가 답이 된다. */
+    if (u.pathname === '/apply/state' && req.method === 'POST') {
+      if (!ok(req, env)) return json({ error: '코드가 맞지 않습니다' }, env, 401);
+      let b; try { b = await req.json(); } catch (e) { return json({ error: '형식 오류' }, env, 400); }
+      const no = S(b.no, 40);
+      const ST = ['접수', '확인', '보류', '선정', '제외'];
+      if (!no || !ST.includes(b.state)) return json({ error: '값이 없습니다' }, env, 400);
+      const at = NOW();
+      let r;
+      try {
+        r = await env.DB.prepare('UPDATE apply SET state=?1, note=?2, by=?3, stateAt=?4, checks=?5 WHERE no=?6')
+          .bind(b.state, S(b.note, 500), S(b.by, 40), at,
+            JSON.stringify(b.checks || {}).slice(0, 1000), no).run();
+      } catch (e) {
+        return json({ error: '처리 상태를 담을 칸이 아직 없습니다 — schema-apply-v2.sql 을 한 번 돌려 주세요' }, env, 503);
+      }
+      if (!r.meta || !r.meta.changes) return json({ error: '그런 접수번호가 없습니다' }, env, 404);
+      return json({ no, state: b.state, at }, env);
     }
 
     /* ═══════════════════════════════════════════════════════════

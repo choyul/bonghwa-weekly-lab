@@ -52,8 +52,6 @@
 .sub-agrix-card .g{display:flex;gap:8px;font-size:calc(12.5px*var(--fsx,1));padding:2px 0}
 .sub-agrix-card .g span{width:72px;color:var(--sub,#5F7168);flex:none}
 .sub-agrix-card .g b.ok{color:#0F7A38} .sub-agrix-card .g b.no{color:#B85C22}
-.sub-auto{font-size:10.5px;font-weight:800;background:#E7F0FF;color:#1D5DBB;border-radius:100px;
- padding:1px 7px;margin-left:6px;vertical-align:2px}
 /* 접수 폼 */
 .ap-lab{display:block;font-size:calc(12.5px*var(--fsx,1));color:var(--sub,#5F7168);margin:10px 0 4px}
 .ap-lab b{color:#B85C22}
@@ -73,3 +71,20 @@ textarea.ap-in{min-height:70px}
 .ap-cap.cut{background:#FFF3D8;color:#8A6210}
 .ap-cap.cut b{color:#8A6210}
 .ap-cap.warn{background:transparent;padding:6px 2px 0;color:var(--sub,#5F7168)}
+/* ── 두 판 가르기 (lab-mode.js) ──
+   수기판에서 '왜 자동으로 안 채워지는가'를 그 자리에 적어 둔다.
+   비어 있으면 주민은 앱이 고장 난 줄 안다. */
+.sub-manual{margin:4px 0 12px;padding:11px 13px;border-radius:12px;
+ background:var(--gold-soft,#FEF4D8);border:1px solid #F0C24B;color:#8A6210;
+ font-size:calc(13.5px*var(--fsx,1));font-weight:700;line-height:1.55}
+.sub-manual span{display:block;font-size:calc(12.5px*var(--fsx,1));font-weight:500;margin-top:3px;color:#7A5A10}
+.sub-manual b{color:#6B4E0A}
+/* 결과가 무엇에 기대어 나온 것인지 — 연동 확인인가, 본인 진술인가 */
+.sub-src{margin-top:8px;font-size:calc(12.5px*var(--fsx,1));line-height:1.55;
+ padding:8px 11px;border-radius:10px;background:var(--bg,#F4F5F2);color:var(--sub,#5F7168)}
+.sub-src.ok{background:#E7F0FF;color:#1D5DBB;font-weight:600}
+/* 정보로 갈음돼 묻지 않은 항목 — 무엇이 갈음됐는지는 밝혀 둔다 */
+.sub-done{margin:2px 0 12px;padding:10px 13px;border-radius:12px;
+ background:#E7F0FF;border:1px solid #BBD4F5;color:#1D5DBB;
+ font-size:calc(13.5px*var(--fsx,1));font-weight:700;line-height:1.55}
+.sub-done span{display:block;font-size:calc(12.5px*var(--fsx,1));font-weight:500;margin-top:3px;opacity:.9}

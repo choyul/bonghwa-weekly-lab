@@ -33,17 +33,43 @@
     return JSON.parse(JSON.stringify(r));
   }
 
-  /* 조회 결과를 자격 항목에 자동으로 채워 넣는다 */
-  function toAnswers(info) {
-    return {
+  /* 조회 결과를 자격 항목에 자동으로 채워 넣는다.
+     거주지는 담당자가 무엇을 물었는지(봉화군/경상북도)에 따라 답이 달라져
+     자격 항목 목록(fields)을 함께 받는다. */
+  function toAnswers(info, fields) {
+    const out = {
       farm: info.status === '정상' ? 'yes' : 'no',
       farming: info.status === '정상' ? 'yes' : 'no',
       farmArea: String(info.area),
       _agrix: info,
     };
+    const res = (fields || []).find(f => f.k === 'residency');
+    if (res) {
+      const want = res.v || '봉화군';
+      /* 소재지 한 줄에 '봉화군' 또는 '경상북도' 가 들어 있는지로 본다 */
+      out.residency = (String(info.addr || '').includes(want) || info.region === want) ? 'yes' : 'no';
+    }
+    return out;
   }
   /* 자동으로 채울 수 있는 항목인가 */
-  function covers(k) { return k === 'farm' || k === 'farming' || k === 'farmArea'; }
+  function covers(k) { return k === 'farm' || k === 'farming' || k === 'farmArea' || k === 'residency'; }
 
-  G.AGRIX_MOCK = { SAMPLE, verify, toAnswers, covers };
+  G.AGRIX_MOCK = {
+    id: 'agrix', icon: '🌱', name: '농업경영체 정보', org: '농산물품질관리원(가정)',
+    btn: '농업경영체 정보 불러오기', btnSub: '등록 상태·경작 면적을 자동으로 채웁니다',
+    SAMPLE, verify, toAnswers, covers,
+    pickLabel: s => `${s.name} · ${s.region} · ${s.area}ha`,
+    cardRows: g => [
+      ['등록번호', g.no, ''],
+      ['상태', `${g.status} (${g.statusAt} 기준)`, g.status === '정상' ? 'ok' : 'no'],
+      ['경작 면적', `${g.area} ha`, ''],
+      ['주 품목', g.crops.join(', '), ''],
+      ['소재지', g.addr, ''],
+    ],
+    prefill: g => ({ farmNo: g.no, addr: g.addr }),
+    brief: g => ({ by: 'agrix', no: g.no, status: g.status, statusAt: g.statusAt,
+                   area: g.area, region: g.region, addr: g.addr }),
+  };
+  /* 정보 제공처는 앞으로 늘어난다(복지자격 등). 같은 틀을 쓰는 것들의 명단. */
+  (G.BW_PROVIDERS = G.BW_PROVIDERS || []).push(G.AGRIX_MOCK);
 })(window);

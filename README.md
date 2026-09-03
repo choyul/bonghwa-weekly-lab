@@ -25,6 +25,10 @@
 | `md/` | 주간업무계획 변환본 (data.js 원천) |
 | `build/` | 내려받기·빌드 스크립트 |
 | `sw.js` `public.webmanifest` | PWA (홈 화면 추가·오프라인) |
+| `admin.html` | 담당자 — 자격 항목·온라인 접수·**내부 시스템 연동** 설정 |
+| `apply-desk.html` `desk.js` | 담당자 — **주간업무 접수 처리** (확인·선정·제외·보고문·내보내기) |
+| `lab-mode.js` | 🔗 경영체 연동판 / ✋ 수기 접수판 가르기 (`?mode=api`·`?mode=manual`) |
+| `agrix-mock.js` | 농업경영체 정보 조회 **화면 목업** — 실제 연결은 없다 |
 
 개인정보는 담겨 있지 않습니다. 부서 대표번호는 `build/dept-phones.json`에
 공개 번호만 채우면 화면 문의처에 표시됩니다.

@@ -248,6 +248,8 @@ body.standalone #moreA2{display:none}
 .mo-fs button small{font-size:calc(11.5px*var(--fsx));font-weight:700;color:var(--sub)}
 .mo-fs button.on{background:var(--brand);border-color:var(--brand);color:#fff}
 .mo-fs button.on small{color:#fff;opacity:.9}
+/* 시연 판 고르기 — 글씨 크기 단추와 같은 틀을 쓰되 설명 한 줄이 밑에 붙는다 */
+.mo-modewhy{margin:8px 18px 0;font-size:calc(12.5px*var(--fsx));color:var(--sub);line-height:1.55;word-break:keep-all}
 .mo-list{display:flex;flex-direction:column;gap:8px;padding:0 18px}
 .mo-list button{display:flex;align-items:center;gap:12px;text-align:left;min-height:62px;padding:10px 14px;
  border:1px solid var(--line);border-radius:12px;background:var(--paper);cursor:pointer;font-family:inherit}
@@ -714,8 +716,10 @@ body{padding-top:34px}
 <script src="ui.js?v=4722f15a"></script>
 <script src="subsidy-data.js"></script>
 <script src="lab-api.js"></script>
+<script src="lab-mode.js"></script>
 <script src="subsidy-config.js"></script>
 <script src="agrix-mock.js"></script>
+<script src="welfare-mock.js"></script>
 <script src="market-config.js"></script>
 <script src="market-api.js"></script>
 <script src="market.js"></script>
@@ -2102,6 +2106,12 @@ function init(){
       <button type="button" data-fs="1">가<small>크게</small></button>
       <button type="button" data-fs="2">가<small>아주 크게</small></button>
     </div>
+    <div class="mo-lab">시연 판 <small style="font-weight:500;color:var(--faint)">(테스트본 전용)</small></div>
+    <div class="mo-fs" id="moMode">
+      <button type="button" data-md="api">🔗<small>경영체 연동판</small></button>
+      <button type="button" data-md="manual">✋<small>수기 접수판</small></button>
+    </div>
+    <p class="mo-modewhy" id="moModeWhy"></p>
     <div class="mo-lab">그 밖에</div>
     <div class="mo-list">
       <button type="button" id="moreA2"><span class="mo-ic">📲</span>
@@ -2126,6 +2136,21 @@ function init(){
    AA('설정','글씨크기'+fsLevel);
    BWUI.toast(FS_TOAST[fsLevel]);
   });
+  /* ── 시연 판 고르기 ──
+     같은 사업을 '경영체를 불러오는 화면'과 '불러오지 않는 화면'으로 번갈아 보이려는 것.
+     고르면 그 자리에서 다시 그린다 — 판이 바뀌면 목록의 표식도 달라진다. */
+  const syncMode=()=>{ if(!window.LABMODE)return;
+   const cm=LABMODE.get();
+   m.querySelectorAll('#moMode button').forEach(b=>b.classList.toggle('on',b.dataset.md===cm));
+   m.querySelector('#moModeWhy').textContent=LABMODE.WHY[cm]; };
+  m.querySelectorAll('#moMode button').forEach(b=>b.onclick=()=>{
+   if(!window.LABMODE)return;
+   LABMODE.set(b.dataset.md); syncMode();
+   AA('설정','시연판'+b.dataset.md);
+   BWUI.toast(LABMODE.LABEL[b.dataset.md]+'으로 바꿨어요');
+   try{ BWUI.api.render() }catch(e){}
+  });
+  syncMode();
   m.querySelector('#moreA2').onclick=()=>{ AA('설정','바로가기'); close(); addToHome(); };
   m.querySelector('#morePf').onclick=()=>{ AA('설정','맞춤설정'); close(); profModal(); };
   m.querySelector('#moreGd').onclick=()=>{ AA('설정','사용안내'); close(); guideModal(); };
