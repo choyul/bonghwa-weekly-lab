@@ -354,14 +354,20 @@
       const areaHa = (agrix && agrix.area != null) ? agrix.area : (a.farmArea || null);
       const cap = window.SUBCFG ? SUBCFG.qtyCap(q, areaHa) : null;
       const why = window.SUBCFG ? SUBCFG.qtyWhy(q, areaHa) : '';
+      const PF = (agrix && PROV) ? PROV.prefill(agrix) : {};
+      let auto = 0;
       const rows = cfg.ask.map(k => {
         const f = A[k]; if (!f) return '';
         let val = pre['ap_' + k] || '';
-        if (agrix && PROV) { const pf = PROV.prefill(agrix); if (pf[k]) val = pf[k]; }
+        const filled = PF[k] != null && PF[k] !== '';
+        if (filled) { val = PF[k]; auto++; }
         const inp = f.type === 'textarea'
           ? `<textarea class="ap-in" data-k="${k}" rows="3">${E(val)}</textarea>`
           : `<input class="ap-in" data-k="${k}" type="${f.type}" value="${E(val)}" placeholder="${E(f.ph || '')}">`;
-        return `<label class="ap-lab">${E(f.label)}${f.required ? ' <b>*</b>' : ''}</label>${inp}`;
+        /* 자동으로 채워진 칸임을 밝힌다 — 어디서 온 값인지 알아야 고칠지 말지 정한다.
+           잠그지는 않는다. 연락처는 대장의 것과 지금 쓰는 것이 다를 수 있다. */
+        return `<label class="ap-lab">${E(f.label)}${f.required ? ' <b>*</b>' : ''}${
+          filled ? '<i class="ap-auto">자동</i>' : ''}</label>${inp}`;
       }).join('');
       /* ── 얼마까지 신청할 수 있나 ──
          적는 칸보다 한도가 먼저다. 얼마까지 되는지 모르고 숫자를 적으면
@@ -399,6 +405,8 @@
             <b>${dleft === 0 ? '오늘까지' : dleft + '일'}</b> 남았습니다. (마감 ${E(endD)})</div></div>` : ''}
           ${qtyRow}
           <div class="sub-q" style="margin-top:16px">신청서</div>
+          ${auto ? `<div class="ap-filled">✍️ <b>${auto}칸</b>을 대신 채워 두었습니다
+            <span>${E((PROV && PROV.prefillNote) || '확인한 정보로 채웠습니다')} — 다르면 고쳐 주세요</span></div>` : ''}
           ${!apiMode() && cfg.ask.includes('farmNo')
             ? '<div class="sub-manual">등록번호를 모르시면 비워 두셔도 됩니다 — 담당자가 대장에서 찾습니다.</div>' : ''}
           ${rows || '<p class="sub-note">받을 정보가 정해지지 않았습니다.</p>'}
@@ -465,17 +473,106 @@
         }
         const keep = { ...prof() }; Object.keys(d).forEach(k => { if (k !== 'memo' && k !== 'qty') keep['ap_' + k] = d[k]; });
         saveProf(keep);
+        const rc = { no: res.no, at: res.at || new Date().toISOString().slice(0, 16).replace('T', ' '),
+                     title: sub.title, dept: sub.dept, tel: H.tel || '',
+                     name: d.name || '', phone: d.phone || '', qty: d.qty || '', why: d.qty ? why : '' };
         m.innerHTML = `<div class="mbox">${head}
           <div class="sub-body">
             <div class="sub-verdict ok">접수했습니다.<br><span style="font-weight:400">접수번호 <b>${E(res.no)}</b></span></div>
             ${d.qty ? `<p class="sub-note">신청 수량 <b>${E(d.qty)}</b>${
               why ? ` — ${E(why)} 기준으로 맞췄습니다.` : ''}<br>
               최종 수량은 면적·예산에 따라 담당과가 다시 정합니다.</p>` : ''}
-            <p class="sub-note">담당과가 확인한 뒤 연락드립니다. 접수번호를 적어 두세요.
+            <p class="sub-note">담당과가 확인한 뒤 연락드립니다.
               ${sub.dept ? E(sub.dept) + ' ' : ''}${H.tel ? E(H.tel) : ''}</p>
+            <div class="sub-acts">
+              <button type="button" id="apSave" class="pri">🧾 접수증 저장</button>
+              ${H.tel ? `<a class="callbtn" href="tel:${E(H.tel)}"
+                style="background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">📞 담당과에 문의하기</a>` : ''}
+            </div>
+            <p class="sub-note" id="apSaveHint">접수번호를 적어 두는 대신, 접수증을 사진으로 저장해 두세요.</p>
           </div>${foot('')}</div>`;
         wire();
+        const sv = m.querySelector('#apSave');
+        if (sv) sv.onclick = () => saveReceipt(rc, sv, m.querySelector('#apSaveHint'));
       };
+    }
+
+    /* ── 접수증을 사진으로 ──
+       접수번호를 종이에 적어 두라고 하면 어르신은 잃어버린다. 사진첩이 더 안전하다.
+       휴대폰에서는 공유 시트의 [이미지 저장]이 갤러리에 넣어 준다. 그 길이 막히면
+       파일로 내려받는다(컴퓨터에서는 이쪽이 정상이다). */
+    function receiptPNG(r) {
+      const W = 880, S = 2;                     /* S = 또렷하게 보이도록 두 배로 그린다 */
+      const cv = document.createElement('canvas');
+      cv.width = W * S;
+      const g = cv.getContext('2d');
+      const line = [];                          /* 먼저 줄을 세어 높이를 정한다 */
+      const put = (k, v) => { if (v) line.push([k, String(v)]); };
+      put('접수번호', r.no);
+      put('접수일시', (r.at || '').replace('T', ' ').slice(0, 16));
+      put('사업', r.title);
+      put('신청인', r.name);
+      put('연락처', r.phone);
+      put('신청 수량', r.qty);
+      put('담당', [r.dept, r.tel].filter(Boolean).join(' · '));
+      const H0 = 150, ROW = 58, FOOT = 132;
+      cv.height = (H0 + line.length * ROW + FOOT) * S;
+      g.scale(S, S);
+      const h = cv.height / S;
+      const F = (px, w) => `${w || 400} ${px}px -apple-system, "Apple SD Gothic Neo", Pretendard, sans-serif`;
+
+      g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, W, h);
+      g.fillStyle = '#16A34A'; g.fillRect(0, 0, W, 10);
+      g.fillStyle = '#121E18'; g.font = F(34, 800);
+      g.fillText('봉화군 보조사업 접수증', 48, 78);
+      g.fillStyle = '#5F7168'; g.font = F(20);
+      g.fillText('오늘의 봉화 · 온라인 접수', 48, 112);
+
+      let y = H0;
+      line.forEach(([k, v]) => {
+        g.fillStyle = '#98A2AE'; g.font = F(20, 600);
+        g.fillText(k, 48, y);
+        g.fillStyle = '#121E18'; g.font = F(k === '접수번호' ? 30 : 24, k === '접수번호' ? 800 : 600);
+        /* 사업 이름은 길다 — 넘치면 잘라서 한 줄로 둔다(접수증은 한눈에 봐야 한다) */
+        let t = v, max = W - 260;
+        if (g.measureText(t).width > max) { while (t.length > 4 && g.measureText(t + '…').width > max) t = t.slice(0, -1); t += '…'; }
+        g.fillText(t, 212, y);
+        g.strokeStyle = '#E8EDE8'; g.beginPath(); g.moveTo(48, y + 20); g.lineTo(W - 48, y + 20); g.stroke();
+        y += ROW;
+      });
+      if (r.why) {
+        g.fillStyle = '#5F7168'; g.font = F(18);
+        g.fillText('수량 기준: ' + r.why, 48, y + 12);
+      }
+      g.fillStyle = '#8A6210'; g.font = F(19, 600);
+      g.fillText('최종 자격과 수량은 담당과 심사로 정해집니다.', 48, h - 74);
+      g.fillStyle = '#98A2AE'; g.font = F(17);
+      g.fillText('이 접수증은 신청이 접수되었다는 표시이며, 선정 통보가 아닙니다.', 48, h - 44);
+      return new Promise(ok => cv.toBlob(ok, 'image/png'));
+    }
+
+    async function saveReceipt(r, btn, hint) {
+      const say = t => { if (hint) hint.textContent = t; };
+      btn.disabled = true; const old = btn.textContent; btn.textContent = '만드는 중…';
+      try {
+        const blob = await receiptPNG(r);
+        const file = new File([blob], `봉화군_접수증_${r.no}.png`, { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: '봉화군 접수증' });
+            say('저장 창에서 [이미지 저장]을 누르면 사진첩에 들어갑니다.');
+          } catch (e) { if (!e || e.name !== 'AbortError') throw e; say('저장을 취소했습니다.'); }
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a2 = document.createElement('a'); a2.href = url; a2.download = file.name;
+          document.body.appendChild(a2); a2.click(); a2.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 3000);
+          say('접수증 사진을 내려받았습니다.');
+        }
+      } catch (e) {
+        say('접수증을 만들지 못했습니다. 접수번호 ' + r.no + ' 를 적어 두세요.');
+      }
+      btn.disabled = false; btn.textContent = old;
     }
 
     renderAsk();

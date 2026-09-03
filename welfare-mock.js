@@ -14,14 +14,18 @@
 (function (G) {
   'use strict';
   /* 시험용 가짜 자격 — 이름·자격 모두 지어낸 것 */
+  /* name·birth·phone 은 간편인증(본인확인)이, 자격은 그 뒤 조회가 준다 */
   const SAMPLE = [
-    { name: '박순애', quals: ['기초생활수급(생계·의료)'], since: '2023-04-01',
+    { name: '박순애', birth: '1949-02-18', phone: '010-4321-5590',
+      quals: ['기초생활수급(생계·의료)'], since: '2023-04-01',
       statusAt: '2026-08-25', addr: '경상북도 봉화군 봉화읍 포저리', region: '봉화군',
       disab: false, singleP: false },
-    { name: '김점례', quals: ['차상위계층'], since: '2024-11-12',
+    { name: '김점례', birth: '1943-09-07', phone: '010-8810-2745',
+      quals: ['차상위계층'], since: '2024-11-12',
       statusAt: '2026-07-11', addr: '경상북도 봉화군 춘양면 의양리', region: '봉화군',
       disab: true, singleP: false },
-    { name: '이만수', quals: [], since: '',
+    { name: '이만수', birth: '1972-12-30', phone: '010-2245-9031',
+      quals: [], since: '',
       statusAt: '2026-06-02', addr: '경상북도 영주시 휴천동', region: '영주시',
       disab: false, singleP: false },
     /* 전산에서 찾지 못하는 경우 — 화면이 말해 주지 않으면 왜 안 되는지 모른다 */
@@ -69,7 +73,8 @@
       ['장애인 등록', g.disab ? '있음' : '없음', ''],
       ['거주지', g.addr, ''],
     ],
-    prefill: g => ({ addr: g.addr }),
+    prefill: g => ({ name: g.name, phone: g.phone, birth: g.birth, addr: g.addr }),
+    prefillNote: '본인확인·복지자격 정보로 채웠습니다',
     brief: g => ({ by: 'welfare', quals: g.quals, statusAt: g.statusAt, region: g.region,
                    addr: g.addr, disab: g.disab, singleP: g.singleP }),
   };

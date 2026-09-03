@@ -11,14 +11,20 @@
 (function (G) {
   'use strict';
   /* 시험용 가짜 경영체 — 이름 끝자리로 아무나 하나 고르게 한다 */
+  /* name·birth·phone 은 간편인증(본인확인)이 주는 것이고,
+     no·status·area·crops 는 그 뒤에 경영체 조회가 주는 것이다.
+     화면에서는 한 번에 오는 것처럼 보이지만 출처가 둘이다. */
   const SAMPLE = [
-    { no: '3145-2021-000812', name: '홍길동', status: '정상', statusAt: '2026-03-14',
+    { no: '3145-2021-000812', name: '홍길동', birth: '1968-04-11', phone: '010-2431-8812',
+      status: '정상', statusAt: '2026-03-14',
       addr: '경상북도 봉화군 봉화읍 내성리', area: 1.24,
       crops: ['벼', '고추'], since: '2016-04-02', region: '봉화군' },
-    { no: '3145-2019-004417', name: '김봉화', status: '정상', statusAt: '2026-01-08',
+    { no: '3145-2019-004417', name: '김봉화', birth: '1955-11-02', phone: '010-9902-4137',
+      status: '정상', statusAt: '2026-01-08',
       addr: '경상북도 봉화군 물야면 오전리', area: 0.42,
       crops: ['사과'], since: '2019-06-11', region: '봉화군' },
-    { no: '3145-2023-001190', name: '이서준', status: '휴업', statusAt: '2025-11-20',
+    { no: '3145-2023-001190', name: '이서준', birth: '1981-07-25', phone: '010-3387-7024',
+      status: '휴업', statusAt: '2025-11-20',
       addr: '경상북도 안동시 풍천면', area: 0.85,
       crops: ['콩'], since: '2023-02-15', region: '안동시' },
     /* 대장에 없는 사람 — 실제로 흔하다(등록을 안 했거나, 이름·생년월일이 다르거나).
@@ -69,7 +75,11 @@
       ['주 품목', g.crops.join(', '), ''],
       ['소재지', g.addr, ''],
     ],
-    prefill: g => ({ farmNo: g.no, addr: g.addr }),
+    /* 본인확인·경영체 조회로 알게 된 것은 신청서에 미리 채운다 —
+       방금 인증한 사람에게 이름을 다시 적으라고 할 이유가 없다 */
+    prefill: g => ({ name: g.name, phone: g.phone, birth: g.birth, farmNo: g.no, addr: g.addr }),
+    /* 그중 무엇이 자동으로 채워졌는지 — 화면이 이름표를 붙이는 데 쓴다 */
+    prefillNote: '본인확인·경영체 정보로 채웠습니다',
     brief: g => ({ by: 'agrix', no: g.no, status: g.status, statusAt: g.statusAt,
                    area: g.area, region: g.region, addr: g.addr }),
   };
