@@ -241,7 +241,7 @@
     }
 
     /* ── ② 결과 ── */
-    function renderResult(v, stay) {
+    function renderResult(v) {
       const today = window.BWUI ? BWUI.api.today : new Date().toISOString().slice(0, 10);
       const tel = H.tel || '';
       /* 담당자가 관리자 화면에서 정한 마감일이 원문보다 앞선다 */
@@ -288,7 +288,7 @@
         const canApply = cfg.online && !already && !closed && !full;
         /* 신청할 수 있는 사람에게 '결과'를 한 번 더 보여 주고 또 누르게 할 이유가 없다.
            바로 신청서로 보낸다 — 자격 확인 내용은 신청서 맨 위에 그대로 얹는다. */
-        if (canApply && !stay) { renderApply(v); return; }
+        if (canApply) { renderApply(v); return; }
         const acts = `<div class="sub-acts">
           ${canApply ? '<button type="button" id="subApply" class="pri">📝 온라인 신청</button>' : ''}
           <div class="row">
@@ -416,9 +416,8 @@
           </div>
           <div class="sub-note">보내신 내용은 담당과가 확인합니다. 최종 자격은 담당과 심사로 정해집니다.</div>
         </div>
-        ${foot('<button type="button" id="apBack">자세히 보기</button>')}</div>`;
+        ${foot('')}</div>`;
       wire();
-      m.querySelector('#apBack').onclick = () => renderResult({ r: 'ok' }, true);
       const qi = m.querySelector('#apQty');
       if (qi && cap != null) qi.oninput = () => {
         if (qi.value !== '' && +qi.value > cap) {
