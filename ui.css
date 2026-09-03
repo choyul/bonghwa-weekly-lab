@@ -170,6 +170,22 @@ button,input,select,textarea{font:inherit}
 .tag.dept{background:#f0efe9;color:#67614f}
 .tag.type{background:var(--acc-soft);color:var(--acc)}
 .tag.annual{background:#fdf3d7;color:#7a5c00;border-color:#f0e0aa;font-weight:600}
+
+/* 딸린 것이 있다는 표시 — 급한 일이 아니므로 색을 쓰지 않고 테두리로만 알린다 */
+.tag.notice{background:var(--paper);color:var(--sub);border-color:var(--line);cursor:default}
+.tag.notice:active{opacity:1}
+
+/* ── 마감 딱지 — 색이 진할수록 급하다 ──
+   한 줄 글에 섞여 있을 때는 '오늘 마감'과 '엿새 뒤'가 똑같아 보여서 갈랐다.
+   누르는 칸이 아니라 표시이므로 cursor 를 바꾸지 않는다. */
+.tag.due{cursor:default;font-weight:700;letter-spacing:-.01em}
+.tag.due:active{opacity:1}
+.due-today{background:var(--warn);color:#fff;border-color:var(--warn);font-weight:800}
+.due-tomorrow{background:var(--bh-warn-soft,#FBEAE7);color:var(--warn);border-color:#F0C9C2;font-weight:800}
+.due-near{background:var(--bh-accent-soft,#F6EFDD);color:#7A5C00;border-color:#EDDFB8}
+.due-far{background:var(--bg);color:var(--sub);border-color:var(--line);font-weight:600}
+/* 급하지 않은 것은 시계도 조용히 — 색으로만 갈라도 시계가 다 똑같이 튄다 */
+.due-far{opacity:.85}
 .meta{font-size:12.5px;color:var(--sub);line-height:1.5}
 .prog{font-size:12.5px;color:var(--warn);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .iconb{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--paper);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ink);flex:none}
@@ -288,3 +304,34 @@ textarea.memo{width:100%;font-size:14px;border:1px solid var(--line);border-radi
 
 #bwToast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#2b2f34;color:#fff;padding:10px 17px;border-radius:9px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:60;font-size:14px;max-width:88vw;text-align:center}
 #bwToast.on{opacity:1}
+
+/* ── 접었다 폈다 하는 맞춤설정 줄 ──
+   접어 두면 회색 줄 하나라 안 보인다는 지적이 있어, 접힌 상태를 색으로 도드라지게 하고
+   무엇이 들어 있는지 한 줄 더 적었다. 펼친 상태의 '접기' 줄은 목록을 가리지 않게 옅게 둔다. */
+.calfold.axfold{gap:10px;min-height:56px;padding:11px 13px;
+  border:1.5px solid var(--acc);background:var(--acc-soft);color:var(--acc);
+  box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.axfold .axf-ic{font-size:calc(18px*var(--fsx,1));line-height:1;flex:none}
+.axfold .axf-tx{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:left}
+.axfold .axf-tx b{font-size:calc(15px*var(--fsx,1));font-weight:800;color:var(--acc);letter-spacing:-.02em}
+.axfold .axf-tx i{font-style:normal;font-size:calc(12.5px*var(--fsx,1));font-weight:600;
+  color:var(--sub);word-break:keep-all}
+.axfold .chev{margin-left:auto;flex:none;font-size:calc(12.5px*var(--fsx,1));font-weight:700;color:var(--acc)}
+.axfold .axbadge{margin-left:auto}
+.axfold .axbadge + .chev{margin-left:8px}
+.calfold.axfold:active{background:var(--paper)}
+/* 펼쳐져 있을 때 — 이미 내용이 다 보이므로 조용히 */
+.calfold.axfold.open{min-height:46px;border:1px solid var(--line);background:var(--paper);
+  color:var(--ink);box-shadow:none}
+.axfold.open .axf-tx b{color:var(--ink)}
+.axfold.open .chev{color:var(--sub);font-weight:600}
+
+/* 펼친 맞춤설정 한 덩어리 — '맞춤설정' 줄과 그 아래 고르는 칸들이 바탕 하나를 같이 쓴다.
+   따로 떼어 놓으면 아래 칸들이 목록에 딸린 것처럼 보여서 묶은 것이다. */
+.axpanel{border:1.5px solid var(--acc);border-radius:var(--r);background:var(--acc-soft);
+  overflow:hidden;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.axpanel .calfold.axfold.open{margin:0;border:0;border-bottom:1px solid rgba(31,75,63,.15);
+  border-radius:0;background:transparent;box-shadow:none}
+.axpanel .axbody{padding:12px 12px 2px}
+.axpanel .axis:first-child .axh{margin-top:2px}
+.axpanel .axis:last-child{margin-bottom:10px}

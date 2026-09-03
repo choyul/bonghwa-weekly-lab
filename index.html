@@ -182,13 +182,44 @@ footer{max-width:430px}
 #bwCards .card:active{transform:scale(.98);box-shadow:var(--shadow-2)}
 #bwCards .card .top h3{font-size:15.5px;font-weight:700;line-height:1.4;color:var(--ink);text-wrap:pretty;word-break:keep-all}
 #bwCards .card .meta{font-size:12.5px;font-weight:600;color:var(--sub)}
-.tag{font-size:11.5px!important;font-weight:800!important;padding:3px 8px!important;border-radius:6px!important;border:none!important}
-.tag.st-ongoing{background:var(--brand-soft);color:var(--brand-ink)}
-.tag.st-upcoming{background:var(--gold-soft);color:#B7830E}
-.tag.st-done{background:var(--line-2,#F1F2F5);color:var(--sub)}
-.tag.type{background:var(--blue-soft);color:#1D5DBB}
-.tag.dept{background:#F1F2F5;color:var(--sub)}
-.tag.annual{background:var(--red-soft);color:var(--red)}
+/* ══ 딱지 색 규칙 — 새 딱지를 만들기 전에 이 세 줄을 먼저 볼 것 ══════════
+   한 카드에 녹·금·청·보라·빨강이 한꺼번에 떠서 정신없다는 지적을 받고 세 줄로 줄였다.
+   ① 난색(빨강)은 '마감이 급하다' 에만 쓴다. 다른 데 쓰면 급한 게 안 보인다.
+   ② 상태(진행중·예정·완료)는 채운 딱지, 브랜드 녹 한 계열에서 '진하기'로만 가른다.
+   ③ 눌러서 좁히는 조건(주제·부서·매년)은 색 대신 '테두리'로 가른다 — 무채.
+   색을 늘리지 말고, 채움/테두리와 진하기로 가를 것. */
+.tag{font-size:11.5px!important;font-weight:800!important;padding:3px 8px!important;
+ border-radius:6px!important;border:none!important}
+
+/* ① 상태 — 채운 딱지, 녹 한 계열. 진행중이 제일 진하고 완료는 힘을 뺀다 */
+.tag.st-ongoing {background:#E1EDE6;color:#1B5138}
+.tag.st-upcoming{background:#EEF3F0;color:#41715B}
+.tag.st-done    {background:#F2F3F5;color:#7C848E}
+
+/* ② 고르는 조건 — 테두리만. 셋을 서로 다른 색으로 칠할 이유가 없다 */
+.tag.type,.tag.dept,.tag.annual{
+ background:var(--paper)!important;color:#4A525C!important;
+ border:1px solid #E1E4E8!important;font-weight:700!important}
+/* '★ 관심'은 내가 담아 둔 표시 — 같은 테두리 벌이되 별표만 금색(아래 탭바 ⭐와 맞춤) */
+.tag.fav{background:var(--paper)!important;color:#B7830E!important;
+ border:1px solid #EAD9A6!important;cursor:default}
+
+/* ③ 마감 — 화면에서 난색은 여기서만. 진할수록 급하다.
+   오늘=채운 빨강 · 내일=연빨강 · 2~3일=아주 옅은 빨강 · 4~7일=무채 */
+.tag.due{cursor:default}
+.due-today{background:#C62828;color:#fff;font-size:12.5px!important;padding:4px 10px!important;
+ box-shadow:0 1px 3px rgba(198,40,40,.28)}
+.due-tomorrow{background:#FBE7E7;color:#B3261E}
+.due-near{background:#FCF3F2;color:#9C554E;filter:grayscale(.4)}
+.due-far{background:#F2F3F5;color:#7C848E;filter:grayscale(1)}   /* 시계 그림까지 무채로 — 안 급한 건 조용히 */
+
+/* 보조사업 딱지도 같은 규칙을 따른다 — '조건 확인'은 눌러서 여는 것이라 테두리,
+   '바로 접수'만은 지금 할 수 있는 일이라 상태 딱지 벌에서 제일 진한 것을 쓴다.
+   (여기서 금색·주황을 쓰면 마감 딱지의 난색과 싸운다) */
+.sub-badge{background:var(--paper)!important;color:#4A525C!important;
+ border:1px solid #E1E4E8!important;font-weight:700!important}
+.sub-badge.apply{background:#E1EDE6!important;color:#1B5138!important;
+ border-color:#C8DDD1!important;font-weight:800!important}
 
 /* ── 섹션 제목 ── */
 #bwInfo{margin:22px 14px 10px;padding:0}
@@ -494,8 +525,9 @@ body:not(.mode-news) #nwView{display:none}
 .ev-title{font-size:15px;font-weight:700;color:var(--ink);line-height:1.4;margin-bottom:5px;word-break:keep-all}
 .ev-meta{font-size:13px;color:var(--sub);line-height:1.5}
 .ev-badge{display:inline-block;font-size:11.5px;font-weight:700;border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:1px}
-.ev-badge.gun{background:var(--acc-soft);color:var(--acc)}
-.ev-badge.org{background:#f0ede7;color:var(--sub)}
+/* 행사 주최 표시도 위 규칙 ③ — 색 대신 테두리로 가른다(군 행사는 조금 진하게) */
+.ev-badge.gun{background:var(--paper);color:#41715B;border:1px solid #D9E4DE}
+.ev-badge.org{background:var(--paper);color:#7C848E;border:1px solid #E1E4E8}
 .ev-empty{text-align:center;color:var(--sub);font-size:14px;padding:34px 10px;
  background:var(--paper);border:1px solid var(--line);border-radius:var(--r)}
 .ev-card{cursor:pointer;transition:border-color .15s}
@@ -1270,9 +1302,12 @@ function init(){
   noticeTab:{ count:()=>noticeMatches().length, render:host=>renderNoticeSection(host),
     renderRecent:host=>renderNoticeSection(host,'recent') },
   onGroupTab:k=>AA('갈래탭',k),
-  /* 무엇을(목적)·누구를(대상)·어디서 고르는 칸.
-     갈래를 고른 다음에 좁히는 것이라 갈래 탭 아래에 놓고 '맞춤설정'으로 접어 둔다. */
-  axesOpen:false, axesLabel:'맞춤설정',
+  /* 무엇을(목적)·누구를(대상)·어디서 고르는 칸. 갈래를 고른 다음에 좁히는 것이라
+     갈래 탭 아래에 둔다.
+     접어 뒀더니 있는 줄 모른다는 얘기가 있어 펼친 채로 시작한다(axesOpen:true).
+     보다가 자리를 먹는다 싶으면 '접기'로 접을 수 있다(axesFold:true). */
+  axesOpen:true, axesFold:true, axesLabel:'맞춤설정',
+  axesHint:'주제·대상·지역으로 좁혀 보기',
   searchPlaceholder:'궁금한 일을 검색해 보세요 (예: 축제, 도로, 교육)',
   listTitle:'봉화의 소식은?',   /* 앞에 '오늘' / '이번 주' / '7월 28일(화)' 처럼 기간이 붙는다 */
   publicLabels:true,
@@ -1320,13 +1355,29 @@ function init(){
     match:(iss,v)=>tag(iss).regions.includes(v)}
   ],
 
-  cardActions:iss=>[{
-   icon:fav[iss._id]?'★':'☆', title:'관심 업무', active:!!fav[iss._id],
-   on(i){ AA(fav[i._id]?'관심빼기':'관심담기','소식:'+uidHash(i._id),i.title);
-          if(fav[i._id])delete fav[i._id]; else fav[i._id]={at:BW.ymd(new Date())}; saveFav(); }
-  }],
+  /* 목록에는 별표를 두지 않는다 — 단추가 제목 자리를 뺏어 제목이 두 줄로 넘어갔다.
+     관심 담기는 소식을 열어 본 다음 아래 단추로 한다(글씨가 있어 더 알아보기도 쉽다).
+     담아 둔 것인지는 카드의 '★ 관심' 딱지로만 알린다. */
+  cardActions:null,
 
   /* 카드 한 줄에 언제·어디서·누구 */
+  /* 담아 둔 것인지는 딱지로만 알린다(누르는 칸이 아니다) */
+  cardFav:iss=>!!fav[iss._id],
+
+  /* 마감이 얼마나 급한지 — 카드 맨 앞 딱지. 색이 진할수록 급하다.
+     'D-2' 같은 약어를 안 쓰고 '2일 전' 으로 적는다(어르신에게 D-day 가 안 읽힌다).
+     신청할 수 있는 일(score>0)에만 붙인다 — 군정 소식에는 마감이란 게 없다. */
+  cardDue:iss=>{
+   const c=tag(iss); if(!(c.score>0))return null;
+   const r=BW.parseDateRange(c.item,c.week); if(!r||!r.end)return null;
+   const d=Math.round((BW.d2(r.end)-BW.d2(BWUI.api.today))/864e5);
+   if(d===0)return{lv:'today',   text:'⏰ 오늘 마감'};
+   if(d===1)return{lv:'tomorrow',text:'⏰ 내일 마감'};
+   if(d>=2&&d<=3)return{lv:'near',text:`⏰ 마감 ${d}일 전`};
+   if(d>=4&&d<=7)return{lv:'far', text:`⏰ 마감 ${d}일 전`};
+   return null;              /* 여드레 넘게 남았거나 이미 지난 것은 안 적는다 */
+  },
+
   cardMeta:iss=>{
    const c=tag(iss), bits=[];
    const r=BW.parseDateRange(c.item,c.week);
@@ -1337,13 +1388,8 @@ function init(){
      : `${s.getMonth()+1}월 ${s.getDate()}일(${BW.DOW[s.getDay()]})`);
    }
    if(c.regions.length)bits.push(c.regions.slice(0,2).join('·'));
-   /* 신청할 수 있는 일에는 마감이 얼마나 남았는지를 맨 앞에 — 갈래 탭이 마감순이라 이 표시가 눈금이 된다 */
-   if(c.score>0&&r&&r.end){
-    const d=Math.round((BW.d2(r.end)-BW.d2(BWUI.api.today))/864e5);
-    if(d===0)bits.unshift('⏰ 오늘 마감');
-    else if(d===1)bits.unshift('⏰ 내일 마감');
-    else if(d>1&&d<=7)bits.unshift(`⏰ 마감 D-${d}`);
-   }
+   /* 마감 표시는 이제 카드 위 딱지(cardDue)가 맡는다 — 색으로 급한 정도를 가른다.
+      한 줄 글에 섞여 있을 때는 오늘 마감이나 엿새 남은 것이나 똑같아 보였다. */
    /* 카드에도 화면에서 고를 수 있는 일곱 갈래 이름으로만 적는다 —
       없앤 갈래 이름(복지·돌봄 등)이 카드에만 남으면 눌러도 그런 조건이 없어 헷갈린다 */
    const mg=[...new Set(c.auds.map(a=>W2M_AUD[a]).filter(Boolean))];
@@ -1408,20 +1454,48 @@ function init(){
       ${canRemind?`<button class="callbtn" id="remindBtn" style="flex:1;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔔 알림 받기</button>`:''}
       <a class="callbtn" href="tel:${tel}" style="flex:1">📞 문의</a>
      </div>
-     <button class="callbtn" id="shareBtn" style="background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔗 친구에게 공유하기</button>
+     <div style="display:flex;gap:8px">
+      <button class="callbtn" id="favBtn" style="flex:1"></button>
+      <button class="callbtn" id="shareBtn" style="flex:1;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔗 공유하기</button>
+     </div>
    </div>`;
   },
   onFooterMount(iss,foot){
    const b=foot.querySelector('#remindBtn');
    if(b)b.onclick=()=>{
-    if(!fav[iss._id]){fav[iss._id]={at:BW.ymd(new Date())};saveFav();BWUI.api.render()}  /* 알림 걸면 관심에도 담김 */
+    if(!fav[iss._id]){fav[iss._id]={at:BW.ymd(new Date())};saveFav();
+                      paintFav(foot.querySelector('#favBtn'),iss._id);BWUI.api.render()}  /* 알림 걸면 관심에도 담김 */
     calModal([iss],'봉화군_'+iss.title.replace(/[^가-힣0-9a-zA-Z]/g,'').slice(0,14));
    };
+   /* 관심 담기 — 목록에서 뺀 별표를 여기에 글씨 있는 단추로 둔다.
+      시트를 다시 그리면 읽던 자리를 잃으므로 단추 모양만 바꾼다. */
+   const fb=foot.querySelector('#favBtn');
+   if(fb){
+    paintFav(fb,iss._id);
+    fb.onclick=()=>{
+     AA(fav[iss._id]?'관심빼기':'관심담기','소식:'+uidHash(iss._id),iss.title);
+     if(fav[iss._id])delete fav[iss._id]; else fav[iss._id]={at:BW.ymd(new Date())};
+     saveFav(); paintFav(fb,iss._id);
+     BWUI.toast(fav[iss._id]?'관심 목록에 담았습니다':'관심 목록에서 뺐습니다');
+     BWUI.api.render();
+    };
+   }
    const sb=foot.querySelector('#shareBtn');
    if(sb)sb.onclick=()=>shareIssue(iss);
    if(window.BWLAB_SUBSIDY)BWLAB_SUBSIDY.mount(iss,foot,{buildICS,downloadICS,tel:phoneOf(iss.dept)||'054-679-6114'});  /* [테스트본] 보조사업 조건 자가확인 */
   }
  });
+
+ /* 관심 담기 단추의 모양 — 담긴 것은 채우고, 안 담긴 것은 테두리만 */
+ function paintFav(b,key){
+  if(!b)return;
+  const on=!!fav[key];
+  b.textContent=on?'★ 관심 목록에 담김':'☆ 관심 목록에 담기';
+  b.style.background=on?'var(--gold-soft)':'var(--paper)';
+  b.style.color='#B7830E';
+  b.style.border='1.5px solid '+(on?'#E9C55F':'#EAD9A6');
+  b.style.fontWeight='800';
+ }
 
  /* ── 헤더 부제 + 오늘 날짜 (부제 바로 밑) ── */
  function decorateHeader(){

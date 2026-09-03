@@ -397,19 +397,34 @@
     const host = $('#bwAxes'); if (!CFG.axes || !CFG.axes.length) return;
     if (axesOpen === null) axesOpen = CFG.axesOpen !== false;
     /* 축이 여럿이면 접어 둘 수 있게 — 목록까지 가는 길을 막지 않는다 */
-    if (CFG.axesOpen === false) {
-      const picked = CFG.axes.filter(ax => !ax.hidden && S.axis[ax.key]).length;
-      const axLabel = CFG.axesLabel || '갈라 보기';
-      if (!axesOpen) {
-        host.innerHTML = `<button class="calfold" id="bwAxOpen">🔎 ${E(axLabel)}
-          ${picked ? `<span class="axbadge">${picked}</span>` : ''}</button>`;
-        $('#bwAxOpen').onclick = () => { axesOpen = true; render(); };
-        return;
-      }
+    /* '처음에 펼쳐져 있는가(axesOpen)' 와 '접을 수 있는가(axesFold)' 는 다른 것이다.
+       군민용은 펼친 채로 시작하되 보다가 불편하면 접을 수 있어야 한다.
+       예전처럼 axesOpen:false 만 준 화면(군수용)은 그대로 접힌 채 시작한다. */
+    const foldable = CFG.axesFold === false ? false
+      : (CFG.axesFold === true || CFG.axesOpen === false);
+    const axLabel = CFG.axesLabel || '갈라 보기';
+    const picked = CFG.axes.filter(ax => !ax.hidden && S.axis[ax.key]).length;
+    /* 접힌 모습 — 예전엔 회색 줄 하나라 눈에 안 띈다는 지적이 있었다.
+       무엇이 들어 있는지 한 줄 더 적고, 색과 화살표로 누를 곳임을 드러낸다. */
+    if (foldable && !axesOpen) {
+      const sub = picked ? `고른 조건 ${picked}개 · 눌러서 펼치기`
+        : (CFG.axesHint || '주제·대상으로 좁혀 보기');
+      host.innerHTML = `<button class="calfold axfold" id="bwAxOpen">
+        <span class="axf-ic">🔎</span>
+        <span class="axf-tx"><b>${E(axLabel)}</b><i>${E(sub)}</i></span>
+        ${picked ? `<span class="axbadge">${picked}</span>` : ''}
+        <span class="chev">펼치기 ▾</span></button>`;
+      $('#bwAxOpen').onclick = () => {
+        axesOpen = true;
+        if (CFG.onAxesFold) CFG.onAxesFold(true);   /* 이용 통계 — 접어 둔 걸 다시 펴는가 */
+        render();
+      };
+      return;
     }
-    host.innerHTML = (CFG.axesOpen === false
-      ? `<button class="calfold" id="bwAxClose" style="margin-bottom:8px">🔎 ${E(CFG.axesLabel || '갈라 보기')} <span class="hint">· 접기</span></button>` : '')
-      + CFG.axes.map(ax => {
+
+    /* 펼친 모습 — '맞춤설정' 줄과 그 아래 칸들이 한 덩어리로 읽히도록
+       바탕 하나(.axpanel)에 같이 담는다. 따로 놓으면 아래 칸들이 목록의 일부처럼 보였다. */
+    const axBody = CFG.axes.map(ax => {
       if (ax.hidden) return '';        /* 화면에는 안 그린다 — 거르기에는 그대로 쓴다 */
       if (ax.when && !ax.when(S)) return '';
       let vals = axValues(ax);
@@ -455,7 +470,20 @@
             ${E(v.label)} <span class="n">${n}</span></button>`;
       }).join('')}</div></div>`;
     }).join('');
-    const ac = $('#bwAxClose'); if (ac) ac.onclick = () => { axesOpen = false; render(); };
+    host.innerHTML = `<div class="axpanel">`
+      + (foldable
+        ? `<button class="calfold axfold open" id="bwAxClose">
+            <span class="axf-ic">🔎</span>
+            <span class="axf-tx"><b>${E(axLabel)}</b></span>
+            ${picked ? `<span class="axbadge">${picked}</span>` : ''}
+            <span class="chev">접기 ▴</span></button>` : '')
+      + `<div class="axbody">${axBody}</div></div>`;
+    const ac = $('#bwAxClose');
+    if (ac) ac.onclick = () => {
+      axesOpen = false;
+      if (CFG.onAxesFold) CFG.onAxesFold(false);    /* 이용 통계 — 펼쳐 둔 걸 접는가 */
+      render();
+    };
     host.querySelectorAll('[data-ax]').forEach(b =>
       b.onclick = () => pickAxis(b.dataset.ax, b.dataset.v));
   }
@@ -740,10 +768,23 @@
       `<button class="iconb ${a.active ? 'on' : ''}" data-a="${i}" title="${E(a.title || '')}">${a.icon}</button>`).join('')}</div>` : ''}
       </div>
       <div class="tagrow">
+        ${(() => {
+      /* 마감이 얼마나 급한지 — 색으로 갈라 보이게 맨 앞에 둔다.
+         화면이 CFG.cardDue 로 {lv, text} 를 주면 그린다(누르는 칸이 아니라 표시). */
+      const dd = CFG.cardDue && CFG.cardDue(iss);
+      return dd ? `<span class="tag due due-${dd.lv}">${E(dd.text)}</span>` : '';
+    })()}
+        ${CFG.cardFav && CFG.cardFav(iss)
+      /* 목록에서 별표 단추를 뺐으므로(제목이 두 줄로 넘어가서),
+         담아 둔 것인지는 이 딱지로만 알 수 있다 — 누르는 칸이 아니라 표시다. */
+      ? '<span class="tag fav">★ 관심</span>' : ''}
         <button class="tag st st-${iss._st}" data-f="status" data-v="${iss._st}">${ST_LABEL[iss._st]}</button>
         ${CFG.hideDeptTag ? '' : `<button class="tag dept" data-f="dept" data-v="${E(iss.dept)}">${E(iss.dept)}</button>`}
         ${(() => { const t = tagOf(iss); return `<button class="tag type" data-f="${t.axis ? 'axis:' + t.axis : 'type'}" data-v="${E(t.v)}">${E(t.label)}</button>`; })()}
         ${iss._ann ? `<button class="tag annual" data-f="annual" data-v="1">매년 이맘때</button>` : ''}
+        ${/* 화면이 덧붙이는 표시 딱지 — 누르는 칸이 아니라 '이런 것이 딸려 있다'는 알림 */
+      (CFG.cardTags ? CFG.cardTags(iss) : []).map(t =>
+        `<span class="tag ${E(t.cls || '')}" style="cursor:default">${E(t.text)}</span>`).join('')}
       </div>
       ${cardMetaHtml(iss)}
       ${progHtml(iss)}`;
