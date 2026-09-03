@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>체크 하나에서 접수증까지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+</head>
+<body>
+<style>
+/* 발표자료·기획서와 같은 색과 글꼴을 쓴다 — 같은 자리에서 함께 보는 문서다.
+   뜻을 지닌 색은 둘뿐: 파랑은 자동으로 되는 길, 흙빛은 사람 손이 가는 길. */
+:root{
+  --ground:#EFF2EE; --paper:#FFFFFF; --raise:#F7F9F6;
+  --ink:#111A15; --body:#25322B; --mute:#5C6B63; --faint:#8A9791;
+  --line:#DBE2DC; --line-soft:#E8EDE8;
+  --link:#1A56A8; --link-soft:#E4EDFA;
+  --hand:#9E5622; --hand-soft:#F8EDE3;
+  --ok:#15803D; --ok-soft:#E1EDE6;
+  --link-solid:#1A56A8; --hand-solid:#8C4E1E;
+  --shadow:0 1px 2px rgba(17,26,21,.05), 0 8px 24px -16px rgba(17,26,21,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#10150F; --paper:#181E19; --raise:#1E251F;
+    --ink:#E9EFE8; --body:#CBD6CB; --mute:#93A197; --faint:#6C7B72;
+    --line:#2B342D; --line-soft:#232B25;
+    --link:#7FAEEE; --link-soft:#1A2537;
+    --hand:#DE9A62; --hand-soft:#2C2118;
+    --ok:#5CC57E; --ok-soft:#17281D;
+    --link-solid:#2A62B0; --hand-solid:#9C5A1E;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#10150F; --paper:#181E19; --raise:#1E251F;
+  --ink:#E9EFE8; --body:#CBD6CB; --mute:#93A197; --faint:#6C7B72;
+  --line:#2B342D; --line-soft:#232B25;
+  --link:#7FAEEE; --link-soft:#1A2537;
+  --hand:#DE9A62; --hand-soft:#2C2118;
+  --ok:#5CC57E; --ok-soft:#17281D;
+  --link-solid:#2A62B0; --hand-solid:#9C5A1E;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--body);
+  font-family:'IBM Plex Sans KR','Apple SD Gothic Neo',system-ui,sans-serif;
+  font-size:16px; line-height:1.75; word-break:keep-all;
+  -webkit-font-smoothing:antialiased;
+}
+.page{max-width:1000px; margin:0 auto; padding:clamp(26px,5vw,60px) clamp(16px,4vw,40px) 110px}
+
+.kicker{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--mute); margin:0 0 12px}
+h1{font-family:Hahmlet,'Apple SD Gothic Neo',serif; font-weight:700;
+  font-size:clamp(32px,5.6vw,50px); line-height:1.15; letter-spacing:-.025em;
+  color:var(--ink); margin:0 0 10px; text-wrap:balance}
+.lead{font-size:clamp(15.5px,2vw,18px); color:var(--mute); max-width:40em; margin:0 0 22px; font-weight:500}
+.meta{display:flex; flex-wrap:wrap; gap:8px; border-top:1px solid var(--line); padding-top:16px}
+.tag{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--mute);
+  background:var(--raise); border:1px solid var(--line); border-radius:999px; padding:4px 12px; white-space:nowrap}
+.tag b{color:var(--ink); font-weight:600}
+
+/* 누가 무엇을 하나 — 세 몫 */
+.roles{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin:26px 0 0}
+.role{background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:16px 18px}
+.role .who{font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--faint); margin:0 0 6px}
+.role h3{font-family:Hahmlet,serif; font-size:19px; font-weight:700; color:var(--ink); margin:0 0 6px; letter-spacing:-.01em}
+.role p{margin:0; font-size:14.5px; color:var(--mute); line-height:1.65}
+.role .where{display:block; margin-top:8px; font-family:'IBM Plex Mono',monospace;
+  font-size:12px; color:var(--faint)}
+
+section{margin-top:clamp(38px,6vw,62px)}
+h2{font-family:Hahmlet,serif; font-weight:700; font-size:clamp(23px,3.2vw,29px);
+  line-height:1.3; letter-spacing:-.02em; color:var(--ink); margin:0 0 8px; text-wrap:balance}
+h2 .n{font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:600;
+  color:var(--faint); margin-right:10px; letter-spacing:.06em}
+section > p{margin:0 0 18px; max-width:44em; font-size:15.5px}
+section > p strong{color:var(--ink); font-weight:600}
+
+figure{margin:0; background:var(--paper); border:1px solid var(--line);
+  border-radius:4px; padding:clamp(16px,2.6vw,26px); box-shadow:var(--shadow)}
+.scroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
+svg{display:block; width:100%; min-width:640px; max-width:100%; height:auto; color:var(--ink)}
+/* SVG 안에 적어 둔 색을 열쇠 삼아 토큰으로 갈아 끼운다 — 어두운 화면에서도 같은 뜻이 되도록.
+   흰 글씨를 얹은 '꽉 찬 도형'만은 두 화면 모두에서 읽히는 짙은 색을 따로 쓴다. */
+svg [fill="#1A56A8"]{fill:var(--link)}
+svg [stroke="#1A56A8"]{stroke:var(--link)}
+svg [fill="#9E5622"]{fill:var(--hand)}
+svg [stroke="#9E5622"]{stroke:var(--hand)}
+svg [fill="#15803D"]{fill:var(--ok)}
+svg [stroke="#15803D"]{stroke:var(--ok)}
+svg [fill="#0E4E9C"]{fill:var(--link-solid)}
+svg [fill="#8C4E1E"]{fill:var(--hand-solid)}
+figcaption{margin-top:16px; padding-top:13px; border-top:1px solid var(--line);
+  font-size:14px; color:var(--mute); line-height:1.65}
+figcaption b{color:var(--ink); font-weight:600}
+
+.note{margin-top:16px; border-left:2px solid var(--hand); background:var(--hand-soft);
+  padding:13px 17px; border-radius:0 3px 3px 0; font-size:15px; color:var(--body); max-width:46em}
+.note.link{border-left-color:var(--link); background:var(--link-soft)}
+.note b{color:var(--ink)}
+
+table{border-collapse:collapse; width:100%; min-width:520px; font-size:14.5px; margin-top:4px}
+th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line-soft); vertical-align:top}
+th{font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--faint); font-weight:600; border-bottom:1px solid var(--line)}
+td b{color:var(--ink)}
+code{font-family:'IBM Plex Mono',monospace; font-size:13px; background:var(--raise);
+  border:1px solid var(--line-soft); border-radius:3px; padding:1px 6px}
+a{color:var(--link); text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--link); outline-offset:3px}
+</style>
+
+<div class="page">
+
+<header>
+  <p class="kicker">오늘의 봉화 · 테스트본 · 보조사업 온라인 접수</p>
+  <h1>체크 하나에서 접수증까지</h1>
+  <p class="lead">담당자가 관리자 화면에서 네모 하나에 표시하면, 그 사업이 주민 화면에 열리고
+    접수가 담당자 책상으로 되돌아옵니다. 그 사이에 무엇이 오가는지 그렸습니다.</p>
+  <div class="meta">
+    <span class="tag">주민 <b>choyul.github.io/bonghwa-weekly-lab</b></span>
+    <span class="tag">설정 <b>admin.html</b></span>
+    <span class="tag">처리 <b>apply-desk.html</b></span>
+    <span class="tag">서버 <b>bonghwa-lab · D1</b></span>
+  </div>
+
+  <div class="roles">
+    <div class="role">
+      <p class="who">담당자 — 설정</p>
+      <h3>무엇을 받을지 정한다</h3>
+      <p>사업 원문을 읽고, 물을 것·받을 정보·수량 한도를 정하고 접수를 연다.</p>
+      <span class="where">admin.html</span>
+    </div>
+    <div class="role">
+      <p class="who">주민 — 신청</p>
+      <h3>자격을 확인하고 낸다</h3>
+      <p>목록에서 사업을 찾아 자격을 확인하고, 신청서를 내고 접수증을 받는다.</p>
+      <span class="where">오늘의 봉화</span>
+    </div>
+    <div class="role">
+      <p class="who">담당자 — 처리</p>
+      <h3>대조하고 선정한다</h3>
+      <p>들어온 접수를 대조해 선정·제외하고, 정원을 조정하고, 내부 시스템으로 넘긴다.</p>
+      <span class="where">apply-desk.html</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ 1 ═══ -->
+<section>
+  <h2><span class="n">01</span>전체 흐름</h2>
+  <p>계획서에서 뽑은 사업 목록이 출발점입니다. 담당자의 설정과 주민의 접수는 <strong>같은 서버의
+    다른 서랍</strong>에 쌓이고, 서로를 읽습니다 — 담당자가 저장한 설정을 주민 화면이 읽고,
+    주민이 낸 접수를 담당자 화면이 읽습니다.</p>
+
+  <figure>
+    <div class="scroll">
+      <svg viewBox="0 0 760 470" role="img" aria-label="주간업무계획서에서 뽑은 사업을 담당자가 설정해 서버에 저장하면, 주민 화면이 그 설정을 읽어 접수를 받고, 그 접수를 담당자 처리 화면이 읽어 선정한 뒤 내부 시스템으로 넘기는 전체 흐름">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+          <marker id="a1b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#1A56A8"/>
+          </marker>
+        </defs>
+
+        <!-- 출발 -->
+        <rect x="132" y="10" width="164" height="42" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="214" y="30" font-size="13" font-weight="600" text-anchor="middle" fill="currentColor">주간업무계획서</text>
+        <text x="214" y="45" font-size="11" text-anchor="middle" fill="currentColor" opacity=".6">매주 올라오는 hwp</text>
+        <line x1="296" y1="31" x2="330" y2="31" stroke="currentColor" stroke-width="1.4" marker-end="url(#a1)"/>
+        <text x="313" y="22" font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".65" font-family="monospace">자동 추출</text>
+        <rect x="334" y="10" width="196" height="42" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="432" y="30" font-size="13" font-weight="600" text-anchor="middle" fill="currentColor">보조사업 427건 + 조건</text>
+        <text x="432" y="45" font-size="11" text-anchor="middle" fill="currentColor" opacity=".6">나이·거주지·경영체·면적</text>
+        <line x1="432" y1="52" x2="432" y2="74" stroke="currentColor" stroke-width="1.4" marker-end="url(#a1)"/>
+
+        <!-- 담당자 설정 -->
+        <rect x="14" y="76" width="732" height="82" rx="4" fill="none" stroke="#9E5622" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="26" y="94" font-size="11.5" font-weight="700" fill="#9E5622" font-family="monospace">담당자 · 설정 화면 (admin.html)</text>
+        <rect x="26" y="102" width="150" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="101" y="121" font-size="12.5" text-anchor="middle" fill="currentColor">사업 원문 읽기</text>
+        <text x="101" y="136" font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".6">사업비·대상·품목</text>
+        <line x1="176" y1="124" x2="200" y2="124" stroke="currentColor" stroke-width="1.2" marker-end="url(#a1)"/>
+        <rect x="204" y="102" width="150" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="279" y="121" font-size="12.5" text-anchor="middle" fill="currentColor">무엇을 물을까</text>
+        <text x="279" y="136" font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".6">자동 추출값을 손질</text>
+        <line x1="354" y1="124" x2="378" y2="124" stroke="currentColor" stroke-width="1.2" marker-end="url(#a1)"/>
+        <rect x="382" y="102" width="150" height="44" rx="3" fill="#1A56A8" fill-opacity=".12" stroke="#1A56A8" stroke-width="1.8"/>
+        <rect x="394" y="117" width="12" height="12" rx="2" fill="#0E4E9C"/>
+        <path d="M397,123 l2.6,2.6 l4.4,-5.2" stroke="#FFFFFF" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <text x="466" y="121" font-size="12.5" font-weight="700" text-anchor="middle" fill="#1A56A8">온라인 접수 받기</text>
+        <text x="457" y="136" font-size="10.5" text-anchor="middle" fill="#1A56A8" opacity=".85">네모 하나</text>
+        <line x1="532" y1="124" x2="556" y2="124" stroke="currentColor" stroke-width="1.2" marker-end="url(#a1)"/>
+        <rect x="560" y="102" width="174" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="647" y="121" font-size="12.5" text-anchor="middle" fill="currentColor">받을 정보 · 수량 한도</text>
+        <text x="647" y="136" font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".6">이름·연락처 / 1ha당·1인 최대</text>
+
+        <line x1="466" y1="158" x2="466" y2="186" stroke="#1A56A8" stroke-width="1.6" marker-end="url(#a1b)"/>
+        <text x="474" y="176" font-size="10.5" fill="#1A56A8" font-family="monospace">설정 저장</text>
+
+        <!-- 서버 -->
+        <rect x="14" y="188" width="732" height="54" rx="4" fill="currentColor" fill-opacity=".05" stroke="currentColor" stroke-width="1.5"/>
+        <text x="30" y="210" font-size="12.5" font-weight="700" fill="currentColor">테스트 서버 · bonghwa-lab</text>
+        <text x="30" y="228" font-size="11" fill="currentColor" opacity=".65" font-family="monospace">cfg 설정 서랍 · apply 접수 서랍 · 접수 순간 정원 세기</text>
+
+        <!-- 서버 ↔ 두 화면 -->
+        <line x1="120" y1="242" x2="120" y2="286" stroke="#1A56A8" stroke-width="1.6" marker-end="url(#a1b)"/>
+        <text x="128" y="268" font-size="10.5" fill="#1A56A8" font-family="monospace">설정 읽기</text>
+        <line x1="300" y1="286" x2="300" y2="242" stroke="#9E5622" stroke-width="1.6" marker-end="url(#a1)"/>
+        <text x="308" y="268" font-size="10.5" fill="#9E5622" font-family="monospace">접수 저장</text>
+        <line x1="586" y1="242" x2="586" y2="286" stroke="#1A56A8" stroke-width="1.6" marker-end="url(#a1b)"/>
+        <text x="594" y="268" font-size="10.5" fill="#1A56A8" font-family="monospace">접수 읽기</text>
+
+        <!-- 주민 -->
+        <rect x="14" y="288" width="356" height="116" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="26" y="306" font-size="11.5" font-weight="700" fill="currentColor" font-family="monospace">주민 · 오늘의 봉화</text>
+        <rect x="26" y="314" width="98" height="34" rx="3" fill="#15803D" fill-opacity=".12" stroke="#15803D" stroke-width="1.2"/>
+        <text x="75" y="335" font-size="11.5" font-weight="700" text-anchor="middle" fill="#15803D">바로 접수 배지</text>
+        <line x1="124" y1="331" x2="146" y2="331" stroke="currentColor" stroke-width="1.2" marker-end="url(#a1)"/>
+        <rect x="150" y="314" width="92" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="196" y="335" font-size="11.5" text-anchor="middle" fill="currentColor">자격 확인</text>
+        <line x1="242" y1="331" x2="264" y2="331" stroke="currentColor" stroke-width="1.2" marker-end="url(#a1)"/>
+        <rect x="268" y="314" width="90" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="313" y="335" font-size="11.5" text-anchor="middle" fill="currentColor">신청서</text>
+        <line x1="313" y1="348" x2="313" y2="362" stroke="currentColor" stroke-width="1.2" marker-end="url(#a1)"/>
+        <rect x="150" y="364" width="208" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="254" y="384" font-size="11.5" text-anchor="middle" fill="currentColor">제출 → 접수증(사진 저장)</text>
+
+        <!-- 담당자 처리 -->
+        <rect x="390" y="288" width="356" height="116" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="402" y="306" font-size="11.5" font-weight="700" fill="currentColor" font-family="monospace">담당자 · 접수 처리 (apply-desk.html)</text>
+        <rect x="402" y="314" width="88" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="446" y="335" font-size="11.5" text-anchor="middle" fill="currentColor">접수 목록</text>
+        <line x1="490" y1="331" x2="512" y2="331" stroke="currentColor" stroke-width="1.2" marker-end="url(#a1)"/>
+        <rect x="516" y="314" width="96" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="564" y="335" font-size="11.5" text-anchor="middle" fill="currentColor">대조·확인</text>
+        <line x1="612" y1="331" x2="634" y2="331" stroke="currentColor" stroke-width="1.2" marker-end="url(#a1)"/>
+        <rect x="638" y="314" width="96" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="686" y="335" font-size="11.5" text-anchor="middle" fill="currentColor">선정·제외</text>
+        <line x1="686" y1="348" x2="686" y2="362" stroke="currentColor" stroke-width="1.2" marker-end="url(#a1)"/>
+        <rect x="402" y="364" width="332" height="30" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="568" y="384" font-size="11.5" text-anchor="middle" fill="currentColor">정원 조정 · 주간업무 보고 문장 · 내보내기</text>
+
+        <line x1="568" y1="404" x2="568" y2="428" stroke="currentColor" stroke-width="1.4" marker-end="url(#a1)"/>
+        <rect x="452" y="430" width="232" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4"/>
+        <text x="568" y="452" font-size="12.5" font-weight="600" text-anchor="middle" fill="currentColor">내부 시스템 (CSV · 표준 JSON)</text>
+      </svg>
+    </div>
+    <figcaption><b>담당자와 주민은 서로 만나지 않고, 서버의 두 서랍을 통해 이어집니다.</b>
+      파란 화살표는 저절로 오가는 것, 흙빛 화살표는 사람이 눌러서 일어나는 것입니다.
+      맨 아래 점선 상자만 아직 붙어 있지 않습니다 — 내보내기 파일까지는 만들어져 있습니다.</figcaption>
+  </figure>
+</section>
+
+<!-- ═══ 2 ═══ -->
+<section>
+  <h2><span class="n">02</span>네모 하나가 바꾸는 세 곳</h2>
+  <p>담당자가 <strong>[이 사업은 온라인 접수를 받습니다]</strong>에 표시하고 저장하면, 주민 화면에서
+    세 가지가 한꺼번에 달라집니다. 담당자는 한 곳만 누르지만 바뀌는 곳은 셋입니다.</p>
+
+  <figure>
+    <div class="scroll">
+      <svg viewBox="0 0 780 210" role="img" aria-label="관리자 화면의 온라인 접수 체크 하나가 주민 화면의 목록 노출, 갈래 분류, 카드 배지 세 곳을 동시에 바꾸는 그림">
+        <defs>
+          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#1A56A8"/>
+          </marker>
+        </defs>
+        <rect x="8" y="72" width="212" height="66" rx="4" fill="#1A56A8" fill-opacity=".12" stroke="#1A56A8" stroke-width="1.8"/>
+        <rect x="24" y="96" width="16" height="16" rx="3" fill="#0E4E9C"/>
+        <path d="M28,104 l3.4,3.4 l5.6,-6.8" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <text x="50" y="100" font-size="13" font-weight="700" fill="#1A56A8">온라인 접수를</text>
+        <text x="50" y="116" font-size="13" font-weight="700" fill="#1A56A8">받습니다</text>
+        <text x="114" y="152" font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".6" font-family="monospace">담당자가 누르는 곳</text>
+
+        <path d="M220,105 C270,105 270,36 320,36" fill="none" stroke="#1A56A8" stroke-width="1.6" marker-end="url(#a2)"/>
+        <path d="M220,105 L320,105" fill="none" stroke="#1A56A8" stroke-width="1.6" marker-end="url(#a2)"/>
+        <path d="M220,105 C270,105 270,174 320,174" fill="none" stroke="#1A56A8" stroke-width="1.6" marker-end="url(#a2)"/>
+
+        <rect x="324" y="14" width="448" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="340" y="34" font-size="12.5" font-weight="600" fill="currentColor">목록에 올린다</text>
+        <text x="340" y="49" font-size="11" fill="currentColor" opacity=".65">계획서의 사업 기간이 지났어도 — 접수 기간은 다르다</text>
+
+        <rect x="324" y="83" width="448" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="340" y="103" font-size="12.5" font-weight="600" fill="currentColor">[신청·참여] 갈래로 넣는다</text>
+        <text x="340" y="118" font-size="11" fill="currentColor" opacity=".65">글로 가늠한 값과 상관없이 — 접수를 켠 것이 곧 답이다</text>
+
+        <rect x="324" y="152" width="448" height="44" rx="3" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="340" y="172" font-size="12.5" font-weight="600" fill="currentColor">카드에 딱지를 붙인다</text>
+        <text x="340" y="187" font-size="11" fill="currentColor" opacity=".65">‘바로 접수’ — 주민이 목록에서 알아볼 수 있게</text>
+      </svg>
+    </div>
+    <figcaption><b>담당자의 결정이 세 곳을 동시에 움직입니다.</b>
+      셋 중 하나라도 계획서 글만 보고 판단하면, 접수를 켜 놓고도 주민이 그 사업을 찾지 못합니다.</figcaption>
+  </figure>
+</section>
+
+<!-- ═══ 3 ═══ -->
+<section>
+  <h2><span class="n">03</span>자격 확인은 어디서 일어나는가</h2>
+  <p>두 판의 차이는 딱 하나입니다. <strong>같은 상자가 자리를 옮깁니다</strong> —
+    연동판에서는 주민이 접수하는 자리에 있고, 수기판에서는 담당자 책상 위에 있습니다.
+    없어지는 것이 아니라, 누가 하느냐가 바뀝니다.</p>
+
+  <figure>
+    <div class="scroll">
+      <svg viewBox="0 0 720 250" role="img" aria-label="연동판에서는 자격 확인 상자가 주민 화면 안에 있고, 수기판에서는 같은 상자가 담당자 책상으로 옮겨 가 한 건에 6분이 드는 비교">
+        <defs>
+          <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <text x="8" y="20" font-size="12.5" font-weight="700" fill="#1A56A8">🔗 연동판 — 자격 정보가 붙어 있을 때</text>
+        <rect x="8" y="30" width="266" height="66" rx="4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="20" y="48" font-size="11" fill="currentColor" opacity=".65" font-family="monospace">주민 화면</text>
+        <rect x="20" y="54" width="118" height="32" rx="3" fill="#1A56A8" fill-opacity=".14" stroke="#1A56A8" stroke-width="1.8"/>
+        <text x="79" y="74" font-size="11.5" font-weight="700" text-anchor="middle" fill="#1A56A8">자격 확인</text>
+        <line x1="138" y1="70" x2="160" y2="70" stroke="currentColor" stroke-width="1.2" marker-end="url(#a3)"/>
+        <rect x="164" y="54" width="98" height="32" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="213" y="74" font-size="11.5" text-anchor="middle" fill="currentColor">신청서 제출</text>
+        <line x1="274" y1="63" x2="318" y2="63" stroke="currentColor" stroke-width="1.3" marker-end="url(#a3)"/>
+        <text x="296" y="55" font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".65" font-family="monospace">접수</text>
+        <rect x="322" y="30" width="266" height="66" rx="4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="334" y="48" font-size="11" fill="currentColor" opacity=".65" font-family="monospace">담당자 책상</text>
+        <rect x="334" y="54" width="240" height="32" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <text x="454" y="74" font-size="11.5" text-anchor="middle" fill="currentColor">눈으로 훑고 중복만 확인</text>
+        <text x="600" y="76" font-size="17" font-weight="700" fill="#1A56A8">1분</text>
+
+        <line x1="8" y1="118" x2="712" y2="118" stroke="currentColor" opacity=".2"/>
+
+        <text x="8" y="146" font-size="12.5" font-weight="700" fill="#9E5622">✋ 수기판 — 지금 그대로</text>
+        <rect x="8" y="156" width="266" height="66" rx="4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="20" y="174" font-size="11" fill="currentColor" opacity=".65" font-family="monospace">주민 화면</text>
+        <rect x="20" y="180" width="118" height="32" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <text x="79" y="200" font-size="11.5" text-anchor="middle" fill="currentColor" opacity=".7">본인 진술</text>
+        <line x1="138" y1="196" x2="160" y2="196" stroke="currentColor" stroke-width="1.2" marker-end="url(#a3)"/>
+        <rect x="164" y="180" width="98" height="32" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="213" y="200" font-size="11.5" text-anchor="middle" fill="currentColor">신청서 제출</text>
+        <line x1="274" y1="189" x2="318" y2="189" stroke="currentColor" stroke-width="1.3" marker-end="url(#a3)"/>
+        <text x="296" y="181" font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".65" font-family="monospace">접수</text>
+        <rect x="322" y="156" width="266" height="66" rx="4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="334" y="174" font-size="11" fill="currentColor" opacity=".65" font-family="monospace">담당자 책상</text>
+        <rect x="334" y="180" width="240" height="32" rx="3" fill="#9E5622" fill-opacity=".14" stroke="#9E5622" stroke-width="1.8"/>
+        <text x="454" y="200" font-size="11.5" font-weight="700" text-anchor="middle" fill="#9E5622">자격 확인 — 대장을 손으로 대조</text>
+        <text x="600" y="202" font-size="17" font-weight="700" fill="#9E5622">6분</text>
+      </svg>
+    </div>
+    <figcaption><b>진하게 칠한 상자가 그 판에서 자격을 확인하는 자리입니다.</b>
+      두 줄에서 그 상자만 자리를 옮겼습니다. 농업 사업은 다섯 가지 중 넷이, 복지 사업은 넷 중 셋이
+      접수하는 자리로 옮겨 갑니다 — <b>중복·기수혜 확인 1분은 어느 판에서도 담당자 몫으로 남습니다.</b></figcaption>
+  </figure>
+</section>
+
+<!-- ═══ 4 ═══ -->
+<section>
+  <h2><span class="n">04</span>정원이 차고, 다시 열린다</h2>
+  <p>정원은 화면이 아니라 <strong>서버가 접수되는 그 순간에 다시 셉니다</strong>. 여럿이 동시에 눌러도
+    정원을 넘지 않습니다. 그리고 심사에서 빠지는 사람이 생기거나 물량이 늘면,
+    담당자가 그 자리에서 다시 엽니다.</p>
+
+  <figure>
+    <div class="scroll">
+      <svg viewBox="0 0 800 200" role="img" aria-label="정원이 찬 사업은 서버가 접수 순간 다시 세어 막고, 담당자가 정원을 늘리면 주민 화면이 그 자리에서 다시 열리는 되먹임">
+        <defs>
+          <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+          <marker id="a4r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#9E5622"/>
+          </marker>
+          <marker id="a4b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#15803D"/>
+          </marker>
+        </defs>
+
+        <rect x="8" y="42" width="150" height="52" rx="3" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="83" y="66" font-size="12.5" font-weight="600" text-anchor="middle" fill="currentColor">주민이 신청을 누른다</text>
+        <text x="83" y="82" font-size="11" text-anchor="middle" fill="currentColor" opacity=".65">남은 자리 0</text>
+        <line x1="158" y1="68" x2="192" y2="68" stroke="currentColor" stroke-width="1.3" marker-end="url(#a4)"/>
+
+        <rect x="196" y="42" width="176" height="52" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="284" y="66" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">서버가 그 자리에서 다시 센다</text>
+        <text x="284" y="82" font-size="11" text-anchor="middle" fill="currentColor" opacity=".65" font-family="monospace">화면이 아니라 서버가</text>
+        <line x1="372" y1="68" x2="406" y2="68" stroke="#9E5622" stroke-width="1.5" marker-end="url(#a4r)"/>
+
+        <rect x="410" y="42" width="150" height="52" rx="3" fill="#9E5622" fill-opacity=".14" stroke="#9E5622" stroke-width="1.6"/>
+        <text x="485" y="66" font-size="12.5" font-weight="700" text-anchor="middle" fill="#9E5622">접수가 막힌다</text>
+        <text x="485" y="82" font-size="11" text-anchor="middle" fill="#9E5622" opacity=".9">정원이 찼습니다</text>
+
+        <path d="M485,94 C485,140 400,150 330,150" fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#a4)"/>
+        <rect x="150" y="130" width="176" height="42" rx="3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4"/>
+        <text x="238" y="149" font-size="12.5" font-weight="600" text-anchor="middle" fill="currentColor">담당자가 정원을 늘린다</text>
+        <text x="238" y="164" font-size="10.5" text-anchor="middle" fill="currentColor" opacity=".65">접수 처리 화면의 [정원 조정]</text>
+
+        <path d="M150,151 C90,151 83,120 83,100" fill="none" stroke="#15803D" stroke-width="1.6" marker-end="url(#a4b)"/>
+        <text x="16" y="126" font-size="11" fill="#15803D" font-weight="600" font-family="monospace">그 자리에서 다시 열림</text>
+
+        <text x="578" y="128" font-size="11" fill="currentColor" opacity=".65">주민 화면에는</text>
+        <text x="578" y="144" font-size="11" fill="currentColor" opacity=".65">남은 자리가 늘 보인다</text>
+        <text x="578" y="162" font-size="11.5" font-weight="700" fill="#15803D">정원 20명 중 18명 · 2자리</text>
+      </svg>
+    </div>
+    <figcaption><b>막는 것도 다시 여는 것도 한 자리에서 일어납니다.</b>
+      담당자가 정원을 고치면 주민 화면의 ‘남은 자리’가 그대로 따라옵니다 —
+      공고를 다시 내거나 전화로 안내할 일이 없습니다.</figcaption>
+  </figure>
+</section>
+
+<!-- ═══ 5 ═══ -->
+<section>
+  <h2><span class="n">05</span>어느 화면에서 무엇을 하나</h2>
+  <p>세 화면이 각각 맡는 일과, 그 결과가 어디에 남는지입니다.</p>
+  <figure>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>화면</th><th>하는 일</th><th>남는 곳</th></tr></thead>
+        <tbody>
+          <tr><td><b>admin.html</b><br><span style="color:var(--faint);font-size:13px">담당자 · 설정</span></td>
+            <td>사업 원문 읽기 · 물을 항목 · 온라인 접수 열기 · 받을 정보 · 수량 한도 · 내부 시스템 칸 이름</td>
+            <td><code>cfg</code> 서랍</td></tr>
+          <tr><td><b>오늘의 봉화</b><br><span style="color:var(--faint);font-size:13px">주민 · 신청</span></td>
+            <td>목록에서 찾기 · 자격 확인 · 신청서 작성(자동 채움) · 수량 한도 안에서 신청 · 접수증 사진 저장</td>
+            <td><code>apply</code> 서랍</td></tr>
+          <tr><td><b>apply-desk.html</b><br><span style="color:var(--faint);font-size:13px">담당자 · 처리</span></td>
+            <td>사업별 접수 목록 · 건별 대조 · 선정·보류·제외 · 정원 조정 · 주간업무 보고 문장 · CSV·JSON 내보내기</td>
+            <td><code>apply</code> 서랍의 처리 칸</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figcaption>세 화면 모두 열람 코드로 들어갑니다(주민 화면은 코드 없이). 담당자 화면 둘은
+      <b>같은 서랍을 서로 다른 쪽에서 보는 것</b>이라, 설정을 고치면 처리 화면에도 곧바로 반영됩니다.</figcaption>
+  </figure>
+
+  <div class="note link"><b>지금 비어 있는 칸은 하나입니다.</b>
+    ‘자격 확인’ 상자가 주민 화면에서 쓰는 정보 — 농업경영체 등록 정보와 복지 수급 자격 —
+    는 아직 화면 목업입니다. 연결이 허락되면 바꿔야 할 것은 그 파일 하나이고,
+    위 그림의 나머지는 오늘 이미 돌아갑니다.</div>
+</section>
+
+</div>
+
+</body>
+</html>
