@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>봉화군 연동 컨설팅 발표</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+</head>
+<body>
+<style>
+/* ══════════════════════════════════════════════════════════════
+   발표자료 초안 — 넘겨 보는 10장.
+   화면에 띄워 그대로 발표해도 되고, PPT 옮길 때 밑그림으로 써도 된다.
+   뜻을 지닌 색은 둘뿐 — 파랑은 연결된 길, 흙빛은 손으로 가는 길.
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  --ground:#EFF2EE; --paper:#FFFFFF; --raise:#F7F9F6;
+  --ink:#111A15; --body:#25322B; --mute:#5C6B63; --faint:#8A9791;
+  --line:#DBE2DC; --line-soft:#E8EDE8;
+  --link:#1A56A8; --link-soft:#E4EDFA;
+  --hand:#9E5622; --hand-soft:#F8EDE3;
+  --ok:#15803D;
+  --link-solid:#1A56A8; --hand-solid:#8C4E1E;
+  --shadow:0 2px 4px rgba(17,26,21,.05), 0 24px 60px -30px rgba(17,26,21,.4);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0C100B; --paper:#161C17; --raise:#1D241E;
+    --ink:#E9EFE8; --body:#CBD6CB; --mute:#93A197; --faint:#6C7B72;
+    --line:#2B342D; --line-soft:#222A24;
+    --link:#7FAEEE; --link-soft:#182334;
+    --hand:#DE9A62; --hand-soft:#2A2017;
+    --link-solid:#2A62B0; --hand-solid:#9C5A1E;
+    --ok:#5CC57E;
+    --shadow:0 2px 4px rgba(0,0,0,.4), 0 24px 60px -30px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C100B; --paper:#161C17; --raise:#1D241E;
+  --ink:#E9EFE8; --body:#CBD6CB; --mute:#93A197; --faint:#6C7B72;
+  --line:#2B342D; --line-soft:#222A24;
+  --link:#7FAEEE; --link-soft:#182334;
+  --hand:#DE9A62; --hand-soft:#2A2017;
+  --link-solid:#2A62B0; --hand-solid:#9C5A1E;
+  --ok:#5CC57E;
+  --shadow:0 2px 4px rgba(0,0,0,.4), 0 24px 60px -30px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--body);
+  font-family:'IBM Plex Sans KR','Apple SD Gothic Neo',system-ui,sans-serif;
+  line-height:1.6; word-break:keep-all; -webkit-font-smoothing:antialiased;
+}
+
+/* ── 무대 ── */
+.stage{max-width:1180px; margin:0 auto; padding:20px 20px 96px}
+.deck{display:flex; flex-direction:column; gap:26px}
+
+/* 16:9 판. 글자 크기를 판 너비(cqw)에 매어 두면 화면이 커져도 비율이 안 깨진다. */
+.slide{
+  position:relative; container-type:inline-size;
+  aspect-ratio:16/9; background:var(--paper);
+  border:1px solid var(--line); border-radius:6px;
+  box-shadow:var(--shadow); overflow:hidden;
+  display:flex; flex-direction:column;
+  padding:5.2cqw 5.6cqw 4.4cqw;
+}
+.slide.dark{background:var(--ink); color:#E7EDE7; border-color:var(--ink)}
+
+/* 판 번호 */
+.pg{
+  position:absolute; right:2.2cqw; bottom:1.8cqw;
+  font-family:'IBM Plex Mono',monospace; font-size:1.25cqw; letter-spacing:.1em;
+  color:var(--faint);
+}
+.slide.dark .pg{color:rgba(231,237,231,.45)}
+
+/* 머리 */
+.eye{
+  font-family:'IBM Plex Mono',monospace; font-size:1.3cqw; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--mute); margin:0 0 1.4cqw;
+}
+.slide.dark .eye{color:rgba(231,237,231,.55)}
+h2{
+  font-family:Hahmlet,'Apple SD Gothic Neo',serif; font-weight:700;
+  font-size:3.9cqw; line-height:1.2; letter-spacing:-.025em;
+  color:var(--ink); margin:0 0 1cqw; text-wrap:balance;
+}
+.slide.dark h2{color:#FFFFFF}
+.sub{font-size:1.85cqw; color:var(--hand); font-weight:600; margin:0 0 2.6cqw; max-width:44em}
+.slide.link .sub{color:var(--link)}
+.slide.dark .sub{color:#E0A87A}
+
+.fill{flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center}
+figure{margin:0}
+svg{display:block; width:100%; height:auto; color:var(--ink)}
+.slide.dark svg{color:#E7EDE7}
+/* SVG 안에 적어 둔 색을 열쇠 삼아 토큰으로 갈아 끼운다 — 어두운 화면에서도 같은 뜻이 되도록 */
+svg [fill="#1A56A8"]{fill:var(--link)}
+svg [stroke="#1A56A8"]{stroke:var(--link)}
+svg [fill="#9E5622"]{fill:var(--hand)}
+svg [stroke="#9E5622"]{stroke:var(--hand)}
+svg [fill="#15803D"]{fill:var(--ok)}
+svg [fill="#0E4E9C"]{fill:var(--link-solid)}
+svg [fill="#8C4E1E"]{fill:var(--hand-solid)}
+
+/* 목록 */
+ul.pts{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:1.35cqw}
+ul.pts li{display:grid; grid-template-columns:auto 1fr; gap:1.3cqw; align-items:start; font-size:1.85cqw}
+ul.pts .m{
+  font-family:'IBM Plex Mono',monospace; font-size:1.35cqw; font-weight:600;
+  color:var(--faint); background:var(--raise); border:1px solid var(--line);
+  border-radius:3px; min-width:2.6cqw; text-align:center; padding:.2cqw .5cqw; margin-top:.35cqw;
+}
+ul.pts li.on .m{color:var(--link); border-color:var(--link); background:var(--link-soft)}
+ul.pts li.off .m{color:var(--hand); border-color:var(--hand); background:var(--hand-soft)}
+ul.pts b{color:var(--ink); font-weight:700}
+.slide.dark ul.pts b{color:#FFFFFF}
+.slide.dark ul.pts li{color:#D6DED6}
+.slide.dark ul.pts .m{background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.16); color:rgba(231,237,231,.6)}
+
+/* 강조 띠 */
+.band{
+  margin-top:2.2cqw; border-left:.3cqw solid var(--hand); background:var(--hand-soft);
+  padding:1.4cqw 1.8cqw; font-size:1.75cqw; line-height:1.55; color:var(--body); border-radius:0 4px 4px 0;
+}
+.band b{color:var(--ink)}
+.slide.link .band{border-left-color:var(--link); background:var(--link-soft)}
+.slide.dark .band{background:rgba(255,255,255,.06); border-left-color:#E0A87A; color:#D6DED6}
+.slide.dark .band b{color:#FFFFFF}
+
+/* 표 */
+table{border-collapse:collapse; width:100%; font-size:1.7cqw}
+th,td{text-align:left; padding:.95cqw 1.1cqw; border-bottom:1px solid var(--line-soft); vertical-align:top}
+th{font-family:'IBM Plex Mono',monospace; font-size:1.2cqw; letter-spacing:.1em;
+   text-transform:uppercase; color:var(--faint); font-weight:600; border-bottom:1px solid var(--line)}
+td.num{font-variant-numeric:tabular-nums; white-space:nowrap}
+td b{color:var(--ink)}
+tr.tot td{border-bottom:none; padding-top:1.3cqw}
+tr.tot td b{font-size:2.1cqw}
+.chip{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:1.3cqw;
+  font-weight:600; border-radius:3px; padding:.2cqw .8cqw; white-space:nowrap}
+.chip.a{color:var(--link); background:var(--link-soft)}
+.chip.b{color:var(--hand); background:var(--hand-soft)}
+
+/* 표지 */
+.cover{justify-content:center}
+.cover .big{
+  font-family:Hahmlet,serif; font-weight:700; font-size:8.2cqw; line-height:1.05;
+  letter-spacing:-.035em; color:#FFFFFF; margin:0 0 1.6cqw;
+}
+.cover .lead{font-size:2.1cqw; color:rgba(231,237,231,.82); max-width:40em; margin:0 0 4cqw; font-weight:500}
+.cover .who{
+  display:flex; gap:1.6cqw; flex-wrap:wrap; font-family:'IBM Plex Mono',monospace;
+  font-size:1.4cqw; color:rgba(231,237,231,.6); letter-spacing:.04em;
+  border-top:1px solid rgba(255,255,255,.16); padding-top:1.8cqw;
+}
+.cover .who b{color:#FFFFFF; font-weight:600}
+
+/* 닫는 장 큰 문장 */
+.punch{
+  font-family:Hahmlet,serif; font-weight:700; font-size:3.4cqw; line-height:1.35;
+  letter-spacing:-.02em; color:#FFFFFF; margin:2.4cqw 0 0; text-wrap:balance;
+}
+.punch em{font-style:normal; color:#8FBDF4}
+
+/* 조종간 */
+.bar{
+  position:fixed; left:50%; transform:translateX(-50%); bottom:16px; z-index:50;
+  display:flex; gap:6px; align-items:center;
+  background:var(--paper); border:1px solid var(--line); border-radius:999px;
+  padding:6px 8px; box-shadow:0 6px 24px -10px rgba(17,26,21,.4);
+}
+.bar button{
+  font:inherit; font-size:13px; font-weight:600; font-family:inherit;
+  background:none; border:0; color:var(--body); cursor:pointer;
+  border-radius:999px; padding:7px 13px; min-height:36px;
+  white-space:nowrap;   /* 두 줄로 접히면 조종간이 화면을 덮는다 */
+}
+.bar button:hover{background:var(--raise)}
+.bar button:focus-visible{outline:2px solid var(--link); outline-offset:2px}
+.bar .cnt{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--mute);
+  padding:0 8px; font-variant-numeric:tabular-nums; white-space:nowrap}
+
+/* ── 한 장씩 보기 ──
+   발표 화면과 같은 16:9로 잡아 둔다. 화면 비율에 맞춰 늘리면
+   여기서 잘 보이던 것이 정작 프로젝터에서 달라진다. */
+body.solo{overflow:hidden}
+body.solo .stage{padding:0; height:100vh; display:flex; align-items:center; justify-content:center}
+body.solo .deck{gap:0; width:100%; display:block}
+body.solo .slide{display:none; border:0; border-radius:0; box-shadow:none;
+  width:min(100vw, 177.78vh); margin:0 auto; aspect-ratio:16/9}
+body.solo .slide.here{display:flex}
+
+@media print{
+  .bar{display:none}
+  .stage{padding:0; max-width:none}
+  .deck{gap:0}
+  .slide{break-after:page; border:0; border-radius:0; box-shadow:none}
+}
+@media (max-width:820px){
+  .slide{aspect-ratio:auto; min-height:auto; padding:26px 22px}
+}
+</style>
+
+<div class="stage"><div class="deck">
+
+<!-- ══ 1 표지 ══ -->
+<section class="slide dark cover">
+  <p class="eye">봉화군 · AI 챔피언 발표</p>
+  <p class="big">40초와<br>4개월</p>
+  <p class="lead">정보 하나를 불러오는 데 걸리는 시간과,<br>그 연결을 허락받는 데 걸리는 시간.</p>
+  <div class="who">
+    <span>봉화군 <b>도시계획과</b></span>
+    <span>실증 <b>오늘의 봉화 · 테스트본</b></span>
+    <span><b>2026. 9.</b></span>
+  </div>
+  <span class="pg">1 / 10</span>
+</section>
+
+<!-- ══ 2 ══ -->
+<section class="slide">
+  <p class="eye">문제 제기</p>
+  <h2>주민은 이미 온라인으로 신청합니다</h2>
+  <p class="sub">다만 '맞는 사람인지'만 아무도 확인하지 못합니다</p>
+  <div class="fill">
+    <figure>
+      <svg viewBox="0 0 720 150" role="img" aria-label="주민 신청과 담당자 심사는 이어져 있지만 그 사이의 자격 확인 칸만 비어 있는 3단 흐름도">
+        <defs><marker id="d2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <rect x="8" y="40" width="180" height="66" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="98" y="68" font-size="14" font-weight="600" text-anchor="middle" fill="currentColor">주민이 신청한다</text>
+        <text x="98" y="90" font-size="12" text-anchor="middle" fill="#15803D" font-weight="600">이미 됨</text>
+        <line x1="196" y1="73" x2="256" y2="73" stroke="currentColor" stroke-width="1.5" marker-end="url(#d2)"/>
+        <rect x="264" y="40" width="180" height="66" rx="3" fill="none" stroke="#9E5622" stroke-width="1.8" stroke-dasharray="5 4"/>
+        <text x="354" y="68" font-size="14" font-weight="700" text-anchor="middle" fill="#9E5622">자격을 확인한다</text>
+        <text x="354" y="90" font-size="12" text-anchor="middle" fill="#9E5622" font-weight="600">비어 있음</text>
+        <line x1="452" y1="73" x2="512" y2="73" stroke="currentColor" stroke-width="1.5" marker-end="url(#d2)"/>
+        <rect x="520" y="40" width="180" height="66" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="610" y="68" font-size="14" font-weight="600" text-anchor="middle" fill="currentColor">담당자가 심사한다</text>
+        <text x="610" y="90" font-size="12" text-anchor="middle" fill="#15803D" font-weight="600">이미 됨</text>
+        <text x="354" y="136" font-size="12.5" text-anchor="middle" fill="currentColor" opacity=".7">지금은 이 칸의 일이 통째로 오른쪽 상자로 넘어간다</text>
+      </svg>
+    </figure>
+    <div class="band">보조사업 <b>427건</b>을 주간업무계획서에서 자동으로 읽어
+      조건까지 뽑아 두었습니다. 그런데 <b>"이 사람이 정말 등록돼 있는가"를 물어볼 데가 없습니다.</b>
+      그래서 지금은 본인에게 묻고, 본인이 적은 대로 받습니다.</div>
+  </div>
+  <span class="pg">2 / 10</span>
+</section>
+
+<!-- ══ 3 ══ -->
+<section class="slide">
+  <p class="eye">실증 · 시연</p>
+  <h2>그래서 화면을 두 개 만들었습니다</h2>
+  <p class="sub">같은 신청, 연결이 있을 때와 없을 때</p>
+  <div class="fill">
+    <figure>
+      <svg viewBox="0 0 720 250" role="img" aria-label="한 건을 처리하는 다섯 가지 대조가 수기판에서는 모두 손으로 남고 연동판에서는 넷이 자동으로 끝나는 비교">
+        <text x="8" y="20" font-size="13" font-weight="700" fill="#9E5622">✋ 수기판 — 지금 그대로</text>
+        <text x="380" y="20" font-size="13" font-weight="700" fill="#1A56A8">🔗 연동판 — 연결이 있을 때</text>
+        <g font-size="12.5" fill="currentColor">
+          <rect x="8" y="34" width="14" height="14" rx="2" fill="none" stroke="#9E5622" stroke-width="1.5"/>
+          <text x="30" y="46">등록 대장 조회</text><text x="330" y="46" text-anchor="end" fill="#9E5622" font-family="monospace">2분</text>
+          <rect x="8" y="72" width="14" height="14" rx="2" fill="none" stroke="#9E5622" stroke-width="1.5"/>
+          <text x="30" y="84">상태·기준일 확인</text><text x="330" y="84" text-anchor="end" fill="#9E5622" font-family="monospace">1분</text>
+          <rect x="8" y="110" width="14" height="14" rx="2" fill="none" stroke="#9E5622" stroke-width="1.5"/>
+          <text x="30" y="122">주소지 관내 여부</text><text x="330" y="122" text-anchor="end" fill="#9E5622" font-family="monospace">1분</text>
+          <rect x="8" y="148" width="14" height="14" rx="2" fill="none" stroke="#9E5622" stroke-width="1.5"/>
+          <text x="30" y="160">경작 면적 확인</text><text x="330" y="160" text-anchor="end" fill="#9E5622" font-family="monospace">1분</text>
+          <rect x="8" y="186" width="14" height="14" rx="2" fill="none" stroke="#9E5622" stroke-width="1.5"/>
+          <text x="30" y="198">중복·기수혜 확인</text><text x="330" y="198" text-anchor="end" fill="#9E5622" font-family="monospace">1분</text>
+        </g>
+        <line x1="8" y1="214" x2="330" y2="214" stroke="currentColor" opacity=".3"/>
+        <text x="8" y="236" font-size="15" font-weight="700" fill="#9E5622">한 건 6분</text>
+        <g font-size="12.5">
+          <rect x="380" y="34" width="14" height="14" rx="2" fill="#0E4E9C"/>
+          <path d="M383,41 l3,3 l5,-6" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <text x="402" y="46" fill="#1A56A8">등록 대장 조회</text><text x="712" y="46" text-anchor="end" fill="#1A56A8" font-family="monospace">자동</text>
+          <rect x="380" y="72" width="14" height="14" rx="2" fill="#0E4E9C"/>
+          <path d="M383,79 l3,3 l5,-6" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <text x="402" y="84" fill="#1A56A8">상태·기준일 확인</text><text x="712" y="84" text-anchor="end" fill="#1A56A8" font-family="monospace">자동</text>
+          <rect x="380" y="110" width="14" height="14" rx="2" fill="#0E4E9C"/>
+          <path d="M383,117 l3,3 l5,-6" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <text x="402" y="122" fill="#1A56A8">주소지 관내 여부</text><text x="712" y="122" text-anchor="end" fill="#1A56A8" font-family="monospace">자동</text>
+          <rect x="380" y="148" width="14" height="14" rx="2" fill="#0E4E9C"/>
+          <path d="M383,155 l3,3 l5,-6" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <text x="402" y="160" fill="#1A56A8">경작 면적 확인</text><text x="712" y="160" text-anchor="end" fill="#1A56A8" font-family="monospace">자동</text>
+          <rect x="380" y="186" width="14" height="14" rx="2" fill="none" stroke="#9E5622" stroke-width="1.5"/>
+          <text x="402" y="198" fill="#9E5622">중복·기수혜 확인</text><text x="712" y="198" text-anchor="end" fill="#9E5622" font-family="monospace">1분</text>
+        </g>
+        <line x1="380" y1="214" x2="712" y2="214" stroke="currentColor" opacity=".3"/>
+        <text x="380" y="236" font-size="15" font-weight="700" fill="#1A56A8">한 건 1분</text>
+      </svg>
+    </figure>
+    <div class="band">같은 사업, 같은 접수함, 같은 담당자 화면입니다.
+      다른 것은 하나뿐 — <b>자격 정보를 불러오느냐 마느냐.</b>
+      연동판에서는 이미 확인된 항목을 <b>아예 묻지 않습니다.</b></div>
+  </div>
+  <span class="pg">3 / 10</span>
+</section>
+
+<!-- ══ 4 ══ -->
+<section class="slide link">
+  <p class="eye">측정 결과 · 시간</p>
+  <h2>27건이면 2시간 34분이 27분이 됩니다</h2>
+  <p class="sub">그리고 줄지 않는 1분에 대하여</p>
+  <div class="fill">
+    <table>
+      <thead><tr><th>대조 항목</th><th>수기판</th><th>연동판</th></tr></thead>
+      <tbody>
+        <tr><td>등록 대장·자격 전산 조회</td><td class="num">2분</td><td><span class="chip a">자동</span></td></tr>
+        <tr><td>상태·자격구분·기준일 확인</td><td class="num">1분</td><td><span class="chip a">자동</span></td></tr>
+        <tr><td>주소지 관내 여부 확인</td><td class="num">1분</td><td><span class="chip a">자동</span></td></tr>
+        <tr><td>경작 면적 확인 <span style="color:var(--faint)">(농업만)</span></td><td class="num">1분</td><td><span class="chip a">자동</span></td></tr>
+        <tr><td>중복·기수혜 여부 확인</td><td class="num">1분</td><td><span class="chip b">1분 — 남는다</span></td></tr>
+        <tr class="tot"><td><b>표본 27건</b> <span style="color:var(--faint)">농업 19 · 복지 8</span></td>
+            <td class="num"><b>2시간 34분</b></td><td class="num"><b>27분</b></td></tr>
+      </tbody>
+    </table>
+    <div class="band">정직하게 — 연동은 심사를 대신하지 않습니다. <b>사실 확인만</b> 대신합니다.
+      우리 부서가 작년에 누구에게 줬는지는 농관원도 복지 전산도 알지 못합니다.
+      <b>중복·기수혜 확인 1분은 연결해도 그대로 남습니다.</b></div>
+  </div>
+  <span class="pg">4 / 10</span>
+</section>
+
+<!-- ══ 5 ══ -->
+<section class="slide">
+  <p class="eye">측정 결과 · 정확도</p>
+  <h2>더 무서운 것은 틀린 채로 접수되는 건입니다</h2>
+  <p class="sub">담당자가 대장을 열기 전까지, 그 건은 정상으로 보입니다</p>
+  <div class="fill">
+    <figure>
+      <svg viewBox="0 0 720 200" role="img" aria-label="같은 접수 열두 건이 수기판에서는 모두 같아 보이고 연동판에서는 넷만 표시가 드러나는 비교">
+        <text x="8" y="18" font-size="12.5" font-weight="700" fill="#9E5622">✋ 수기판에서 보이는 것</text>
+        <g fill="none" stroke="currentColor" stroke-width="1.2" opacity=".45">
+          <rect x="8" y="30" width="72" height="44" rx="3"/><rect x="88" y="30" width="72" height="44" rx="3"/>
+          <rect x="168" y="30" width="72" height="44" rx="3"/><rect x="248" y="30" width="72" height="44" rx="3"/>
+          <rect x="8" y="84" width="72" height="44" rx="3"/><rect x="88" y="84" width="72" height="44" rx="3"/>
+          <rect x="168" y="84" width="72" height="44" rx="3"/><rect x="248" y="84" width="72" height="44" rx="3"/>
+          <rect x="8" y="138" width="72" height="44" rx="3"/><rect x="88" y="138" width="72" height="44" rx="3"/>
+          <rect x="168" y="138" width="72" height="44" rx="3"/><rect x="248" y="138" width="72" height="44" rx="3"/>
+        </g>
+        <text x="164" y="198" font-size="12" text-anchor="middle" fill="currentColor" opacity=".6">열두 장이 다 같아 보인다</text>
+        <text x="392" y="18" font-size="12.5" font-weight="700" fill="#1A56A8">🔗 연동판에서 보이는 것</text>
+        <g fill="none" stroke="#1A56A8" stroke-width="1.2" opacity=".5">
+          <rect x="392" y="30" width="72" height="44" rx="3"/><rect x="552" y="30" width="72" height="44" rx="3"/>
+          <rect x="392" y="84" width="72" height="44" rx="3"/><rect x="472" y="84" width="72" height="44" rx="3"/>
+          <rect x="632" y="84" width="72" height="44" rx="3"/>
+          <rect x="392" y="138" width="72" height="44" rx="3"/><rect x="552" y="138" width="72" height="44" rx="3"/>
+          <rect x="632" y="138" width="72" height="44" rx="3"/>
+        </g>
+        <g fill="#9E5622" fill-opacity=".14" stroke="#9E5622" stroke-width="2">
+          <rect x="472" y="30" width="72" height="44" rx="3"/><rect x="632" y="30" width="72" height="44" rx="3"/>
+          <rect x="552" y="84" width="72" height="44" rx="3"/><rect x="472" y="138" width="72" height="44" rx="3"/>
+        </g>
+        <g font-size="14" font-weight="700" text-anchor="middle" fill="#9E5622">
+          <text x="508" y="57">!</text><text x="668" y="57">!</text><text x="588" y="111">!</text><text x="508" y="165">!</text>
+        </g>
+        <text x="548" y="198" font-size="12" text-anchor="middle" fill="#9E5622" font-weight="600">접수되는 자리에서 드러난다</text>
+      </svg>
+    </figure>
+    <div class="band">표본 27건 중 <b>11건(41%)</b>이 적어 낸 내용과 대장·전산이 달랐습니다 —
+      휴업인데 영농 중, 없는 등록번호, 0.38ha를 0.9ha로, 소재지가 안동시,
+      수급이라 적었는데 전산에는 차상위.
+      <b>빠뜨리면 자격 없는 사람에게 보조금이 나가고 환수와 민원이 뒤따릅니다.</b></div>
+  </div>
+  <span class="pg">5 / 10</span>
+</section>
+
+<!-- ══ 6 ══ -->
+<section class="slide link">
+  <p class="eye">준비 상태 · 기술</p>
+  <h2>기술은 이미 끝나 있습니다</h2>
+  <p class="sub">화면도, 규격도, 명세서도 이미 배포돼 있습니다</p>
+  <div class="fill">
+    <figure>
+      <svg viewBox="0 0 720 150" role="img" aria-label="주민 화면부터 내부 시스템까지 이어진 다섯 칸 가운데 자격 정보 칸만 잠겨 있는 그림">
+        <defs><marker id="d6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <rect x="6" y="52" width="118" height="56" rx="3" fill="#1A56A8" fill-opacity=".1" stroke="#1A56A8" stroke-width="1.4"/>
+        <text x="65" y="76" font-size="12.5" font-weight="600" text-anchor="middle" fill="#1A56A8">주민 화면</text>
+        <text x="65" y="94" font-size="11" text-anchor="middle" fill="#1A56A8" opacity=".8">작동함</text>
+        <line x1="128" y1="80" x2="158" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#d6)"/>
+        <rect x="162" y="52" width="130" height="56" rx="3" fill="none" stroke="#9E5622" stroke-width="2" stroke-dasharray="5 4"/>
+        <text x="227" y="76" font-size="12.5" font-weight="700" text-anchor="middle" fill="#9E5622">자격 정보</text>
+        <text x="227" y="94" font-size="11" text-anchor="middle" fill="#9E5622">지금은 목업</text>
+        <rect x="216" y="22" width="22" height="18" rx="2" fill="none" stroke="#9E5622" stroke-width="1.6"/>
+        <path d="M221,22 v-5 a6,6 0 0 1 12,0 v5" fill="none" stroke="#9E5622" stroke-width="1.6"/>
+        <line x1="296" y1="80" x2="326" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#d6)"/>
+        <rect x="330" y="52" width="118" height="56" rx="3" fill="#1A56A8" fill-opacity=".1" stroke="#1A56A8" stroke-width="1.4"/>
+        <text x="389" y="76" font-size="12.5" font-weight="600" text-anchor="middle" fill="#1A56A8">담당자 화면</text>
+        <text x="389" y="94" font-size="11" text-anchor="middle" fill="#1A56A8" opacity=".8">작동함</text>
+        <line x1="452" y1="80" x2="482" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#d6)"/>
+        <rect x="486" y="52" width="118" height="56" rx="3" fill="#1A56A8" fill-opacity=".1" stroke="#1A56A8" stroke-width="1.4"/>
+        <text x="545" y="76" font-size="12.5" font-weight="600" text-anchor="middle" fill="#1A56A8">연동 규격</text>
+        <text x="545" y="94" font-size="11" text-anchor="middle" fill="#1A56A8" opacity=".8">자동 생성</text>
+        <line x1="608" y1="80" x2="638" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#d6)"/>
+        <rect x="642" y="52" width="72" height="56" rx="3" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <text x="678" y="76" font-size="12.5" font-weight="600" text-anchor="middle" fill="currentColor">내부</text>
+        <text x="678" y="94" font-size="12.5" font-weight="600" text-anchor="middle" fill="currentColor">시스템</text>
+        <text x="227" y="134" font-size="13" text-anchor="middle" fill="#9E5622" font-weight="700">이 한 칸만 비어 있다</text>
+      </svg>
+    </figure>
+    <div class="band">주민 화면 · 담당자 설정 · 접수 처리 · 연동 규격 자동 생성까지 다 돌아갑니다.
+      <b>복지 사업으로도 이미 넓혔습니다</b> — 연동되는 정보가 바뀔 뿐 코드 뼈대는 하나입니다.<br>
+      <b>"연결이 허락되면, 바꿔야 할 것은 목업 파일 하나입니다."</b></div>
+  </div>
+  <span class="pg">6 / 10</span>
+</section>
+
+<!-- ══ 7 ══ -->
+<section class="slide link">
+  <p class="eye">준비 상태 · 제도</p>
+  <h2>제도는 2022년 8월에 이미 열렸습니다</h2>
+  <p class="sub">농업경영체 등록확인서는 벌써 행정정보 공동이용 대상입니다</p>
+  <div class="fill">
+    <figure>
+      <svg viewBox="0 0 720 120" role="img" aria-label="2022년 8월 제도 개방부터 오늘까지 4년 1개월이 비어 있는 타임라인">
+        <line x1="20" y1="58" x2="700" y2="58" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="60" cy="58" r="7" fill="#1A56A8"/>
+        <text x="60" y="38" font-size="12.5" font-weight="700" text-anchor="middle" fill="#1A56A8">2022. 8. 1.</text>
+        <text x="60" y="82" font-size="12" text-anchor="middle" fill="currentColor" opacity=".75">공동이용 대상 고시</text>
+        <text x="60" y="99" font-size="12" text-anchor="middle" fill="currentColor" opacity=".75">— 문이 열린 날</text>
+        <line x1="120" y1="58" x2="620" y2="58" stroke="#9E5622" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/>
+        <text x="370" y="38" font-size="14" font-weight="700" text-anchor="middle" fill="#9E5622">4년 1개월</text>
+        <text x="370" y="82" font-size="12" text-anchor="middle" fill="#9E5622">봉화군 주민은 여전히 종이로 신청한다</text>
+        <circle cx="660" cy="58" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+        <text x="660" y="38" font-size="12.5" font-weight="700" text-anchor="middle" fill="currentColor">오늘</text>
+        <text x="660" y="82" font-size="12" text-anchor="middle" fill="currentColor" opacity=".75">2026. 9.</text>
+      </svg>
+    </figure>
+    <ul class="pts" style="margin-top:2cqw">
+      <li class="on"><span class="m">1</span><span>행안부 「공동이용 대상 행정정보 현황」 고시에 <b>농업경영체 등록확인서</b> 추가.
+        융자·보조금 지원기관이 <b>180만 경영체</b>의 등록정보를 확인해 쓰라는 목적이 명시돼 있습니다.</span></li>
+      <li class="on"><span class="m">2</span><span>AGRIX는 <b>지자체용 Open API 15종</b>과
+        이용 절차(<b>신청 → 심의 → 협약 → 지원 → 사후관리</b>)를 공개하고 있습니다.</span></li>
+    </ul>
+    <div class="band">그러니 이 발표는 "없는 것을 만들어 달라"가 아니라
+      <b>"이미 있는 문을 우리가 못 열고 있으니 같이 열어 달라"</b>는 요청입니다.</div>
+  </div>
+  <span class="pg">7 / 10</span>
+</section>
+
+<!-- ══ 8 ══ -->
+<section class="slide">
+  <p class="eye">핵심 · 진짜 장애물</p>
+  <h2>막고 있는 것은 기술이 아닙니다</h2>
+  <p class="sub">한 사람이 열 수 없는 문이 다섯 개, 그것도 분야마다 따로</p>
+  <div class="fill">
+    <figure>
+      <svg viewBox="0 0 720 190" role="img" aria-label="담당자 한 사람 앞에 잠긴 문 다섯 개가 일렬로 있고 뒤로 같은 문 한 벌이 흐리게 겹쳐 있는 그림">
+        <circle cx="30" cy="92" r="11" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M20,128 a10,20 0 0 1 20,0" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <text x="30" y="154" font-size="11.5" text-anchor="middle" fill="currentColor" opacity=".7">담당자</text>
+        <text x="30" y="170" font-size="11.5" text-anchor="middle" fill="currentColor" opacity=".7">한 사람</text>
+        <g stroke="#9E5622" stroke-width="1.2" fill="none" opacity=".35">
+          <rect x="88" y="24" width="112" height="120" rx="3"/><rect x="216" y="24" width="112" height="120" rx="3"/>
+          <rect x="344" y="24" width="112" height="120" rx="3"/><rect x="472" y="24" width="112" height="120" rx="3"/>
+          <rect x="600" y="24" width="112" height="120" rx="3"/>
+        </g>
+        <g stroke="#9E5622" stroke-width="1.6" fill="none">
+          <rect x="80" y="32" width="112" height="120" rx="3"/><rect x="208" y="32" width="112" height="120" rx="3"/>
+          <rect x="336" y="32" width="112" height="120" rx="3"/><rect x="464" y="32" width="112" height="120" rx="3"/>
+          <rect x="592" y="32" width="112" height="120" rx="3"/>
+        </g>
+        <g fill="#9E5622">
+          <circle cx="180" cy="92" r="3.5"/><circle cx="308" cy="92" r="3.5"/><circle cx="436" cy="92" r="3.5"/>
+          <circle cx="564" cy="92" r="3.5"/><circle cx="692" cy="92" r="3.5"/>
+        </g>
+        <g font-size="12" fill="currentColor" text-anchor="middle">
+          <text x="136" y="84">소관이</text><text x="136" y="102">우리가</text><text x="136" y="120">아니다</text>
+          <text x="264" y="84">개인정보</text><text x="264" y="102">근거를</text><text x="264" y="120">누가 쓰나</text>
+          <text x="392" y="84">정보화</text><text x="392" y="102">부서의 일이</text><text x="392" y="120">아니다</text>
+          <text x="520" y="84">예산의</text><text x="520" y="102">순환</text><text x="520" y="120">논리</text>
+          <text x="648" y="84">책임의</text><text x="648" y="102">비대칭</text><text x="648" y="120">·순환보직</text>
+        </g>
+        <text x="392" y="182" font-size="12" text-anchor="middle" fill="#9E5622" opacity=".85">뒤에 겹친 흐린 문 — 복지 분야의 같은 다섯 개</text>
+      </svg>
+    </figure>
+    <div class="band">각각의 문에는 <b>지키는 사람도, 지키는 이유도</b> 다 있습니다.
+      누가 잘못해서가 아니라 구조가 그렇게 생겼습니다.
+      그중 다섯째가 가장 셉니다 — <b>안 하면 아무 일도 안 일어납니다.</b></div>
+  </div>
+  <span class="pg">8 / 10</span>
+</section>
+
+<!-- ══ 9 ══ -->
+<section class="slide link">
+  <p class="eye">제안</p>
+  <h2>컨설팅은 기술이 아니라 열쇠입니다</h2>
+  <p class="sub">다섯 개의 문에 대응하는 다섯 개의 열쇠</p>
+  <div class="fill">
+    <table>
+      <thead><tr><th>막힌 문</th><th>컨설팅이 대신하는 것</th></tr></thead>
+      <tbody>
+        <tr><td><b>소관이 우리가 아니다</b></td><td>부처·농관원 협의를 <b>기관 대 기관</b>으로 올린다</td></tr>
+        <tr><td><b>개인정보 근거</b></td><td>수집·이용 근거와 영향평가 <b>표준안</b> — 첫 문장을 대신 써 준다</td></tr>
+        <tr><td><b>정보화 부서 일이 아니다</b></td><td>표준시스템과의 <b>연계 방식·역할 분담</b>을 정리한다</td></tr>
+        <tr><td><b>예산의 순환 논리</b></td><td>실증 결과를 <b>공식 근거</b>로 만든다 — 예산서에 붙일 문서가 생긴다</td></tr>
+        <tr><td><b>책임의 비대칭</b></td><td>담당자 한 사람의 모험이 아니라 <b>기관의 과제</b>가 된다</td></tr>
+      </tbody>
+    </table>
+    <div class="band">우리에게 부족한 것은 개발자가 아닙니다.
+      <b>기관 대 기관으로 말할 자격과 선례</b>입니다.
+      그리고 한 번 만든 절차는 <b>분야마다 다시 두드리지 않아도 되게</b> 합니다.</div>
+  </div>
+  <span class="pg">9 / 10</span>
+</section>
+
+<!-- ══ 10 ══ -->
+<section class="slide dark">
+  <p class="eye">요청</p>
+  <h2>한 가지만 부탁드립니다</h2>
+  <p class="sub">봉화군을 첫 사례로</p>
+  <div class="fill">
+    <ul class="pts">
+      <li class="on"><span class="m">1</span><span>자격 정보 연계 컨설팅 대상에 <b>봉화군을 넣어 주십시오.</b></span></li>
+      <li class="on"><span class="m">2</span><span>연결 전후를 <b>같은 화면으로 재서</b> 결과를 공개하겠습니다.</span></li>
+      <li class="on"><span class="m">3</span><span>그 과정을 <b>다른 시군·다른 분야가 그대로 따라 할 절차서</b>로 정리해 주십시오.</span></li>
+    </ul>
+    <p class="punch">봉화군 하나를 위해 문을 열어 달라는 것이 아닙니다.<br>
+      <em>한 번 열면 226번 열립니다.</em></p>
+  </div>
+  <span class="pg">10 / 10</span>
+</section>
+
+</div></div>
+
+<nav class="bar" aria-label="발표 조종">
+  <button type="button" id="prev" aria-label="이전 장">←</button>
+  <span class="cnt" id="cnt">전체 보기</span>
+  <button type="button" id="next" aria-label="다음 장">→</button>
+  <button type="button" id="solo">한 장씩</button>
+  <button type="button" id="print">인쇄 · PDF</button>
+</nav>
+
+<script>
+(function(){
+ 'use strict';
+ /* 한 장씩 넘겨 보는 것과 쭉 훑어보는 것 — 발표 자리와 검토 자리는 필요가 다르다 */
+ const slides=[...document.querySelectorAll('.slide')];
+ const cnt=document.getElementById('cnt');
+ let solo=false, at=0;
+
+ function show(){
+  if(!solo){ cnt.textContent='전체 보기'; return; }
+  slides.forEach((s,i)=>s.classList.toggle('here',i===at));
+  cnt.textContent=(at+1)+' / '+slides.length;
+  window.scrollTo(0,0);
+ }
+ function go(d){
+  if(!solo){                       /* 훑어보는 중이면 그 장으로 스크롤만 */
+   at=Math.min(slides.length-1,Math.max(0,at+d));
+   slides[at].scrollIntoView({behavior:'smooth',block:'start'});
+   return;
+  }
+  at=Math.min(slides.length-1,Math.max(0,at+d)); show();
+ }
+ document.getElementById('prev').onclick=()=>go(-1);
+ document.getElementById('next').onclick=()=>go(1);
+ document.getElementById('solo').onclick=()=>{
+  solo=!solo; document.body.classList.toggle('solo',solo);
+  document.getElementById('solo').textContent=solo?'전체 보기':'한 장씩';
+  show();
+ };
+ document.getElementById('print').onclick=()=>{
+  document.body.classList.remove('solo'); solo=false; show(); print();
+ };
+ addEventListener('keydown',e=>{
+  if(e.target.closest('button'))return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){ e.preventDefault(); go(1); }
+  if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); go(-1); }
+ });
+ show();
+})();
+</script>
+
+</body>
+</html>
