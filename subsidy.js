@@ -130,12 +130,13 @@
       const API = apiMode();
       const agrixable = !!PROV;
       const useAgrix = API && agrixable;
-      /* 정보를 이미 끌어왔으면 그 항목은 아예 묻지 않는다.
-         위 카드에 '등록번호 · 상태 정상'이 떠 있는데 밑에서 또
-         "등록을 하셨나요?"라고 물으면, 확인한 것이 아니라 두 번 묻는 것이 된다.
+      /* 연동판에서는 '불러올 것'을 묻지 않는다 — 끌어오기 전에도 묻지 않는다.
+         불러오기 단추 바로 밑에서 "등록을 하셨나요?"를 또 물으면,
+         주민은 무엇을 해야 하는지 알 수 없다. 불러오면 알게 되는 것은 불러와서 안다.
          연동판에서 질문이 사라지는 그 모습 자체가 연동이 하는 일이다. */
-      const done = fields.filter(f => agrix && PROV && PROV.covers(f.k));
-      const rest = fields.filter(f => !done.includes(f));
+      const covered = f => useAgrix && PROV.covers(f.k);
+      const done = fields.filter(f => agrix && covered(f));
+      const rest = fields.filter(f => !covered(f));
       const qs = rest.map(f => {
         const label = window.SUBCFG ? SUBCFG.qText(f) : f.q;
         if (f.k === 'age' || f.k === 'farmArea')
@@ -154,6 +155,9 @@
         ? `<div class="sub-done">${PROV.icon} 위 정보로 <b>${done.length}가지</b>가 확인되어 여쭙지 않았습니다
              <span>${E(done.map(f => (window.SUBCFG && SUBCFG.FIELDS[f.k] && SUBCFG.FIELDS[f.k].label) || f.k).join(' · '))}</span></div>`
         : '';
+      /* 물을 것이 없고 아직 안 불러왔으면 [결과 보기]를 둘 이유가 없다 —
+         불러오기가 곧 결과다. 누를 수 없는 단추를 두면 그것부터 눌러 보게 된다. */
+      const needGo = rest.length > 0 || (!useAgrix) || !!agrix;
       m.innerHTML = `<div class="mbox">${head}
         <div class="sub-body">
           ${useAgrix && !agrix ? `<button type="button" id="subAgrix" class="sub-agrix">${PROV.icon} ${E(PROV.btn)}
@@ -163,11 +167,11 @@
             적어 주신 내용은 담당자가 나중에 대장과 대조합니다.</span></div>` : ''}
           ${agrix ? agrixCard(agrix) : ''}
           ${doneNote}
-          ${qs || (done.length
-            ? '<p class="sub-note">더 여쭐 것이 없습니다. 아래 [결과 보기]를 눌러 주세요.</p>'
+          ${qs || (useAgrix && !agrix
+            ? '<p class="sub-note">위 단추를 누르면 본인 확인을 거쳐 바로 결과를 보여 드립니다.</p>'
             : '<p class="sub-note">물을 항목이 없습니다.</p>')}
           ${rest.length ? '<div class="sub-note">답은 이 휴대폰에만 저장됩니다.</div>' : ''}</div>
-        ${foot('<button type="button" id="subGo" class="pri">결과 보기</button>')}</div>`;
+        ${foot(needGo ? '<button type="button" id="subGo" class="pri">결과 보기</button>' : '')}</div>`;
       wire();
       m.querySelectorAll('.sub-opts[data-k] button').forEach(b => {
         const k = b.parentElement.dataset.k;
@@ -176,7 +180,8 @@
           b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); };
       });
       const ab = m.querySelector('#subAgrix'); if (ab) ab.onclick = agrixFlow;
-      m.querySelector('#subGo').onclick = () => {
+      const go = m.querySelector('#subGo');
+      if (go) go.onclick = () => {
         m.querySelectorAll('input[data-k]').forEach(el => { a[el.dataset.k] = el.value; });
         const keep = { ...prof(), residency: a.residency, farm: a.farm, farming: a.farming,
                        gender: a.gender, biz: a.biz, farmArea: a.farmArea };
@@ -206,10 +211,33 @@
       wire();
       m.querySelectorAll('[data-p]').forEach(b => b.onclick = async () => {
         m.querySelector('.sub-body').innerHTML = '<p class="sub-note">본인 확인 중입니다…</p>';
-        agrix = await PROV.verify(+b.dataset.p);
+        const got = await PROV.verify(+b.dataset.p);
+        /* 대장에 없는 사람도 있다 — 그때는 '없다'고 말해 주고 담당과로 보낸다.
+           빈 화면이나 '해당 없음'으로 끝내면 왜 안 되는지 알 수 없다. */
+        if (!got || got.found === false) { renderNotFound(); return; }
+        agrix = got;
         Object.assign(a, PROV.toAnswers(agrix, fields));
-        renderAsk();
+        /* 불러온 것으로 다 채워졌으면 곧장 결과로 — 한 번 더 누르게 할 이유가 없다.
+           아직 물을 것이 남았을 때만 질문 화면으로 되돌아간다. */
+        const rest = fields.filter(f => !PROV.covers(f.k));
+        if (rest.length) renderAsk();
+        else renderResult(judgeFields(fields, a));
       });
+    }
+
+    /* 정보가 조회되지 않을 때 */
+    function renderNotFound() {
+      const tel = H.tel || '';
+      m.innerHTML = `<div class="mbox">${head}
+        <div class="sub-body">
+          <div class="sub-verdict ask">${PROV.icon} ${E(PROV.name)}가 확인되지 않습니다.</div>
+          <p class="sub-note">등록이 되어 있지 않거나, 이름·생년월일이 대장과 다를 수 있습니다.
+            등록을 하셨는데도 이렇게 나오면 담당과로 문의해 주세요.</p>
+          ${tel ? `<div class="sub-follow"><a class="callbtn" href="tel:${E(tel)}">📞 담당과 전화</a></div>` : ''}
+        </div>
+        ${foot('<button type="button" id="subRetry">다시 해 보기</button>')}</div>`;
+      wire();
+      m.querySelector('#subRetry').onclick = agrixFlow;
     }
 
     /* ── ② 결과 ── */
@@ -221,16 +249,16 @@
       const closed = endD && dday(endD, today) < 0;
       const full = false;   /* 정원은 서버가 접수 순간에 다시 센다 — 기기별로 세면 동시에 넘어간다 */
       const already = window.LABAPI ? LABAPI.mine(sub.id) : applyLog().some(r => r.id === sub.id);
-      let body = '', act = '';
+      let body = '';
       if (v.r === 'no') {
         body = `<div class="sub-verdict no">${E(v.fails.join(', '))} 조건에서 해당되지 않습니다.</div>
           <p class="sub-note">조건이 맞지 않아 온라인 접수는 열리지 않습니다.
             사정이 다르다고 보시면 담당과로 문의하세요.</p>
-          ${tel ? `<div class="sub-follow"><a class="callbtn" href="tel:${E(tel)}">📞 담당과 전화</a></div>` : ''}`;
+          ${tel ? `<div class="sub-acts"><a class="callbtn" href="tel:${E(tel)}">📞 담당과 전화</a></div>` : ''}`;
       } else if (v.r === 'ask') {
         body = `<div class="sub-verdict ask">자동으로 판단할 수 없습니다. 담당과에 문의하세요.<br>
             <span style="font-weight:400">확인이 필요한 것: ${E(v.unknown.join(', '))}</span></div>
-          ${tel ? `<div class="sub-follow"><a class="callbtn" href="tel:${E(tel)}">📞 담당과 전화</a></div>` : ''}`;
+          ${tel ? `<div class="sub-acts"><a class="callbtn" href="tel:${E(tel)}">📞 담당과 전화</a></div>` : ''}`;
       } else {
         let follow = '';
         if (endD) {
@@ -242,23 +270,34 @@
         if (sub.apply && sub.apply.documents && sub.apply.documents.length)
           follow += `<div>챙길 서류: ${E(sub.apply.documents.join(', '))}</div>`;
         if (cfg.note) follow += `<div>${E(cfg.note)}</div>`;
-        const canIcs = endD && !closed;
-        follow += `<div class="row">
-          ${tel ? `<a class="callbtn" style="flex:1" href="tel:${E(tel)}">📞 담당과 전화</a>` : ''}
-          ${canIcs ? `<button type="button" id="subIcs" class="callbtn" style="flex:1;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔔 마감 알림</button>` : ''}
-        </div>`;
         const src = apiMode() && agrix && PROV
           ? `<div class="sub-src ok">🔗 ${E(PROV.name)}로 확인한 결과입니다.</div>`
           : '<div class="sub-src">✋ 적어 주신 내용(본인 진술)만으로 본 결과입니다. 담당자가 서류로 다시 확인합니다.</div>';
+
+        /* ── 여기서 할 수 있는 일 세 가지 ──
+           예전에는 [온라인 신청]만 아래 발자리에 있고 전화·알림은 본문에 있어서,
+           같은 줄에 있어야 할 것이 두 군데로 갈라져 있었다. 한자리에 모은다. */
+        const canIcs = endD && !closed;
+        let why = '';
+        if (cfg.online) {
+          if (already) why = '이미 이 사업에 접수하셨습니다.';
+          else if (closed) why = '접수 기간이 지나 온라인 접수가 닫혔습니다.';
+          else if (full) why = `접수 정원(${cfg.capacity}명)이 찼습니다. 담당과로 문의하세요.`;
+        }
+        const canApply = cfg.online && !already && !closed && !full;
+        const acts = `<div class="sub-acts">
+          ${canApply ? '<button type="button" id="subApply" class="pri">📝 온라인 신청</button>' : ''}
+          <div class="row">
+            ${tel ? `<a class="callbtn" style="flex:1" href="tel:${E(tel)}">📞 담당과 전화</a>` : ''}
+            ${canIcs ? `<button type="button" id="subIcs" class="callbtn" style="flex:1;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔔 마감 알림</button>` : ''}
+          </div>
+          ${why ? `<p class="sub-note" style="margin-top:2px">${E(why)}</p>` : ''}
+        </div>`;
+
         body = `<div class="sub-verdict ok">해당될 수 있습니다. 신청 전에 담당과에 확인하세요.</div>
           ${src}
-          <div class="sub-follow">${follow}</div>`;
-        if (cfg.online) {
-          if (already) body += `<p class="sub-note">이미 이 사업에 접수하셨습니다. 아래 [내 접수 내역]에서 보실 수 있습니다.</p>`;
-          else if (closed) body += `<p class="sub-note">접수 기간이 지나 온라인 접수가 닫혔습니다.</p>`;
-          else if (full) body += `<p class="sub-note">접수 정원(${cfg.capacity}명)이 찼습니다. 담당과로 문의하세요.</p>`;
-          else act = '<button type="button" id="subApply" class="pri">📝 온라인 신청</button>';
-        }
+          ${follow ? `<div class="sub-follow">${follow}</div>` : ''}
+          ${acts}`;
       }
       m.innerHTML = `<div class="mbox">${head}
         <div class="sub-body">${body}
@@ -267,9 +306,10 @@
           <div class="sub-note">${sub.status !== 'reviewed'
             ? '계획서에서 자동으로 읽은 초안이에요. 최종 자격은 담당과 심사로 정해집니다.'
             : '최종 자격은 담당과 심사로 정해집니다.'}</div></div>
-        ${foot(act + '<button type="button" id="subBack">다시 답하기</button>')}</div>`;
+        ${foot(fields.some(f => !(apiMode() && PROV && PROV.covers(f.k)))
+          ? '<button type="button" id="subBack">다시 답하기</button>' : '')}</div>`;
       wire();
-      m.querySelector('#subBack').onclick = renderAsk;
+      const bk = m.querySelector('#subBack'); if (bk) bk.onclick = renderAsk;
       const ap = m.querySelector('#subApply'); if (ap) ap.onclick = renderApply;
       /* 정원이 있는 사업이면 몇 자리 남았는지 서버에 물어 본다.
          답이 늦게 와도 화면이 이미 넘어갔으면(다시 답하기 등) 붙이지 않는다. */

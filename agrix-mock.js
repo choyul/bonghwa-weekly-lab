@@ -21,6 +21,9 @@
     { no: '3145-2023-001190', name: '이서준', status: '휴업', statusAt: '2025-11-20',
       addr: '경상북도 안동시 풍천면', area: 0.85,
       crops: ['콩'], since: '2023-02-15', region: '안동시' },
+    /* 대장에 없는 사람 — 실제로 흔하다(등록을 안 했거나, 이름·생년월일이 다르거나).
+       화면이 이 경우를 말해 주지 않으면 주민은 왜 안 되는지 모른다. */
+    { name: '조회되지 않는 경우', found: false },
   ];
 
   function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -58,7 +61,7 @@
     id: 'agrix', icon: '🌱', name: '농업경영체 정보', org: '농산물품질관리원(가정)',
     btn: '농업경영체 정보 불러오기', btnSub: '등록 상태·경작 면적을 자동으로 채웁니다',
     SAMPLE, verify, toAnswers, covers,
-    pickLabel: s => `${s.name} · ${s.region} · ${s.area}ha`,
+    pickLabel: s => s.found === false ? `${s.name} — 대장에 없음` : `${s.name} · ${s.region} · ${s.area}ha`,
     cardRows: g => [
       ['등록번호', g.no, ''],
       ['상태', `${g.status} (${g.statusAt} 기준)`, g.status === '정상' ? 'ok' : 'no'],

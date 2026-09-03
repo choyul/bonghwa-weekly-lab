@@ -24,6 +24,8 @@
     { name: '이만수', quals: [], since: '',
       statusAt: '2026-06-02', addr: '경상북도 영주시 휴천동', region: '영주시',
       disab: false, singleP: false },
+    /* 전산에서 찾지 못하는 경우 — 화면이 말해 주지 않으면 왜 안 되는지 모른다 */
+    { name: '조회되지 않는 경우', found: false },
   ];
 
   function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -59,7 +61,8 @@
     id: 'welfare', icon: '🤝', name: '복지자격 정보', org: '사회보장정보(가정)',
     btn: '복지자격 정보 불러오기', btnSub: '수급·차상위 등 자격을 자동으로 확인합니다',
     SAMPLE, verify, toAnswers, covers,
-    pickLabel: s => `${s.name} · ${s.region} · ${s.quals.length ? s.quals.join(', ') : '자격 없음'}`,
+    pickLabel: s => s.found === false ? `${s.name} — 전산에 없음`
+      : `${s.name} · ${s.region} · ${s.quals.length ? s.quals.join(', ') : '자격 없음'}`,
     cardRows: g => [
       ['자격', g.quals.length ? g.quals.join(', ') : '해당 자격 없음', g.quals.length ? 'ok' : 'no'],
       ['기준일', g.statusAt, ''],

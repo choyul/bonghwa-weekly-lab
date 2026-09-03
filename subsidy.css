@@ -88,3 +88,10 @@ textarea.ap-in{min-height:70px}
  background:#E7F0FF;border:1px solid #BBD4F5;color:#1D5DBB;
  font-size:calc(13.5px*var(--fsx,1));font-weight:700;line-height:1.55}
 .sub-done span{display:block;font-size:calc(12.5px*var(--fsx,1));font-weight:500;margin-top:3px;opacity:.9}
+/* 결과 화면에서 할 수 있는 일 — 전화·마감 알림·온라인 신청을 한자리에 모은다.
+   예전에는 신청만 아래 발자리에 있어, 같은 줄에 있어야 할 것이 두 군데로 갈라져 있었다. */
+.sub-acts{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.sub-acts .row{display:flex;gap:8px}
+.sub-acts .pri{width:100%;min-height:48px;border:none;border-radius:12px;
+ background:var(--brand,#16A34A);color:#fff;font-family:inherit;font-weight:800;
+ font-size:calc(15.5px*var(--fsx,1));cursor:pointer}
