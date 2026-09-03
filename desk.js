@@ -664,27 +664,36 @@
   /* ═══ 나란히 비교 ═══ */
   function viewCompare() {
     const rows = ROWS.filter(r => !DONE(r.state));
-    const n = rows.length || 1;
     const wrong = ROWS.filter(r => r._truth && gap(r)).length;
     const tot = ROWS.filter(r => r._truth).length;
+    /* 합계는 건마다 제 분야 표로 센다 — 농업 6분, 복지 5분이 섞여 있다.
+       한 벌로 뭉뚱그리면 위 요약 카드의 숫자와 어긋난다. */
+    const sumMan = rows.reduce((a, r) => a + manualMin(checksOf(r)), 0);
+    const sumApi = rows.reduce((a, r) => a + apiMin(checksOf(r)), 0);
+    const nW = rows.filter(r => provOf(r) === 'welfare').length;
     const li = (k, auto) => `<li class="${auto ? 'auto' : 'hand'}">${E(k.t)} — ${auto ? '접수 때 자동으로 끝남' : `담당자가 함 (약 ${k.min}분)`}</li>`;
+    const pair = (set, name, icon) => `<div class="cmp" style="margin-bottom:10px">
+        <div class="col a"><div class="ch">✋ 수기판 — ${E(name)}</div>
+          <ol>${set.map(k => li(k, false)).join('')}</ol>
+          <div class="foot">한 건 <b>${manualMin(set)}분</b></div></div>
+        <div class="col b"><div class="ch">${icon} 연동판 — 정보가 붙어 있을 때</div>
+          <ol>${set.map(k => li(k, k.auto)).join('')}</ol>
+          <div class="foot">한 건 <b>${apiMin(set)}분</b></div></div>
+      </div>`;
     return `<div class="card">
       <h2>같은 접수 한 건, 두 가지 처리</h2>
-      <p class="lead">아래 다섯 가지는 어느 판에서든 반드시 해야 하는 대조입니다.
-        다른 것은 <b>누가 하느냐</b>뿐입니다.</p>
-      <div class="cmp">
-        <div class="col a"><div class="ch">✋ 수기판 — 지금 그대로</div>
-          <ol>${CHECKS.map(k => li(k, false)).join('')}</ol>
-          <div class="foot">한 건 <b>${MIN_MANUAL}분</b> · 미처리 ${rows.length}건이면 <b>${hhmm(rows.length * MIN_MANUAL)}</b></div></div>
-        <div class="col b"><div class="ch">🔗 연동판 — 경영체 정보가 붙어 있을 때</div>
-          <ol>${CHECKS.map(k => li(k, k.auto)).join('')}</ol>
-          <div class="foot">한 건 <b>${MIN_API}분</b> · 미처리 ${rows.length}건이면 <b>${hhmm(rows.length * MIN_API)}</b></div></div>
-      </div>
+      <p class="lead">아래 대조는 어느 판에서든 반드시 해야 합니다. 다른 것은 <b>누가 하느냐</b>뿐입니다.
+        분야가 달라도 <b>구조는 하나</b>입니다 — 연동되는 정보만 바뀝니다.</p>
+      ${pair(CHECKSETS.agrix, '농업 사업 (경영체)', '🌱')}
+      ${pair(CHECKSETS.welfare, '복지 사업 (수급 자격)', '🤝')}
       <div class="cost api" style="margin-top:12px">
-        미처리 ${rows.length}건 기준으로 <b>${hhmm(rows.length * (MIN_MANUAL - MIN_API))}</b>이 줄어듭니다.
+        미처리 ${rows.length}건${nW ? ` (복지 ${nW}건 포함)` : ''} 기준 —
+        수기판 <b>${hhmm(sumMan)}</b> → 연동판 <b>${hhmm(sumApi)}</b>,
+        <b>${hhmm(sumMan - sumApi)}</b>이 줄어듭니다.
         <div class="hint" style="color:inherit;opacity:.85">
-          다섯 가지 중 넷이 사라지고, <b>중복·기수혜 확인 1가지는 그대로 남습니다</b> —
-          우리 부서 지난 대장은 농관원이 알지 못합니다. 연동은 만능이 아니라 넷을 덜어 줄 뿐입니다.</div>
+          어느 분야든 <b>중복·기수혜 확인 1가지는 그대로 남습니다</b> —
+          우리 부서 지난 대장은 농관원도 복지 전산도 알지 못합니다.
+          연동은 만능이 아니라 사실 확인만 덜어 줍니다.</div>
       </div>
     </div>
 
@@ -692,10 +701,10 @@
       <h2>시간보다 중요한 것 — 틀린 채로 접수되는 건</h2>
       ${tot ? `<div class="stats">
         <div class="stat hot"><div class="n">${wrong}건</div><div class="l">적어 낸 내용과 대장이 다름</div></div>
-        <div class="stat"><div class="n">${tot}건</div><div class="l">경영체가 걸린 접수</div></div>
+        <div class="stat"><div class="n">${tot}건</div><div class="l">연동으로 확인되는 접수</div></div>
         <div class="stat blue"><div class="n">${Math.round(wrong / tot * 100)}%</div><div class="l">수기판에서 손으로 잡아내야 하는 몫</div></div>
       </div>
-      <p class="hint">수기판에서는 이 ${wrong}건이 <b>담당자가 대장을 열기 전까지 정상 접수로 보입니다.</b>
+      <p class="hint">수기판에서는 이 ${wrong}건이 <b>담당자가 대장·전산을 열기 전까지 정상 접수로 보입니다.</b>
         빠뜨리면 자격 없는 사람에게 보조금이 나가고, 나중에 환수해야 합니다.
         연동판에서는 접수 단추를 누르는 그 자리에서 걸러집니다.</p>
       <p class="hint">위 숫자는 시연 표본으로 센 것입니다 — [시연 표본 만들기]를 누르면 채워집니다.</p>`
@@ -706,17 +715,17 @@
       <h2>연동이 없어도 남는 일 — 정직하게</h2>
       <table class="spec">
         <tr><th>일</th><th>연동판</th><th>수기판</th></tr>
-        <tr><td>경영체 등록·상태·면적·소재지 대조</td><td><span class="pill api">자동</span></td><td><span class="pill man">손으로 5분</span></td></tr>
+        <tr><td>등록·자격·상태·소재지 대조<div style="font-size:11.5px;color:var(--faint)">농업은 경영체, 복지는 수급 자격</div></td>
+          <td><span class="pill api">자동</span></td><td><span class="pill man">손으로 4~5분</span></td></tr>
         <tr><td>중복·기수혜 확인</td><td><span class="pill man">손으로 1분</span></td><td><span class="pill man">손으로 1분</span></td></tr>
         <tr><td>사업별 특수 요건(교육 이수, 마을 추천 등)</td><td><span class="pill man">손으로</span></td><td><span class="pill man">손으로</span></td></tr>
         <tr><td>최종 선정·예산 배분</td><td><span class="pill man">사람이</span></td><td><span class="pill man">사람이</span></td></tr>
       </table>
       <p class="hint">연동은 심사를 대신하지 않습니다. <b>사실 확인만</b> 대신합니다.
         그런데 담당자 시간의 대부분이 거기에 들어갑니다.</p>
-      <p class="hint" style="margin-top:10px"><b>이 구조는 농업만의 것이 아닙니다.</b>
-        복지 사업이면 위 다섯 줄이 '수급 자격 전산 조회 → 자격 구분·기준일 → 주소지 → 중복·기수혜' 넉 줄로
-        바뀔 뿐, 뼈대는 같습니다 — 연동되는 정보가 경영체에서 수급 자격으로 바뀌는 것뿐입니다.
-        실제로 이 화면의 복지 표본 사업이 그렇게 돌아갑니다.</p>
+      <p class="hint" style="margin-top:10px"><b>그래서 문을 한 번 열면 분야마다 다시 씁니다.</b>
+        다만 문은 분야마다 따로 있습니다 — 농업은 농관원, 복지는 복지 전산.
+        군 담당자 혼자서는 같은 문을 몇 번이고 두드리게 됩니다.</p>
     </div>`;
   }
   function wireCompare() { }

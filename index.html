@@ -1848,6 +1848,12 @@ function init(){
   syncTopControls();
   window.scrollTo({top:0,behavior:'smooth'});
  }
+ /* ── 장터 문 닫기 ──
+    보조사업 접수 실증을 시연하는 자리라 장터가 곁길이 된다.
+    코드는 그대로 두고 들어가는 길(모드 탭·홈 카드)만 닫는다.
+    #market 주소로는 여전히 들어갈 수 있다 — 다시 열려면 여기만 true 로. */
+ const SHOW_MARKET=false;
+
  function buildModeTabs(){
   const wrap=document.querySelector('.bw-wrap'); if(!wrap||document.getElementById('modetabs'))return;
   const el=document.createElement('div'); el.className='modetabs'; el.id='modetabs';
@@ -1855,7 +1861,7 @@ function init(){
     <button type="button" data-m="work" class="on">📋 새소식</button>`
     +(EV.length?`<button type="button" data-m="event">🎪 행사</button>`:'')
     +(NEWS.length?`<button type="button" data-m="news">📰 언론속봉화</button>`:'')
-    +`<button type="button" data-m="market">🛒 장터</button>`;
+    +(SHOW_MARKET?`<button type="button" data-m="market">🛒 장터</button>`:'');
   wrap.insertBefore(el,wrap.firstChild);
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{
    if(b.dataset.m==='market'){ if(window.MARKET)MARKET.go('#market'); return; }
@@ -2309,7 +2315,7 @@ function init(){
 
  /* ── 홈 화면 '이번 주 장터' 카드 (§4-1) — 소식 카드와 같은 시각 언어 ── */
  async function buildMarketHome(){
-  if(!window.MARKET)return;
+  if(!SHOW_MARKET||!window.MARKET)return;
   const wrap=document.querySelector('.bw-wrap'); if(!wrap)return;
   const s=await MARKET.summary(); if(!s||!s.live)return;      /* 장터가 비면 카드도 없다 */
   let el=document.getElementById('mkHome');
