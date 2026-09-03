@@ -701,6 +701,14 @@ footer{font-size:calc(14px*var(--fsx))}
 .nw-note{font-size:calc(12.5px*var(--fsx))}
 .nw-search input{font-size:calc(15px*var(--fsx))}
 
+ .calhint{font-size:calc(12.5px*var(--fsx));color:var(--sub);text-align:center;line-height:1.45;margin:-2px 0 2px}
+ .calhint b{color:var(--acc)}
+ /* ── 공지사항 원문 바로가기 ── 눌러서 나가는 칸이라 화살표로 '나간다'를 알린다 */
+.nlink-row{display:block;padding:11px 12px;margin-top:7px;border:1px solid var(--line);border-radius:10px;
+ background:var(--paper);text-decoration:none;color:var(--ink)}
+.nlink-row:active{background:var(--bg)}
+.nlink-t{display:block;font-weight:700;line-height:1.45;font-size:calc(14.5px*var(--fsx))}
+.nlink-d{display:block;margin-top:4px;color:var(--sub);font-size:calc(12.5px*var(--fsx))}
 </style>
 <script>
 /* 안드로이드 계열은 '바탕화면에 추가' 안내를 페이지가 뜨자마자 한 번 보낸다.
@@ -757,14 +765,17 @@ body{padding-top:34px}
 <script src="market.js"></script>
 <script src="subsidy.js"></script>
 <script>
-/* data.js(필수) → notices.js(고시·공고) → events.js(주간행사) → news.js(봉화 뉴스) → init
-   뒤의 셋은 없거나 실패해도 화면은 뜬다 */
+/* data.js(필수) → notices.js(고시·공고) → events.js(주간행사) → news.js(봉화 뉴스)
+   → notice_links.js(공지사항 바로가기) → init
+   뒤의 넷은 없거나 실패해도 화면은 뜬다 */
 (function(){
  function load(src,cb){const s=document.createElement('script');s.src=src;s.onload=cb;s.onerror=cb;document.head.appendChild(s)}
  load('data.js?v='+Date.now(), function(){
   load('notices.js?v='+Date.now(), function(){
    load('events.js?v='+Date.now(), function(){
-    load('news.js?v='+Date.now(), init);
+    load('news.js?v='+Date.now(), function(){
+     load('notice_links.js?v='+Date.now(), init);
+    });
    });
   });
  });
@@ -855,6 +866,72 @@ function init(){
  const UA=navigator.userAgent;
  const inApp=/KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\//i.test(UA);
  const isKakao=/KAKAOTALK/i.test(UA);
+ const isIOS=/iPhone|iPad|iPod/.test(UA)||(/Macintosh/.test(UA)&&navigator.maxTouchPoints>1);
+
+ function gcalUrl(iss){
+  const c=tag(iss), r=BW.parseDateRange(c.item,c.week);
+  const start=r.start||r.end, end=r.end||r.start;
+  const t=timeOf(c.item);
+  let dates;
+  if(t){
+   const ed=new Date(BW.d2(start).getFullYear(),BW.d2(start).getMonth(),BW.d2(start).getDate(),t.h+1,t.mi);
+   dates=icsD(start)+'T'+pad(t.h)+pad(t.mi)+'00/'+icsD(BW.ymd(ed))+'T'+pad(ed.getHours())+pad(ed.getMinutes())+'00';
+  }else dates=icsD(start)+'/'+icsD(BW.ymd(BW.addD(BW.d2(end),1)));
+  const placeLine=c.item.lines.find(l=>/^(장\s*소|위\s*치)/.test(l.txt));
+  const loc=placeLine?placeLine.txt.replace(/^[^:：]*[:：]\s*/,'').trim():'';
+  const p=new URLSearchParams({action:'TEMPLATE',text:'[봉화군] '+iss.title,dates,
+   details:iss.dept+' · '+(iss._icsNote||'봉화군 주간업무 안내\n계획 단계 정보라 실제 일정과 다를 수 있습니다.'),
+   ctz:'Asia/Seoul'});
+  if(loc)p.set('location',loc);
+  return 'https://calendar.google.com/calendar/render?'+p.toString();
+ }
+
+ async function addViaFile(ics,fname){
+  const file=new File([ics],fname,{type:'text/calendar'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+   try{await navigator.share({files:[file],title:'봉화군 일정'});return true}
+   catch(err){if(err&&err.name==='AbortError')return false}   /* 사용자가 취소 */
+  }
+  downloadICS(ics,fname);
+  BWUI.toast('파일이 열리면 [추가]를 누르면 캘린더에 들어갑니다');
+  return true;
+ }
+
+ function iosCalModal(iss,base){
+  let m=document.getElementById('iosCalModal');
+  if(!m){m=document.createElement('div');m.id='iosCalModal';m.className='modal';document.body.appendChild(m)}
+  m.innerHTML=`<div class="mbox">
+    <h2>달력에 추가</h2>
+    <div class="note">저장해 두면 날짜 전에 휴대폰이 알려 줍니다.</div>
+    <div style="padding:4px 18px 2px;display:flex;flex-direction:column;gap:8px">
+     <button class="callbtn" id="icApple">🍎 아이폰 캘린더에 추가</button>
+     <button class="callbtn" id="icGoogle" style="background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">📅 구글 캘린더에 추가</button>
+    </div>
+    <div class="mfoot"><span style="flex:1"></span><button id="icClose">닫기</button></div>
+  </div>`;
+  m.classList.add('open');
+  const close=()=>m.classList.remove('open');
+  m.querySelector('#icClose').onclick=close;
+  m.onclick=e=>{if(e.target===m)close()};
+  m.querySelector('#icApple').onclick=async()=>{
+   AA('캘린더담기_아이폰','',iss.title);
+   if(await addViaFile(buildICS([iss]),base+'.ics'))close();
+  };
+  m.querySelector('#icGoogle').onclick=()=>{
+   AA('캘린더담기_구글','',iss.title);
+   window.open(gcalUrl(iss),'_blank','noopener'); close();
+  };
+ }
+
+ function quickCal(iss,base){
+  if(!icsEvent(iss)){BWUI.toast('알림 받을 일정이 없어요 — 날짜가 지났거나 정해지지 않았습니다');return}
+  if(inApp){calModal([iss],base);return}          /* 인앱 안내·기록은 calModal 이 맡는다 */
+  AV('알림받기','',iss.title);
+  if(isIOS){iosCalModal(iss,base);return}
+  AA('캘린더담기_구글','',iss.title);
+  window.open(gcalUrl(iss),'_blank','noopener');
+  BWUI.toast('구글 캘린더가 열립니다 — [저장]을 누르면 달력에 담겨요');
+ }
 
  function calModal(list,base){
   AV('알림받기','', list.length===1?list[0].title:(list.length+'건'));
@@ -1281,6 +1358,22 @@ function init(){
   if((S.scope||'')!==AS_s){ AS_s=S.scope||''; AA('기간바꾸기',AS_s); }
  }
 
+ /* ── 소식 ↔ 봉화군 공지사항 짝짓기 ──
+    짝짓기는 화면이 아니라 build/link_notices.js 가 미리 해 둔다.
+    여기서는 '부서|제목열쇠'로 찾아, 최근 것부터 세 건까지만 낸다. */
+ const NL=window.BW_NLINKS||{map:{}};
+ const NLBASE=NL.base||'https://www.bonghwa.go.kr/portal/board/post/view.do?bcIdx=100&mid=0201010000&idx=';
+ function linksOf(iss){
+  const m=NL.map||{}, out=[], seen={};
+  (iss.list||[]).forEach(o=>{
+   (m[o.dept+'|'+BW.normKey(o.item.title)]||[]).forEach(x=>{
+    if(seen[x.i])return; seen[x.i]=1; out.push(x);
+   });
+  });
+  out.sort((a,b)=>a.d<b.d?1:-1);      /* 최근에 올라온 글부터 */
+  return out.slice(0,3);
+ }
+
  BWUI.start({
   role:'public', title:'오늘의 봉화',
   /* 1주 = 달력 주(일~토). 주간계획은 월~일 단위로 실리지만, 군민에게는 달력이 익숙하다 */
@@ -1363,6 +1456,8 @@ function init(){
   /* 카드 한 줄에 언제·어디서·누구 */
   /* 담아 둔 것인지는 딱지로만 알린다(누르는 칸이 아니다) */
   cardFav:iss=>!!fav[iss._id],
+  /* 원문·신청서식이 딸려 있다는 알림 — 누르는 칸이 아니라 표시라 무채 테두리다 */
+  cardTags:iss=>linksOf(iss).length?[{cls:'notice',text:'📄 공지사항'}]:[],
 
   /* 마감이 얼마나 급한지 — 카드 맨 앞 딱지. 색이 진할수록 급하다.
      'D-2' 같은 약어를 안 쓰고 '2일 전' 으로 적는다(어르신에게 D-day 가 안 읽힌다).
@@ -1446,14 +1541,40 @@ function init(){
    return out;
   },
 
+  /* 본문 바로 밑 — 읽고 나서 '그래서 어디서 신청하나'가 나올 자리다.
+     제목·등록일을 함께 보여 준다. 짝이 잘못 붙었더라도 누르기 전에 알아볼 수 있게. */
+  afterContent(iss,body){
+   const ls=linksOf(iss); if(!ls.length)return;
+   const kd=d=>{const[y,m,dd]=d.split('-');return `${y}. ${+m}. ${+dd}.`};
+   /* 짝짓기가 제목이 거의 같은 글만 남기므로, 한 건일 때 공지 제목을 또 적으면
+      바로 위 시트 제목과 중복이다 — 할 일만 적는다.
+      여러 건일 때는 어느 글인지 갈라야 하니 제목을 남긴다. */
+   body.insertAdjacentHTML('beforeend',`
+    <div class="blk nlink">
+     <h3>봉화군 공지사항 원문</h3>
+     ${ls.length===1
+      ?`<a class="nlink-row" href="${E(NLBASE+ls[0].i)}" target="_blank" rel="noopener" data-nl="0">
+         <span class="nlink-t">📄 원문·신청서식(첨부) 보러 가기</span>
+         <span class="nlink-d">${E(kd(ls[0].d))} 등록 · 봉화군 홈페이지 &rsaquo;</span></a>`
+      :ls.map((x,i)=>`<a class="nlink-row" href="${E(NLBASE+x.i)}" target="_blank" rel="noopener" data-nl="${i}">
+         <span class="nlink-t">${E(x.t)}</span>
+         <span class="nlink-d">${E(kd(x.d))} 등록 · 봉화군 홈페이지 &rsaquo;</span></a>`).join('')}
+    </div>`);
+   body.querySelectorAll('[data-nl]').forEach(a=>a.addEventListener('click',()=>
+    AA('공지사항원문','소식:'+uidHash(iss._id),ls[+a.dataset.nl].t)));
+  },
+
   detailFooter(iss){
    const tel=phoneOf(iss.dept)||'054-679-6114';
    const canRemind=!!buildICS([iss]);
+   /* 단추 이름은 '무엇이 일어나는가'로 적는다 — 「알림 받기」인데 달력이 열리면
+      기대가 어긋난다(사용자 지적). 왜 하는지는 단추 밑 한 줄이 맡는다. */
    return `<div style="display:flex;flex-direction:column;gap:8px">
      <div style="display:flex;gap:8px">
-      ${canRemind?`<button class="callbtn" id="remindBtn" style="flex:1;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔔 알림 받기</button>`:''}
+      ${canRemind?`<button class="callbtn" id="remindBtn" style="flex:1;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">📅 달력에 저장</button>`:''}
       <a class="callbtn" href="tel:${tel}" style="flex:1">📞 문의</a>
      </div>
+     ${canRemind?`<div class="calhint">달력에 저장해 두면 <b>마감 전날</b> 휴대폰이 알려 줍니다</div>`:''}
      <div style="display:flex;gap:8px">
       <button class="callbtn" id="favBtn" style="flex:1"></button>
       <button class="callbtn" id="shareBtn" style="flex:1;background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">🔗 공유하기</button>
@@ -1465,7 +1586,7 @@ function init(){
    if(b)b.onclick=()=>{
     if(!fav[iss._id]){fav[iss._id]={at:BW.ymd(new Date())};saveFav();
                       paintFav(foot.querySelector('#favBtn'),iss._id);BWUI.api.render()}  /* 알림 걸면 관심에도 담김 */
-    calModal([iss],'봉화군_'+iss.title.replace(/[^가-힣0-9a-zA-Z]/g,'').slice(0,14));
+    quickCal(iss,'봉화군_'+iss.title.replace(/[^가-힣0-9a-zA-Z]/g,'').slice(0,14));
    };
    /* 관심 담기 — 목록에서 뺀 별표를 여기에 글씨 있는 단추로 둔다.
       시트를 다시 그리면 읽던 자리를 잃으므로 단추 모양만 바꾼다. */
@@ -2670,6 +2791,23 @@ function init(){
   /* 검색은 맨 위 공통 검색칸(psearch)이 맡는다 — 이 칸은 CSS 로 감춰 두고 자리만 남긴다.
      두 개를 함께 두면 어느 쪽이 듣는지 알 수 없어 반드시 헷갈린다. */
  }
+ /* ── 뉴스만의 기간 예외 ──
+    기사는 하루에 한두 건이라, 공통 기간을 그대로 쓰면 화면이 빈 채로 열린다.
+    ① 하루를 고르면 그 앞 6일까지 함께 본다.
+    ② '1주'가 이번 주면 일요일~토요일 대신 '오늘부터 지난 7일'로 본다
+       (주 초에는 구간의 대부분이 앞날이라 0건이 된다). */
+ function nwWindow(){
+  const S=BWUI.api.state, today=BWUI.api.today;
+  const back6=d=>BW.ymd(new Date(BW.d2(d).getTime()-6*864e5));
+  if(S.scope==='day'){ const day=S.day||today; return {kind:'day', day, from:back6(day), to:day}; }
+  if(S.scope==='week'&&VIEW_WEEK===HOME_WEEK) return {kind:'week7', day:null, from:back6(today), to:today};
+  return null;
+ }
+ function nwPool(){
+  const w=nwWindow();
+  return w ? NEWS.filter(n=>n.d>=w.from&&n.d<=w.to) : NEWS.filter(n=>inPeriod(n.d));
+ }
+
  function renderNews(){
   const box=document.getElementById('nwBody'); if(!box)return;
   const nwDate=d=>{const x=BW.d2(d);return `${x.getMonth()+1}.${x.getDate()}.(${BW.DOW[x.getDay()]})`;};
@@ -2683,7 +2821,8 @@ function init(){
   /* 기간은 맨 위 공통 UI가 정한다. 검색도 같은 칸(psearch)을 쓴다. */
   const St=BWUI.api.state;
   nwQ=(St.q||'').trim();
-  const POOL=NEWS.filter(n=>inPeriod(n.d));
+  const POOL=nwPool();
+  const WIN=nwWindow();             /* 뉴스만의 기간 예외 — 하루 / 이번 주(=지난 7일), 아니면 null */
   /* 기간이나 검색어가 바뀌면 '더 보기'로 펼쳐 둔 것을 처음으로 되돌린다 */
   const nsig=JSON.stringify([St.scope,St.day,St.month,St.from,St.to,VIEW_WEEK,nwQ]);
   if(nsig!==nwSig){ nwSig=nsig; nwLimit=10; }
@@ -2711,12 +2850,25 @@ function init(){
    rows.forEach(n=>used.add(n.id));
    if(rows.length)secs.push([title,rows]);
   };
-  take('📰 오늘의 뉴스',       n=>n.d===today);
-  take('🆕 내가 놓친 뉴스',    n=>missed.has(n.id));
-  take('🗓️ 지난 1주일',        n=>n.ts>=weekAgo);
-  take('📁 그 이전',           n=>true);
-  /* 기간을 좁혀 놓으면 묶음이 하나만 남는 일이 잦다 — 그럴 땐 제목을 기간 이름으로 바꾼다 */
-  if(secs.length===1)secs[0][0]='📰 '+periodWord()+' 봉화 소식';
+  if(WIN&&WIN.kind==='day'){
+   /* 하루를 고른 경우 — 그날 것을 먼저, 그 앞 1주일을 이어서 (한 화면에 같이 나온다) */
+   const isToday=WIN.day===today;
+   take(isToday?'📰 오늘의 뉴스':`📰 ${nwDate(WIN.day)} 뉴스`, n=>n.d===WIN.day);
+   take('🆕 내가 놓친 뉴스', n=>missed.has(n.id));
+   take(isToday?'🗓️ 지난 1주일':'🗓️ 그 전 1주일', n=>true);
+  }else if(WIN){
+   /* '1주' — 이번 주 구간 대신 오늘부터 지난 7일 */
+   take('📰 오늘의 뉴스',   n=>n.d===today);
+   take('🆕 내가 놓친 뉴스', n=>missed.has(n.id));
+   take('🗓️ 지난 7일',      n=>true);
+  }else{
+   take('📰 오늘의 뉴스',       n=>n.d===today);
+   take('🆕 내가 놓친 뉴스',    n=>missed.has(n.id));
+   take('🗓️ 지난 1주일',        n=>n.ts>=weekAgo);
+   take('📁 그 이전',           n=>true);
+   /* 기간을 좁혀 놓으면 묶음이 하나만 남는 일이 잦다 — 그럴 땐 제목을 기간 이름으로 바꾼다 */
+   if(secs.length===1)secs[0][0]='📰 '+periodWord()+' 봉화 소식';
+  }
 
   let budget=nwLimit, html='', shown=0, total=POOL.length;
   for(const [title,rows] of secs){
@@ -2726,7 +2878,7 @@ function init(){
           <div class="nw-list">${part.map(card).join('')}</div>`;
   }
   if(!html){
-   html=`<div class="nw-list"><div class="nw-empty">${periodWord()}에는 올라온 소식이 없어요<br>
+   html=`<div class="nw-list"><div class="nw-empty">${WIN?(WIN.kind==='day'?'최근 1주일':'지난 7일'):periodWord()}에는 올라온 소식이 없어요<br>
      <span style="font-size:12.5px">위에서 기간을 넓혀 보세요</span></div></div>`;
   }else if(shown<total){
    html+=`<button class="morebtn" id="nwMore">${total-shown}건 더 보기</button>`;
