@@ -270,8 +270,9 @@
         if (sub.apply && sub.apply.documents && sub.apply.documents.length)
           follow += `<div>챙길 서류: ${E(sub.apply.documents.join(', '))}</div>`;
         if (cfg.note) follow += `<div>${E(cfg.note)}</div>`;
-        const src = apiMode() && agrix && PROV
-          ? `<div class="sub-src ok">🔗 ${E(PROV.name)}로 확인한 결과입니다.</div>`
+        /* 연동으로 확인한 건은 바로 밑 카드가 이미 출처를 말하고 있다 —
+           같은 말을 한 줄 더 얹지 않는다. 본인 진술만은 밝혀 둔다(대신 말해 줄 카드가 없다). */
+        const src = (apiMode() && agrix && PROV) ? ''
           : '<div class="sub-src">✋ 적어 주신 내용(본인 진술)만으로 본 결과입니다. 담당자가 서류로 다시 확인합니다.</div>';
 
         /* ── 여기서 할 수 있는 일 세 가지 ──
@@ -375,9 +376,11 @@
         </div>
         <label class="ap-lab">얼마나 신청하시겠어요?${q.unit ? ` (${E(q.unit)})` : ''}</label>
         <input class="ap-in" id="apQty" type="number" min="0" step="any" inputmode="decimal"
+          value="${cap != null ? cap : ''}"
           placeholder="${cap != null ? '최대 ' + cap : '숫자로 적어 주세요'}">
         <div class="ap-cap" id="apCap">${cap != null
-          ? `${cap}${E(q.unit || '')}까지 적으실 수 있습니다.` : ''}</div>
+          ? `한도만큼 적어 두었습니다. <b>덜 필요하시면 고쳐 주세요.</b>`
+          : ''}</div>
         <div class="ap-cap warn">신청한 수량이 그대로 나가지는 않습니다.
           <b>면적과 예산에 맞춰 자동으로 조정</b>되며, 최종 수량은 담당과 심사로 정해집니다.
           ${q.note ? E(q.note) : ''}</div>` : '';
@@ -386,8 +389,7 @@
       const dleft = endD ? dday(endD, today) : null;
       /* 결과 화면을 건너뛰고 왔으므로, 무엇으로 자격이 확인됐는지를 여기 얹는다 */
       const okLine = (apiMode() && agrix && PROV)
-        ? `<div class="ap-ok">✅ 자격이 확인되었습니다
-             <span>🔗 ${E(PROV.name)}로 확인했습니다</span></div>` + agrixCard(agrix)
+        ? '<div class="ap-ok">✅ 자격이 확인되었습니다</div>' + agrixCard(agrix)
         : `<div class="ap-ok self">✅ 신청하실 수 있습니다
              <span>✋ 적어 주신 내용 기준입니다. 담당자가 서류로 다시 확인합니다.</span></div>`;
       m.innerHTML = `<div class="mbox">${head}
@@ -404,6 +406,8 @@
             적어 주신 내용을 이 사업 심사에 쓰는 데 동의합니다. 심사가 끝나면 지웁니다.</label>` : ''}
           <div class="sub-acts" style="margin-top:16px">
             <button type="button" id="apGo" class="pri">📨 신청서 제출</button>
+            ${H.tel ? `<a class="callbtn" href="tel:${E(H.tel)}"
+              style="background:var(--paper);color:var(--acc);border:1.5px solid var(--acc)">📞 담당과에 문의하기</a>` : ''}
           </div>
           <div class="sub-note">보내신 내용은 담당과가 확인합니다. 최종 자격은 담당과 심사로 정해집니다.</div>
         </div>
