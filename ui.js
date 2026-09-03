@@ -199,7 +199,13 @@
   function ongoingExtra(shown) {
     const b = periodBounds(); if (!b) return [];
     const seen = new Set(shown.map(i => i._id));
-    const out = ISSUES.filter(i => !seen.has(i._id) && periodOverlaps(i, b[0], b[1]) && matchesExceptRange(i));
+    /* 담당자가 온라인 접수를 열어 둔 건은 계획서의 기간과 상관없이 끌어온다.
+       계획서에 적힌 기간은 '사업 기간'이라 '접수 기간'과 다르다 — 그것만 보면
+       담당자가 접수를 켜 놓아도 목록에 뜨지 않아, 주민이 찾을 수가 없다.
+       (CFG.alwaysOngoing 을 주지 않는 화면은 예전 그대로 돈다) */
+    const open = CFG.alwaysOngoing || (() => false);
+    const out = ISSUES.filter(i => !seen.has(i._id) && matchesExceptRange(i)
+      && (periodOverlaps(i, b[0], b[1]) || open(i)));
     /* 마감이 가까운 것부터 — 끝나는 날이 없는 상시 사업은 뒤로 */
     const endOf = i => (i._range && !i._range.openEnded && (i._range.end || i._range.start)) || '9999-12-31';
     out.sort((a, c) => endOf(a) < endOf(c) ? -1 : endOf(a) > endOf(c) ? 1 : 0);

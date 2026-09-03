@@ -572,7 +572,10 @@
       btn.disabled = false; btn.textContent = old;
     }
 
-    renderAsk();
+    /* 물을 것도 없고 불러올 것도 없는 사업 — 담당자가 조건 없이 접수만 연 경우다.
+       그럴 때 문답 화면을 빈 채로 띄우고 [결과 보기]를 누르게 할 이유가 없다. */
+    if (!fields.length && !(apiMode() && PROV)) renderResult(judgeFields(fields, a));
+    else renderAsk();
     m.classList.add('open');
   }
 
@@ -587,12 +590,16 @@
   const askable = it => { const c = cfgOf(it);
     return (c.fields || []).some(f => f.on !== false) || !!c.online; };
   const onlineOK = it => !!cfgOf(it).online;
-  const okKeys = new Set(DATA.filter(askable).map(i => i.issueKey));
   /* 카드 제목만으로는 같은 사업의 다른 연도와 헷갈린다 — 현안 키로 맞춘다 */
   let titleSet = null, onlineTitles = null;
-  const onlineKeys = new Set(DATA.filter(onlineOK).map(i => i.issueKey));
+  /* 어느 사업에 표식을 달지는 '설정'에서 나온다. 그 설정은 서버에서 늦게 온다.
+     예전에는 이 목록을 파일을 읽는 순간 한 번만 만들어서, 설정이 도착해도
+     표식이 그대로였다 — 담당자가 접수를 켠 사업에 '바로 접수'가 안 붙던 까닭이다.
+     그래서 titleSet 을 다시 만들 때마다 이 목록도 같이 다시 만든다. */
   function reviewedTitles() {
     if (titleSet || !window.BWUI || !BWUI.api || !BWUI.api.issues) return titleSet;
+    const okKeys = new Set(DATA.filter(askable).map(i => i.issueKey));
+    const onlineKeys = new Set(DATA.filter(onlineOK).map(i => i.issueKey));
     titleSet = new Set(BWUI.api.issues.filter(i => okKeys.has(i.key)).map(i => i.title.trim()));
     onlineTitles = new Set(BWUI.api.issues.filter(i => onlineKeys.has(i.key)).map(i => i.title.trim()));
     return titleSet;
@@ -603,6 +610,11 @@
   if (window.LABAPI && window.SUBCFG) LABAPI.pullCfg().then(r => {
     SUBCFG.setAll(r.cfg);
     titleSet = null;                       /* 표식을 다시 계산 */
+    /* 이미 '표식 붙임'으로 도장 찍힌 카드에서 도장을 떼어 다시 붙게 한다 */
+    document.querySelectorAll('#bwCards .card h3[data-sub-mark]').forEach(h => {
+      delete h.dataset.subMark;
+      const b = h.querySelector('.sub-badge'); if (b) b.remove();
+    });
     /* 엔진이 아직 시작 전이면 기다렸다 다시 그린다 —
        설정을 먼저 받아 놓고 render() 를 부르면 CFG 가 없어 터진다 */
     (function redraw(n) {

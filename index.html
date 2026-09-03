@@ -753,7 +753,7 @@ body{padding-top:34px}
 </footer>
 <script src="analytics.js?v=dc629450"></script>
 <script src="core.js?v=65e6c932"></script>
-<script src="ui.js?v=f0fc3d68"></script>
+<script src="ui.js?v=9424b2a6"></script>
 <script src="subsidy-data.js?v=3c432162"></script>
 <script src="lab-api.js?v=8c14d9d6"></script>
 <script src="lab-mode.js?v=1c61a422"></script>
@@ -763,7 +763,7 @@ body{padding-top:34px}
 <script src="market-config.js?v=32e76b0d"></script>
 <script src="market-api.js?v=74d7a6c8"></script>
 <script src="market.js?v=c03da242"></script>
-<script src="subsidy.js?v=b4590a6e"></script>
+<script src="subsidy.js?v=627b1eb1"></script>
 <script>
 /* data.js(필수) → notices.js(고시·공고) → events.js(주간행사) → news.js(봉화 뉴스)
    → notice_links.js(공지사항 바로가기) → init
@@ -1383,10 +1383,17 @@ function init(){
   ongoingSection:true,
   /* 군민이 신청·참여할 수 있는 일과 군청 내부 행정을 가르는 기준.
      갈래 탭이 이 기준으로 [신청·참여 | 군정 소식]을 나눈다. */
-  splitAdmin:iss=>tag(iss).score>0,
+  /* 신청·참여인가 군정 소식인가 — 계획서 글로 가늠하되,
+     담당자가 온라인 접수를 열어 둔 건은 그것이 곧 답이다.
+     글로만 가늠하면 담당자가 접수를 켜 놓아도 '군정 소식' 쪽에 숨는다. */
+  splitAdmin:iss=>tag(iss).score>0
+    ||!!(window.BWLAB_SUBSIDY&&BWLAB_SUBSIDY.canApplyNow(iss)),
   /* 갈래 탭 — 한 번에 한 갈래만 보여 목록이 두루마리가 되지 않게 한다 */
   groupTabs:true,
   canApplyNow:iss=>!!(window.BWLAB_SUBSIDY&&BWLAB_SUBSIDY.canApplyNow(iss)),
+  /* 담당자가 접수를 열어 둔 건은 계획서 기간이 지났어도 목록에 올린다 —
+     안 그러면 접수를 켜 놓고도 주민이 그 사업을 찾을 수 없다 */
+  alwaysOngoing:iss=>!!(window.BWLAB_SUBSIDY&&BWLAB_SUBSIDY.canApplyNow(iss)),
   profileMatch:iss=>{
    const a=PROF.aud[0]; if(!a||a==='주민 누구나')return false;
    const e=MERGED_AUD.find(x=>x[0]===a);
