@@ -53,6 +53,20 @@ textarea{min-height:120px;font-size:12.5px;line-height:1.5;font-family:ui-monosp
 .prev .q{font-weight:800;font-size:14.5px;margin:10px 0 5px}
 .prev .o{display:flex;gap:6px;flex-wrap:wrap}
 .prev .o span{border:1px solid var(--line);border-radius:100px;padding:5px 12px;font-size:13px;background:var(--paper)}
+/* ── 고른 사업의 내용 ── 설정을 정하기 전에 읽는 자리다. 원문을 그대로 보인다 */
+.what-h{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:2px}
+.what-h b{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.what-h span{font-size:12.5px;color:var(--faint)}
+.what-raw{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:10px}
+.what-raw p{margin:0 0 5px;font-size:13.5px;line-height:1.6;word-break:keep-all}
+.what-raw p:last-child{margin-bottom:0}
+.what-raw p.l2{padding-left:14px;color:var(--sub);font-size:13px}
+.what-raw p b{color:var(--ink);font-weight:700}
+.what-cond{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.what-cond .c{font-size:12px;font-weight:700;border-radius:100px;padding:3px 10px;
+ background:var(--acc-soft);color:#0F7A38}
+.what-cond .c.none{background:var(--bg);color:var(--faint);font-weight:600}
+.what-wait{font-size:13px;color:var(--faint);padding:6px 0}
 table.spec{width:100%;border-collapse:collapse;font-size:13px}
 table.spec th,table.spec td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:middle}
 table.spec th{color:var(--sub);font-size:12px;font-weight:700;background:var(--bg)}
@@ -94,6 +108,12 @@ table.spec .fix{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:
   </div>
 
   <div id="editor" style="display:none">
+    <div class="card" id="whatCard">
+      <h2 style="margin-top:0">이 사업은 무엇인가</h2>
+      <p class="hint" style="margin:0 0 10px">내용을 보고 정하세요. 아래 설정은 이 글에서 읽어 낸 것을 기본값으로 채워 둔 것입니다.</p>
+      <div id="whatBody"></div>
+    </div>
+
     <div class="card">
       <h2 style="margin-top:0">① 무엇을 물을까요</h2>
       <div id="fields"></div>
@@ -191,6 +211,7 @@ table.spec .fix{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:
 </div>
 </div>
 
+<!-- 주간업무 원문(data.js)은 3MB 라 뒤에서 받는다. 목록은 그 전에 먼저 뜬다. -->
 <script src="subsidy-data.js?v=3c432162"></script>
 <script src="lab-api.js?v=8c14d9d6"></script>
 <script src="subsidy-config.js?v=14ddd09b"></script>
@@ -218,6 +239,67 @@ table.spec .fix{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:
  $('#code').onkeydown=e=>{if(e.key==='Enter')enter()};
  try{ if(sessionStorage.getItem(GKEY)==='1')show(); }catch(e){}
 
+ /* ── 주간업무 원문 ──
+    설정을 정하기 전에 사업 내용을 읽어야 한다. 원문은 data.js 에 있는데 3MB 라
+    화면을 막지 않도록 뒤에서 받는다. 도착하기 전에는 '불러오는 중'이라고 적고,
+    도착하면 열려 있는 사업의 내용을 그 자리에서 채워 넣는다. */
+ let OCC=null;
+ (function(){ const sc=document.createElement('script');
+   sc.src='data.js?v='+Date.now();
+   sc.onload=()=>{ OCC=(window.BW_DATA&&BW_DATA.occ)||[]; if(cur)renderWhat(); };
+   sc.onerror=()=>{ OCC=[]; if(cur)renderWhat(); };
+   document.head.appendChild(sc); })();
+
+ /* 사업 하나의 원문 — 주차·부서·제목 셋이 다 맞는 것을 찾는다(427건 모두 맞는다) */
+ function occOf(it){
+  if(!OCC)return null;
+  return OCC.find(o=>o.week===it.week&&o.dept===it.dept&&o.item.title===it.title)||null;
+ }
+
+ /* 자동으로 읽어 낸 조건을 사람이 읽는 말로 — 무엇을 근거로 기본값이 정해졌는지 보이게 */
+ function condWords(c){
+  const w=[];
+  if(c.ageMin!=null||c.ageMax!=null)
+   w.push('나이 '+[c.ageMin!=null?c.ageMin+'세 이상':'',c.ageMax!=null?c.ageMax+'세 '+(c.ageMaxInclusive?'이하':'미만'):'']
+     .filter(Boolean).join(' ~ '));
+  if(c.residency)w.push(c.residency+' 거주');
+  if(c.needsFarmRegistry)w.push('농업경영체 등록');
+  if(c.needsFarming)w.push('계속 영농종사');
+  /* 0ha 이상은 조건이 아니다 — 자동 추출이 단위를 놓친 것이라(1,000㎡ → 0)
+     딱지로 내면 오히려 헷갈린다. 원문에 적힌 실제 면적을 담당자가 보고 정하면 된다. */
+  if(c.farmAreaMin)w.push('경작 면적 '+c.farmAreaMin+'ha 이상');
+  if(c.gender)w.push(c.gender);
+  if(c.needsBizRegistry)w.push('사업자등록');
+  if(c.hasIncomeRule)w.push('소득 기준 있음');
+  if(c.subsidyRate!=null)w.push('보조율 '+c.subsidyRate+'%');
+  if(c.selfPayRate!=null)w.push('자부담 '+c.selfPayRate+'%');
+  if(c.applyStart||c.applyEnd)w.push('접수 '+[c.applyStart||'',c.applyEnd||''].join(' ~ '));
+  return w;
+ }
+
+ function renderWhat(){
+  const box=$('#whatBody'); if(!box||!cur)return;
+  const o=occOf(cur);
+  const lines=o?o.item.lines:null;
+  const cw=condWords(cur.conditions);
+  box.innerHTML=`
+   <div class="what-h"><b>${E(cur.title)}</b>
+     <span>${E(cur.dept)} · ${E(cur.week)} 주간업무${o&&o.sec?' · '+E(o.sec):''}</span></div>
+   ${lines
+     ? `<div class="what-raw">${lines.map(l=>`<p class="${l.lv>1?'l2':''}">${
+         E(l.txt).replace(/^([^:：]{2,10})([:：])/,'<b>$1</b>$2')}</p>`).join('')}</div>`
+     : (OCC
+        ? `<div class="what-raw">${(cur.rawLines||[]).map(l=>`<p>${E(l)}</p>`).join('')
+            ||'<p class="what-wait">원문을 찾지 못했습니다.</p>'}</div>`
+        : '<p class="what-wait">주간업무 원문을 불러오는 중입니다…</p>')}
+   ${(cur.apply&&(cur.apply.place||(cur.apply.documents||[]).length))
+     ? `<p class="hint">${cur.apply.place?'접수처: <b>'+E(cur.apply.place)+'</b>':''}${
+         (cur.apply.documents||[]).length?' · 서류: '+E(cur.apply.documents.join(', ')):''}</p>`:''}
+   <div class="what-cond">${cw.length
+     ? cw.map(x=>`<span class="c">${E(x)}</span>`).join('')
+     : '<span class="c none">자동으로 읽어 낸 조건이 없습니다 — 아래에서 직접 정하세요</span>'}</div>`;
+ }
+
  /* 접수 가능한 건인가 — 기간이 남아 있거나 기간이 안 적힌 것 */
  const today=new Date().toISOString().slice(0,10);
  const openable=it=>!it.conditions.applyEnd||it.conditions.applyEnd>=today;
@@ -244,7 +326,7 @@ table.spec .fix{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:
  $('#onlyOpen').onclick=()=>{ onlyOpen=!onlyOpen; $('#onlyOpen').classList.toggle('on',onlyOpen); renderList(); };
 
  function pick(id){ cur=ITEMS.find(i=>i.id===id); cfg=JSON.parse(JSON.stringify(SUBCFG.forItem(cur)));
-   $('#editor').style.display=''; renderList(); renderEditor();
+   $('#editor').style.display=''; renderList(); renderWhat(); renderEditor();
    $('#editor').scrollIntoView({behavior:'smooth',block:'start'}); }
 
  function renderEditor(){
