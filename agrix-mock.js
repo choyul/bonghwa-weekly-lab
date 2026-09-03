@@ -78,8 +78,6 @@
     /* 본인확인·경영체 조회로 알게 된 것은 신청서에 미리 채운다 —
        방금 인증한 사람에게 이름을 다시 적으라고 할 이유가 없다 */
     prefill: g => ({ name: g.name, phone: g.phone, birth: g.birth, farmNo: g.no, addr: g.addr }),
-    /* 그중 무엇이 자동으로 채워졌는지 — 화면이 이름표를 붙이는 데 쓴다 */
-    prefillNote: '본인확인·경영체 정보로 채웠습니다',
     brief: g => ({ by: 'agrix', no: g.no, status: g.status, statusAt: g.statusAt,
                    area: g.area, region: g.region, addr: g.addr }),
   };

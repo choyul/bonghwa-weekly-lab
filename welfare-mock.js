@@ -74,7 +74,6 @@
       ['거주지', g.addr, ''],
     ],
     prefill: g => ({ name: g.name, phone: g.phone, birth: g.birth, addr: g.addr }),
-    prefillNote: '본인확인·복지자격 정보로 채웠습니다',
     brief: g => ({ by: 'welfare', quals: g.quals, statusAt: g.statusAt, region: g.region,
                    addr: g.addr, disab: g.disab, singleP: g.singleP }),
   };

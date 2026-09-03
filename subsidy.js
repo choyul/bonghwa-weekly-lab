@@ -355,12 +355,11 @@
       const cap = window.SUBCFG ? SUBCFG.qtyCap(q, areaHa) : null;
       const why = window.SUBCFG ? SUBCFG.qtyWhy(q, areaHa) : '';
       const PF = (agrix && PROV) ? PROV.prefill(agrix) : {};
-      let auto = 0;
       const rows = cfg.ask.map(k => {
         const f = A[k]; if (!f) return '';
         let val = pre['ap_' + k] || '';
         const filled = PF[k] != null && PF[k] !== '';
-        if (filled) { val = PF[k]; auto++; }
+        if (filled) val = PF[k];
         const inp = f.type === 'textarea'
           ? `<textarea class="ap-in" data-k="${k}" rows="3">${E(val)}</textarea>`
           : `<input class="ap-in" data-k="${k}" type="${f.type}" value="${E(val)}" placeholder="${E(f.ph || '')}">`;
@@ -405,8 +404,6 @@
             <b>${dleft === 0 ? '오늘까지' : dleft + '일'}</b> 남았습니다. (마감 ${E(endD)})</div></div>` : ''}
           ${qtyRow}
           <div class="sub-q" style="margin-top:16px">신청서</div>
-          ${auto ? `<div class="ap-filled">✍️ <b>${auto}칸</b>을 대신 채워 두었습니다
-            <span>${E((PROV && PROV.prefillNote) || '확인한 정보로 채웠습니다')} — 다르면 고쳐 주세요</span></div>` : ''}
           ${!apiMode() && cfg.ask.includes('farmNo')
             ? '<div class="sub-manual">등록번호를 모르시면 비워 두셔도 됩니다 — 담당자가 대장에서 찾습니다.</div>' : ''}
           ${rows || '<p class="sub-note">받을 정보가 정해지지 않았습니다.</p>'}
