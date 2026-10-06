@@ -1973,6 +1973,8 @@ function init(){
    listh.textContent=t;
   }
   /* 고시·공고는 갈래 탭의 세 번째 칸이 그린다 — 여기서 또 붙이면 두 번 나온다 */
+  /* 행사 화면에서 기간을 '1개월'로 바꾸면 월간 달력이 바로 나와야 한다(실서버에서 옮김) */
+  applySpanUI();
   if(MODE==='event'&&BWUI.api.state.scope==='month')renderMonthCal();   /* 고른 날짜 표시 갱신 */
   renderEvents();          /* 행사 보기일 때 그 기간 행사 목록 */
   renderNews();            /* 뉴스도 같은 기간·검색을 따른다 */
