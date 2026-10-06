@@ -39,6 +39,8 @@
   const ST_LABEL = { done: '종료', ongoing: '진행중', upcoming: '예정', none: '기간 미기재' };
   function typeLabel(t) { return CFG.publicLabels ? (BW.PUBLIC_TYPE_LABELS[t] || t) : t; }
   /* 화면이 자기 분류를 쓰면(군민용 주제 등) 그것을 태그에 쓴다 — 축과 태그가 어긋나면 안 된다 */
+  /* 갈래 — 화면이 CFG.kindOf 로 셋(apply·gov·internal)을 주면 그대로, 아니면 예전처럼 둘로 */
+  function grpKind(iss) { return CFG.kindOf ? CFG.kindOf(iss) : (CFG.splitAdmin(iss) ? 'apply' : 'gov'); }
   function tagOf(iss) { return CFG.typeTag ? CFG.typeTag(iss) : { v: iss.type, label: typeLabel(iss.type) }; }
 
   /* ───────── 초기화 ───────── */
@@ -358,8 +360,8 @@
     axes.forEach(a => { S.axis[a.key] = keep[a.key]; });
     let all = rows.concat(ext);
     if (CFG.groupTabs && CFG.splitAdmin) {
-      if (S.grpTab === 'gov') all = all.filter(i => !CFG.splitAdmin(i));
-      else if (S.grpTab === 'apply') all = all.filter(i => CFG.splitAdmin(i));
+      if (S.grpTab === 'gov' || S.grpTab === 'apply' || S.grpTab === 'internal')
+        all = all.filter(i => grpKind(i) === S.grpTab);
     }
     return all;
   }
@@ -557,7 +559,9 @@
          군청 내부 사정일 뿐이라, 기간 안의 것과 아직 진행 중인 것을 합쳐
          [신청·참여 | 군정 소식 | 고시·공고] 세 갈래로만 가르고 한 갈래씩 보여 준다. */
       const extra = CFG.ongoingSection ? ongoingExtra(rows) : [];
-      const isApply = iss => CFG.splitAdmin(iss);
+      const isApply = iss => grpKind(iss) === 'apply';
+      const isGov = iss => grpKind(iss) === 'gov';
+      const isIn = iss => grpKind(iss) === 'internal';
       const endOf = i => (i._range && !i._range.openEnded && (i._range.end || i._range.start)) || '';
       /* 마감 가까운 순 — ①앞으로 마감될 것(가까운 순) ②막 끝난 것(최근 순) ③기한 없는 상시 */
       const applyKey = i => { const e = endOf(i);
@@ -574,11 +578,17 @@
       if (gsig !== onSig) { S.limit = 60; S.onLimit = 12; onSig = gsig; }
       const applyNew = rows.filter(isApply).sort(bySoon);
       const applyOld = extra.filter(isApply).sort(bySoon);
-      const govNew = rows.filter(i => !isApply(i)).sort(bySoon);
-      const govOld = extra.filter(i => !isApply(i)).sort(bySoon);
+      const govNew = rows.filter(isGov).sort(bySoon);
+      const govOld = extra.filter(isGov).sort(bySoon);
+      /* 군청 내부 일 — 회의·심의·보고회처럼 군민이 낄 자리가 없는 일은 따로 모은다.
+         지우지 않고 마지막 갈래로 둔다(잘못 여기로 온 소식을 찾을 길이 남는다). */
+      const inNew = CFG.kindOf ? rows.filter(isIn).sort(bySoon) : [];
+      const inOld = CFG.kindOf ? extra.filter(isIn).sort(bySoon) : [];
       const ntN = CFG.noticeTab ? CFG.noticeTab.count() : 0;
       GRP_COUNTS = { apply: applyNew.length + applyOld.length,
-                     gov: govNew.length + govOld.length, notice: ntN };
+                     gov: govNew.length + govOld.length, notice: ntN,
+                     internal: inNew.length + inOld.length };
+      /* 맞춤 설정에서 고른 '나' 에게 해당하는 신청 가능 건수 — 첫 칸 문장이 쓴다 */
       if (CFG.profileMatch)
         GRP_COUNTS.applyMine = applyNew.concat(applyOld).filter(i => CFG.profileMatch(i)).length;
       /* 탭은 #bwCards 밖에 둔다 — 안에 두면 다음 렌더의 innerHTML='' 로 같이 지워지고,
@@ -592,7 +602,8 @@
         else box.parentNode.insertBefore(bar, box);
       }
       bar.innerHTML = [['apply', '📝', '신청·참여', GRP_COUNTS.apply], ['gov', '🏛', '군정 소식', GRP_COUNTS.gov],
-        ['notice', '📢', '고시·공고', ntN]].map(([k, i, l, n]) =>
+        ['notice', '📢', '고시·공고', ntN]]
+        .concat(CFG.kindOf ? [['internal', '🏢', '군청 내부', GRP_COUNTS.internal]] : []).map(([k, i, l, n]) =>
           `<button type="button" data-g="${k}" class="${S.grpTab === k ? 'on' : ''}">
              <span class="gi">${i}</span><span class="gl">${l}</span><span class="gn">${n}</span></button>`).join('');
       bar.querySelectorAll('button').forEach(b => b.onclick = () => {
@@ -630,11 +641,12 @@
           CFG.noticeTab.renderRecent(box);
         } else note('이 조건에 맞는 고시·공고가 없어요');
       } else {
-        const gov = S.grpTab === 'gov';
-        let fresh = gov ? govNew : applyNew, cont = gov ? govOld : applyOld;
+        const gov = S.grpTab === 'gov' || S.grpTab === 'internal', inn = S.grpTab === 'internal';
+        let fresh = inn ? inNew : gov ? govNew : applyNew, cont = inn ? inOld : gov ? govOld : applyOld;
         if (applyOnly) { fresh = fresh.filter(CFG.canApplyNow); cont = cont.filter(CFG.canApplyNow); }
+        if (inn && (fresh.length || cont.length)) note('회의·심의·보고처럼 군청 안에서 하는 일이에요');
         if (!fresh.length && !cont.length) {
-          note(gov ? '이 조건에 맞는 군정 소식이 없어요' : '이 조건으로 신청·참여할 수 있는 일은 없어요');
+          note(inn ? '이 조건에 맞는 군청 내부 일이 없어요' : gov ? '이 조건에 맞는 군정 소식이 없어요' : '이 조건으로 신청·참여할 수 있는 일은 없어요');
         } else {
           /* 두 묶음에 각자 한도를 준다 — 하나로 묶으면 새 소식이 한도를 다 먹어
              '전부터 이어지는 소식'이 아예 화면에 안 나온다 */
