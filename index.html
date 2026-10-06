@@ -2356,8 +2356,8 @@ function init(){
     <div class="pf-grid" data-pf="aud">${auds.map(a=>
       `<button type="button" data-a="${E(a)}" class="${tmp.aud.includes(a)?'on':''}">${audIcon(a,icons[a])} ${E(a)}</button>`).join('')}</div>
     <div class="pf-lab">어느 읍·면에 사세요?</div>
-    <div class="pf-grid" data-pf="reg">${PF_REGIONS
-      .map(r=>`<button type="button" data-r="${E(r)}" class="${tmp.region===r?'on':''}">${r}</button>`).join('')}</div>`;
+    <div class="pf-grid" data-pf="reg">${[''].concat(PF_REGIONS)
+      .map(r=>`<button type="button" data-r="${E(r)}" class="${tmp.region===r?'on':''}">${r||'전체'}</button>`).join('')}</div>`;
   host.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{
    const a=b.dataset.a, i=tmp.aud.indexOf(a);
    if(i>=0)tmp.aud.splice(i,1);
@@ -2366,7 +2366,8 @@ function init(){
    b.classList.toggle('on',tmp.aud.includes(a));
   });
   host.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{
-   tmp.region=tmp.region===b.dataset.r?'':b.dataset.r;      /* 다시 누르면 해제 */
+   /* '전체' = 읍·면을 가리지 않는다(빈 값). 고른 읍·면을 다시 눌러도 전체로 돌아간다. */
+   tmp.region=tmp.region===b.dataset.r?'':b.dataset.r;
    host.querySelectorAll('[data-r]').forEach(x=>x.classList.toggle('on',x.dataset.r===tmp.region));
   });
  }
@@ -2694,7 +2695,8 @@ function init(){
    const tmp={aud:[],region:''};
    profForm(box.querySelector('#askForm'),tmp);
    box.querySelector('#askGo').onclick=()=>{
-    if(!tmp.aud.length&&!tmp.region){ BWUI.toast('하나 이상 골라 주세요 — 안 고르시려면 건너뛰기를 눌러 주세요'); return; }
+    /* 대상도 안 고르고 읍·면도 '전체'면 가릴 것이 없다 — 건너뛴 것과 같게, 전체 소식을 그대로 보여 준다 */
+    if(!tmp.aud.length&&!tmp.region){ try{localStorage.setItem(SKIPKEY,'1')}catch(e){} AA('맞춤설정','전체로봄'); renderHome(); window.scrollTo({top:0}); return; }
     applyProf(tmp); window.scrollTo({top:0}); };
    box.querySelector('#askSkip').onclick=()=>{ try{localStorage.setItem(SKIPKEY,'1')}catch(e){} AA('맞춤설정','건너뜀'); renderHome(); };
   }else{
