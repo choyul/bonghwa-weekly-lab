@@ -29,14 +29,29 @@ if (fs.existsSync(deptPhonesPath)) { try { deptPhones = JSON.parse(fs.readFileSy
 const files = fs.readdirSync(mdDir).filter(f => f.endsWith('.md')).sort();
 const occ = [];
 const weeks = [];
+/* 파싱 바닥 점검 — kordoc 출력 형식이 바뀌면 파서가 조용히 깨져 한 주가 통째로
+   비거나(2026-09-07, 0건) 부서불명으로 버려진(2026-09-28, 71건) 일이 실제로 있었다.
+   93주 실측 최솟값이 업무 45건·부서 21개이므로, 그보다 한참 아래면 데이터 이상이다.
+   깨진 data.js 를 조용히 배포하느니 빌드를 멈추는 편이 낫다 (Actions 실패로 드러남). */
+const MIN_ITEMS = 25, MIN_DEPTS = 15;
+const bad = [];
 for (const f of files) {
   const week = weekOfFilename(f);
   if (!week) continue;
   const r = parseWeekMd(fs.readFileSync(path.join(mdDir, f), 'utf-8'), week);
+  const nDepts = new Set(r.entries.map(e => e.dept)).size;
+  if (r.entries.length < MIN_ITEMS || nDepts < MIN_DEPTS) {
+    bad.push(`${week}: 업무 ${r.entries.length}건 / 부서 ${nDepts} / 부서불명 ${r.skipped.noDept}건 (${f})`);
+  }
   weeks.push(week);
   for (const e of r.entries) {
     occ.push({ week, dept: e.dept, sec: e.sec, item: e.item, prog: BW.parseProg(e.item) });
   }
+}
+if (bad.length) {
+  console.error(`파싱 바닥 미달 — md 변환 형식이 바뀌었는지 확인 필요 (기준: 업무 ${MIN_ITEMS}건·부서 ${MIN_DEPTS}개):`);
+  bad.forEach(b => console.error('  ' + b));
+  process.exit(3);
 }
 occ.sort((a, b) => a.week < b.week ? -1 : 1);
 const latest = weeks[weeks.length - 1];

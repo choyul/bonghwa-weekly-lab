@@ -27,7 +27,11 @@ function parseWeekMd(text, week) {
   /* 1) 목차에서 부서 목록 추출 (두 형식 모두) */
   const deptSet = new Set();
   for (const ln of lines) {
-    let m = ln.match(/^(\d{2})\.\s*([^\t·]+?)\s*(?:\t|·{2,})/);
+    const t = ln.replace(/\*\*/g, '').trim();
+    let m = t.match(/^(\d{2})\.\s*([^\t·]+?)\s*(?:\t|·{2,})/);
+    /* kordoc 버전에 따라 목차에 쪽번호 없이 "01. 기획예산실"만 나오기도 한다
+       (2026-09-28 주차에서 실제 발생 — 부서를 못 찾아 71건이 버려졌다). */
+    if (!m) m = t.match(/^(\d{2})\.\s*([가-힣][가-힣\s]{1,14})$/);
     if (m) { const name = squash(m[2]); if (/^[가-힣]{2,15}$/.test(name)) deptSet.add(name); }
   }
   EUPMYEON.forEach(d => deptSet.add(d));
@@ -46,6 +50,10 @@ function parseWeekMd(text, week) {
 
   for (let raw of lines) {
     let s = raw.replace(/\r$/, '').trim();
+    if (!s) continue;
+    /* kordoc 버전에 따라 제목·부서 헤더가 "**□ 제목**"처럼 굵게 나오기도 한다
+       (2026-09-07 주차에서 실제 발생 — 한 주가 통째로 0건 파싱됐다). 굵게 표식은 벗긴다. */
+    s = s.replace(/\*\*/g, '').trim();
     if (!s) continue;
     if (/^!\[/.test(s)) continue;                       /* 이미지 */
     if (/^\|[\s:-]+\|/.test(s.replace(/-/g, '-'))) continue; /* 표 구분선 */
