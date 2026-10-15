@@ -1395,7 +1395,7 @@ function init(){
  const PKEY='bhlab.profile';
  let PROF={aud:[],region:''};
  try{ PROF=Object.assign(PROF, JSON.parse(localStorage.getItem(PKEY))||{}); }catch(e){}
- PROF.aud=(PROF.aud||[]).filter(a=>a&&a!=='주민 누구나').slice(0,2);   /* 대상은 둘까지 */
+ PROF.aud=(PROF.aud||[]).filter(a=>a&&a!=='주민 누구나');   /* 대상은 몇 개든 고를 수 있다 */
  const profOn=()=>PROF.aud.length||PROF.region;
  function saveProf(){ try{localStorage.setItem(PKEY,JSON.stringify(PROF))}catch(e){} }
  /* 내 프로필과 얼마나 맞는지 — 클수록 위로 */
@@ -2346,24 +2346,30 @@ function init(){
   howToModal();                            /* 그래도 없으면(아이폰 등) 방법을 안내 */
  }
 
- /* 대상(둘까지)·읍면을 고르는 칸 — 설정 창과 첫 화면 맨 위 물음이 같이 쓴다 */
+ /* 대상(여럿, [전체] 포함)·읍면을 고르는 칸 — 설정 창과 첫 화면 맨 위 물음이 같이 쓴다 */
  const PF_REGIONS=['봉화읍','물야면','봉성면','법전면','춘양면','소천면','석포면','재산면','명호면','상운면'];
  function profForm(host,tmp){
   const auds=MERGED_AUD.map(x=>x[0]).filter(x=>x!=='주민 누구나');
   const icons={};MERGED_AUD.forEach(x=>icons[x[0]]=x[1]);
   host.innerHTML=`
-    <div class="pf-lab">누구의 소식을 먼저 볼까요? <span>(둘까지 고를 수 있어요)</span></div>
-    <div class="pf-grid" data-pf="aud">${auds.map(a=>
+    <div class="pf-lab">누구의 소식을 먼저 볼까요?</div>
+    <div class="pf-grid" data-pf="aud"><button type="button" data-aall class="${tmp.aud.length===auds.length?'on':''}">전체</button>${auds.map(a=>
       `<button type="button" data-a="${E(a)}" class="${tmp.aud.includes(a)?'on':''}">${audIcon(a,icons[a])} ${E(a)}</button>`).join('')}</div>
     <div class="pf-lab">어느 읍·면에 사세요?</div>
     <div class="pf-grid" data-pf="reg">${[''].concat(PF_REGIONS)
       .map(r=>`<button type="button" data-r="${E(r)}" class="${tmp.region===r?'on':''}">${r||'전체'}</button>`).join('')}</div>`;
+  /* [전체] = 대상을 모두 켠다(다시 누르면 모두 끈다). 하나씩 다 골라도 저절로 켜진다. */
+  const syncAud=()=>{
+   host.querySelectorAll('[data-a]').forEach(x=>x.classList.toggle('on',tmp.aud.includes(x.dataset.a)));
+   host.querySelector('[data-aall]').classList.toggle('on',tmp.aud.length===auds.length);
+  };
+  host.querySelector('[data-aall]').onclick=()=>{
+   tmp.aud.splice(0,tmp.aud.length,...(tmp.aud.length===auds.length?[]:auds)); syncAud();
+  };
   host.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{
-   const a=b.dataset.a, i=tmp.aud.indexOf(a);
-   if(i>=0)tmp.aud.splice(i,1);
-   else if(tmp.aud.length>=2){ BWUI.toast('둘까지 고를 수 있어요 — 하나를 다시 눌러 빼 주세요'); return; }
-   else tmp.aud.push(a);
-   b.classList.toggle('on',tmp.aud.includes(a));
+   const i=tmp.aud.indexOf(b.dataset.a);
+   if(i>=0)tmp.aud.splice(i,1); else tmp.aud.push(b.dataset.a);
+   syncAud();
   });
   host.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{
    /* '전체' = 읍·면을 가리지 않는다(빈 값). 고른 읍·면을 다시 눌러도 전체로 돌아간다. */
@@ -2372,7 +2378,7 @@ function init(){
   });
  }
  function applyProf(tmp){
-  PROF={aud:tmp.aud.slice(0,2),region:tmp.region||''}; saveProf();
+  PROF={aud:tmp.aud.slice(),region:tmp.region||''}; saveProf();
   document.body.classList.toggle('profon',!!profOn());
   AA('맞춤설정저장',(PROF.aud.join('+')||'대상없음')+(PROF.region?'/'+PROF.region:''));
   homeMore=HOME_STEP; homeSoon=HOME_STEP; BWUI.api.render();
@@ -2700,7 +2706,9 @@ function init(){
     applyProf(tmp); window.scrollTo({top:0}); };
    box.querySelector('#askSkip').onclick=()=>{ try{localStorage.setItem(SKIPKEY,'1')}catch(e){} AA('맞춤설정','건너뜀'); renderHome(); };
   }else{
-   const who=on ? PROF.aud.map(a=>`${icons[a]||''} ${E(a)}`).concat(PROF.region?[E(PROF.region)]:[]).join(' · ')
+   /* 대상을 모두 골랐으면 그림을 늘어놓지 않고 '전체'로 줄인다 */
+   const allAud=PROF.aud.length===MERGED_AUD.length-1;
+   const who=on ? (allAud?['전체']:PROF.aud.map(a=>`${icons[a]||''} ${E(a)}`)).concat(PROF.region?[E(PROF.region)]:[]).join(' · ')
                 : '누구의 소식을 볼까요?';
    const me=add(`<button type="button" class="me${on?'':' off'}"><span class="me-t">${who}</span>
      <span class="me-x">${on?'바꾸기':'고르기'} ▾</span></button>`);
